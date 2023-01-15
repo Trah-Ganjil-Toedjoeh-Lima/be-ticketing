@@ -1,0 +1,21 @@
+version: '3.7'
+
+services:
+  db:
+    image: 'postgres:15-alpine'
+    container_name: gmcgo-db #change me [2]
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: gmcgo_db #change me [6]
+      POSTGRES_PASSWORD: root #change me
+      POSTGRES_USER: root #change me
+    volumes:
+      - ./.docker/dbdata:/var/lib/postgresql/data #change me [2]
+    networks:
+      - gmcgo-network #change me [5]
+
+networks:
+  gmcgo-network: #change me [5]
+    driver: bridge
