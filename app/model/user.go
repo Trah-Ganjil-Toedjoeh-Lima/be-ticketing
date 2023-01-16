@@ -1,4 +1,4 @@
-package models
+package model
 
 import (
 	"gorm.io/gorm"
@@ -9,7 +9,7 @@ type User struct {
 	UserId    int `gorm:"primaryKey"`
 	Name      string
 	Email     string
-	phone     string
+	Phone     string
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	DeletedAt gorm.DeletedAt

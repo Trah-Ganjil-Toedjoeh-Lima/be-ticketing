@@ -9,8 +9,10 @@ go 1.19
 //go get -u github.com/joho/godotenv
 //go get -u github.com/google/wire
 //go get -u github.com/go-gormigrate/gormigrate/v2
+//go get -u go get -u github.com/go-factory/factory/v4
 
 require (
+	github.com/bxcodec/faker/v4 v4.0.0-beta.3 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/gin-gonic/gin v1.8.2 // indirect
 	github.com/go-gormigrate/gormigrate/v2 v2.0.2 // indirect

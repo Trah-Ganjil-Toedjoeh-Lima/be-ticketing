@@ -3,6 +3,7 @@ package database
 import (
 	"fmt"
 	"github.com/frchandra/gmcgo/config"
+	"github.com/frchandra/gmcgo/database/factory"
 	"github.com/go-gormigrate/gormigrate/v2"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -48,6 +49,7 @@ func (this *Migrator) RunMigration(option string) {
 		if err == nil {
 			err = m.Migrate()
 		}
+		this.RunSeeder(this.Database)
 	default:
 		panic("option " + option + " unknown")
 	}
@@ -57,4 +59,27 @@ func (this *Migrator) RunMigration(option string) {
 	} else {
 		fmt.Printf("Could not migrate: %v", err)
 	}
+}
+
+type Seeder struct {
+	Factory factory.Factory
+	Count   int
+}
+
+func NewFactory() []Seeder {
+	return []Seeder{
+		Seeder{Factory: factory.NewUserFactory(), Count: 3},
+	}
+}
+
+func (this *Migrator) RunSeeder(db *gorm.DB) error {
+	for _, seeder := range NewFactory() {
+		for i := 0; i < seeder.Count; i++ {
+			err := db.Debug().Create(seeder.Factory.GetData()).Error
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
