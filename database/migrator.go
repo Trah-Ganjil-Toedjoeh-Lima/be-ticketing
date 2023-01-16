@@ -1,27 +1,24 @@
-package app
+package database
 
 import (
 	"fmt"
 	"github.com/frchandra/gmcgo/config"
-	"github.com/gin-gonic/gin"
+	"github.com/go-gormigrate/gormigrate/v2"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
 
-type Server struct {
-	Config   *config.AppConfig
-	Database *gorm.DB
-	Router   *gin.Engine
+type Migrator struct {
+	Database   *gorm.DB
+	Migrations Migration
 }
 
-func NewServer(appConfig *config.AppConfig) *Server {
+func NewMigrator(appConfig *config.AppConfig, migration Migration) *Migrator {
 	db, _ := initializeDb(appConfig)
-	router := initializeRouter(appConfig)
-	return &Server{
-		Config:   appConfig,
-		Database: db,
-		Router:   router,
+	return &Migrator{
+		Database:   db,
+		Migrations: migration,
 	}
 }
 
@@ -39,20 +36,25 @@ func initializeDb(appConfig *config.AppConfig) (*gorm.DB, error) {
 	return db, err
 }
 
-func initializeRouter(appConfig *config.AppConfig) *gin.Engine {
-	fmt.Println("Welcome to " + appConfig.AppName)
-	if appConfig.IsProduction == "false" {
-		gin.SetMode(gin.DebugMode)
-	}
-	router := gin.Default()
-	initializeRoutes(router)
-	return router
-}
+func (this *Migrator) RunMigration(option string) {
+	var err error
+	m := gormigrate.New(this.Database, gormigrate.DefaultOptions, this.Migrations.Migrations)
 
-func (this *Server) Run() {
-	fmt.Printf("Listening to port %s", this.Config.AppPort)
-	err := this.Router.Run(":" + this.Config.AppPort)
-	if err != nil {
-		panic("Server unable to start")
+	fmt.Println("option " + option + " is chosen")
+
+	switch option {
+	case "migrate:fresh":
+		err = m.RollbackTo("init")
+		if err == nil {
+			err = m.Migrate()
+		}
+	default:
+		panic("option " + option + " unknown")
+	}
+
+	if err == nil {
+		fmt.Println("Migration did run successfully")
+	} else {
+		fmt.Printf("Could not migrate: %v", err)
 	}
 }
