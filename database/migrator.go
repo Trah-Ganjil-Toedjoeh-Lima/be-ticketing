@@ -2,12 +2,9 @@ package database
 
 import (
 	"fmt"
-	"github.com/frchandra/gmcgo/config"
 	"github.com/frchandra/gmcgo/database/factory"
 	"github.com/go-gormigrate/gormigrate/v2"
-	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 )
 
 type Migrator struct {
@@ -15,26 +12,11 @@ type Migrator struct {
 	migration Migration
 }
 
-func NewMigrator(appConfig *config.AppConfig, migration Migration) *Migrator {
-	db, _ := initializeDb(appConfig)
+func NewMigrator(db *gorm.DB, migration Migration) *Migrator {
 	return &Migrator{
 		db:        db,
 		migration: migration,
 	}
-}
-
-func initializeDb(appConfig *config.AppConfig) (*gorm.DB, error) {
-	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Jakarta", appConfig.DBHost, appConfig.DBUser, appConfig.DBPassword, appConfig.DBName, appConfig.DBPort)
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Info),
-	})
-	if err != nil {
-		panic("Failed on connecting to the migrator server")
-	} else {
-		fmt.Println("db connection established")
-		fmt.Println("Using migrator " + db.Migrator().CurrentDatabase())
-	}
-	return db, err
 }
 
 func (this *Migrator) RunMigration(option string) {

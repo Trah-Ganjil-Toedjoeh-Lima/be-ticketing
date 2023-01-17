@@ -11,9 +11,9 @@ import (
 	"github.com/frchandra/gmcgo/app/controller"
 	"github.com/frchandra/gmcgo/app/repository"
 	"github.com/frchandra/gmcgo/app/service"
-	"github.com/frchandra/gmcgo/config"
 	"github.com/frchandra/gmcgo/database"
 	"github.com/gin-gonic/gin"
+	"github.com/google/wire"
 )
 
 // Injectors from injector.go:
@@ -28,8 +28,12 @@ func InitializeRouter() *gin.Engine {
 }
 
 func InitializeMigrator() *database.Migrator {
-	appConfig := config.NewAppConfig()
+	db := app.NewDatabase()
 	migration := database.NewMigration()
-	migrator := database.NewMigrator(appConfig, migration)
+	migrator := database.NewMigrator(db, migration)
 	return migrator
 }
+
+// injector.go:
+
+var UserSet = wire.NewSet(repository.NewUserRepository, service.NewUserService, controller.NewUserController)
