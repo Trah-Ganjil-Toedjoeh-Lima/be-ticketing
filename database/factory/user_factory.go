@@ -26,7 +26,8 @@ func (this UserFactory) GetData() interface{} {
 	}
 }
 
-func (this UserFactory) RunFactory(count int) error {
+func (this UserFactory) RunFactory() error {
+	count := 3
 	for i := 0; i < count; i++ {
 		err := this.Database.Debug().Create(this.GetData()).Error
 		if err != nil {

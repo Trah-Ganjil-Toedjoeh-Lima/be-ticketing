@@ -65,12 +65,13 @@ func (this *Migrator) RunMigration(option string) {
 func (this *Migrator) GetFactory() []factory.Factory {
 	return []factory.Factory{
 		factory.NewUserFactory(this.Database),
+		factory.NewSeatFactory(this.Database),
 	}
 }
 
 func (this *Migrator) RunFactory() error {
 	for _, seeder := range this.GetFactory() {
-		err := seeder.RunFactory(3)
+		err := seeder.RunFactory()
 		if err != nil {
 			return err
 		}

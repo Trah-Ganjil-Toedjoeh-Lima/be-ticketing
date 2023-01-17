@@ -30,6 +30,15 @@ func NewMigration() Migration {
 				return tx.Debug().Migrator().DropTable(model.User{})
 			},
 		},
+		{
+			ID: "create_seats_table",
+			Migrate: func(tx *gorm.DB) error {
+				return tx.Debug().AutoMigrate(model.Seat{})
+			},
+			Rollback: func(tx *gorm.DB) error {
+				return tx.Debug().Migrator().DropTable(model.Seat{})
+			},
+		},
 	}
 
 	return Migration{
