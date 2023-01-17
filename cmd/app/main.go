@@ -1,10 +1,13 @@
 package main
 
 import (
-	injector "github.com/frchandra/gmcgo/injector"
+	"github.com/frchandra/gmcgo/config"
+	"github.com/frchandra/gmcgo/injector"
 )
 
 func main() {
-	server := injector.InitializeServer()
-	server.Run()
+
+	appConfig := config.NewAppConfig()
+	router := injector.InitializeRouter()
+	router.Run(":" + appConfig.AppPort)
 }

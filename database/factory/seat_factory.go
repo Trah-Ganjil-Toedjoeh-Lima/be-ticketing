@@ -7,11 +7,11 @@ import (
 )
 
 type SeatFactory struct {
-	Database *gorm.DB
+	db *gorm.DB
 }
 
 func NewSeatFactory(db *gorm.DB) SeatFactory {
-	return SeatFactory{Database: db}
+	return SeatFactory{db: db}
 }
 
 func (this SeatFactory) RunFactory() error {
@@ -25,7 +25,7 @@ func (this SeatFactory) RunFactory() error {
 				Link:   "#",
 				Status: 0,
 			}
-			err := this.Database.Debug().Create(seat).Error
+			err := this.db.Debug().Create(seat).Error
 			if err != nil {
 				return err
 			}
@@ -42,7 +42,7 @@ func (this SeatFactory) RunFactory() error {
 				Link:   "#",
 				Status: 0,
 			}
-			err := this.Database.Debug().Create(seat).Error
+			err := this.db.Debug().Create(seat).Error
 			if err != nil {
 				return err
 			}
@@ -59,7 +59,7 @@ func (this SeatFactory) RunFactory() error {
 				Link:   "#",
 				Status: 0,
 			}
-			err := this.Database.Debug().Create(seat).Error
+			err := this.db.Debug().Create(seat).Error
 			if err != nil {
 				return err
 			}
@@ -76,7 +76,7 @@ func (this SeatFactory) RunFactory() error {
 				Link:   "#",
 				Status: 0,
 			}
-			err := this.Database.Debug().Create(seat).Error
+			err := this.db.Debug().Create(seat).Error
 			if err != nil {
 				return err
 			}
@@ -90,7 +90,7 @@ func (this SeatFactory) RunFactory() error {
 			Link:   "#",
 			Status: 0,
 		}
-		err := this.Database.Debug().Create(seat).Error
+		err := this.db.Debug().Create(seat).Error
 		if err != nil {
 			return err
 		}
@@ -106,7 +106,7 @@ func (this SeatFactory) RunFactory() error {
 				Link:   "#",
 				Status: 0,
 			}
-			err := this.Database.Debug().Create(seat).Error
+			err := this.db.Debug().Create(seat).Error
 			if err != nil {
 				return err
 			}
@@ -123,7 +123,7 @@ func (this SeatFactory) RunFactory() error {
 				Link:   "#",
 				Status: 0,
 			}
-			err := this.Database.Debug().Create(seat).Error
+			err := this.db.Debug().Create(seat).Error
 			if err != nil {
 				return err
 			}
@@ -137,7 +137,7 @@ func (this SeatFactory) RunFactory() error {
 			Link:   "#",
 			Status: 0,
 		}
-		err := this.Database.Debug().Create(seat).Error
+		err := this.db.Debug().Create(seat).Error
 		if err != nil {
 			return err
 		}
@@ -150,7 +150,7 @@ func (this SeatFactory) RunFactory() error {
 			Link:   "#",
 			Status: 0,
 		}
-		err := this.Database.Debug().Create(seat).Error
+		err := this.db.Debug().Create(seat).Error
 		if err != nil {
 			return err
 		}
@@ -162,7 +162,7 @@ func (this SeatFactory) RunFactory() error {
 		Link:   "#",
 		Status: 0,
 	}
-	err := this.Database.Debug().Create(seat).Error
+	err := this.db.Debug().Create(seat).Error
 	if err != nil {
 		return err
 	}
@@ -173,7 +173,7 @@ func (this SeatFactory) RunFactory() error {
 		Link:   "#",
 		Status: 0,
 	}
-	err = this.Database.Debug().Create(seat).Error
+	err = this.db.Debug().Create(seat).Error
 	if err != nil {
 		return err
 	}
@@ -184,7 +184,7 @@ func (this SeatFactory) RunFactory() error {
 		Link:   "#",
 		Status: 0,
 	}
-	err = this.Database.Debug().Create(seat).Error
+	err = this.db.Debug().Create(seat).Error
 	if err != nil {
 		return err
 	}
@@ -195,7 +195,7 @@ func (this SeatFactory) RunFactory() error {
 		Link:   "#",
 		Status: 0,
 	}
-	err = this.Database.Debug().Create(seat).Error
+	err = this.db.Debug().Create(seat).Error
 	if err != nil {
 		return err
 	}
@@ -206,7 +206,7 @@ func (this SeatFactory) RunFactory() error {
 		Link:   "#",
 		Status: 3,
 	}
-	err = this.Database.Debug().Create(seat).Error
+	err = this.db.Debug().Create(seat).Error
 	if err != nil {
 		return err
 	}
@@ -217,7 +217,7 @@ func (this SeatFactory) RunFactory() error {
 		Link:   "#",
 		Status: 3,
 	}
-	err = this.Database.Debug().Create(seat).Error
+	err = this.db.Debug().Create(seat).Error
 	if err != nil {
 		return err
 	}
@@ -228,7 +228,7 @@ func (this SeatFactory) RunFactory() error {
 		Link:   "#",
 		Status: 3,
 	}
-	err = this.Database.Debug().Create(seat).Error
+	err = this.db.Debug().Create(seat).Error
 	if err != nil {
 		return err
 	}
@@ -239,7 +239,7 @@ func (this SeatFactory) RunFactory() error {
 		Link:   "#",
 		Status: 3,
 	}
-	err = this.Database.Debug().Create(seat).Error
+	err = this.db.Debug().Create(seat).Error
 	if err != nil {
 		return err
 	}
@@ -250,7 +250,7 @@ func (this SeatFactory) RunFactory() error {
 		Link:   "#",
 		Status: 3,
 	}
-	err = this.Database.Debug().Create(seat).Error
+	err = this.db.Debug().Create(seat).Error
 	if err != nil {
 		return err
 	}
@@ -261,7 +261,7 @@ func (this SeatFactory) RunFactory() error {
 		Link:   "#",
 		Status: 3,
 	}
-	err = this.Database.Debug().Create(seat).Error
+	err = this.db.Debug().Create(seat).Error
 	if err != nil {
 		return err
 	}
@@ -272,7 +272,7 @@ func (this SeatFactory) RunFactory() error {
 		Link:   "#",
 		Status: 3,
 	}
-	err = this.Database.Debug().Create(seat).Error
+	err = this.db.Debug().Create(seat).Error
 	if err != nil {
 		return err
 	}
@@ -283,7 +283,7 @@ func (this SeatFactory) RunFactory() error {
 		Link:   "#",
 		Status: 3,
 	}
-	err = this.Database.Debug().Create(seat).Error
+	err = this.db.Debug().Create(seat).Error
 	if err != nil {
 		return err
 	}
@@ -298,7 +298,7 @@ func (this SeatFactory) RunFactory() error {
 				Link:   "#",
 				Status: 0,
 			}
-			err = this.Database.Debug().Create(seat).Error
+			err = this.db.Debug().Create(seat).Error
 			if err != nil {
 				return err
 			}

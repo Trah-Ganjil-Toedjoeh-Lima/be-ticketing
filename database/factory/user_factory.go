@@ -8,11 +8,11 @@ import (
 )
 
 type UserFactory struct {
-	Database *gorm.DB
+	db *gorm.DB
 }
 
 func NewUserFactory(db *gorm.DB) UserFactory {
-	return UserFactory{Database: db}
+	return UserFactory{db: db}
 }
 
 func (this UserFactory) GetData() interface{} {
@@ -29,7 +29,7 @@ func (this UserFactory) GetData() interface{} {
 func (this UserFactory) RunFactory() error {
 	count := 3
 	for i := 0; i < count; i++ {
-		err := this.Database.Debug().Create(this.GetData()).Error
+		err := this.db.Debug().Create(this.GetData()).Error
 		if err != nil {
 			return err
 		}

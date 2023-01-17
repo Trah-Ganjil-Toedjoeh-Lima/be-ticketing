@@ -6,6 +6,7 @@ import (
 )
 
 func initializeRoutes(router *gin.Engine) {
+	//userController := injector.InitializeUserController(db)
 
 	v1 := router.Group("/api/v1")
 	v1.GET("/", func(c *gin.Context) {
@@ -13,4 +14,6 @@ func initializeRoutes(router *gin.Engine) {
 			"hello": "world",
 		})
 	})
+	/*	v1.GET("/", userController.Index)*/
+
 }

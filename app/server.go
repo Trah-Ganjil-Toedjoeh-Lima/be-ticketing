@@ -10,18 +10,18 @@ import (
 )
 
 type Server struct {
-	Config   *config.AppConfig
-	Database *gorm.DB
-	Router   *gin.Engine
+	appConfig *config.AppConfig
+	db        *gorm.DB
+	router    *gin.Engine
 }
 
 func NewServer(appConfig *config.AppConfig) *Server {
 	db, _ := initializeDb(appConfig)
 	router := initializeRouter(appConfig)
 	return &Server{
-		Config:   appConfig,
-		Database: db,
-		Router:   router,
+		appConfig: appConfig,
+		db:        db,
+		router:    router,
 	}
 }
 
@@ -33,7 +33,7 @@ func initializeDb(appConfig *config.AppConfig) (*gorm.DB, error) {
 	if err != nil {
 		panic("Failed on connecting to the migrator server")
 	} else {
-		fmt.Println("Database connection established")
+		fmt.Println("db connection established")
 		fmt.Println("Using migrator " + db.Migrator().CurrentDatabase())
 	}
 	return db, err
@@ -50,8 +50,8 @@ func initializeRouter(appConfig *config.AppConfig) *gin.Engine {
 }
 
 func (this *Server) Run() {
-	fmt.Printf("Listening to port %s", this.Config.AppPort)
-	err := this.Router.Run(":" + this.Config.AppPort)
+	fmt.Printf("Listening to port %s", this.appConfig.AppPort)
+	err := this.router.Run(":" + this.appConfig.AppPort)
 	if err != nil {
 		panic("Server unable to start")
 	}

@@ -11,15 +11,15 @@ import (
 )
 
 type Migrator struct {
-	Database   *gorm.DB
-	Migrations Migration
+	db        *gorm.DB
+	migration Migration
 }
 
 func NewMigrator(appConfig *config.AppConfig, migration Migration) *Migrator {
 	db, _ := initializeDb(appConfig)
 	return &Migrator{
-		Database:   db,
-		Migrations: migration,
+		db:        db,
+		migration: migration,
 	}
 }
 
@@ -31,7 +31,7 @@ func initializeDb(appConfig *config.AppConfig) (*gorm.DB, error) {
 	if err != nil {
 		panic("Failed on connecting to the migrator server")
 	} else {
-		fmt.Println("Database connection established")
+		fmt.Println("db connection established")
 		fmt.Println("Using migrator " + db.Migrator().CurrentDatabase())
 	}
 	return db, err
@@ -39,7 +39,7 @@ func initializeDb(appConfig *config.AppConfig) (*gorm.DB, error) {
 
 func (this *Migrator) RunMigration(option string) {
 	var err error
-	m := gormigrate.New(this.Database, gormigrate.DefaultOptions, this.Migrations.Migrations)
+	m := gormigrate.New(this.db, gormigrate.DefaultOptions, this.migration.Migrations)
 
 	fmt.Println("option " + option + " is chosen")
 
@@ -64,8 +64,8 @@ func (this *Migrator) RunMigration(option string) {
 
 func (this *Migrator) GetFactory() []factory.Factory {
 	return []factory.Factory{
-		factory.NewUserFactory(this.Database),
-		factory.NewSeatFactory(this.Database),
+		factory.NewUserFactory(this.db),
+		factory.NewSeatFactory(this.db),
 	}
 }
 

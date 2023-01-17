@@ -6,6 +6,8 @@ import (
 	"os"
 )
 
+//TODO: make this a singleton
+
 type AppConfig struct {
 	AppName      string
 	IsProduction string

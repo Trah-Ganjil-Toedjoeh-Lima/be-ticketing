@@ -8,16 +8,23 @@ package injector
 
 import (
 	"github.com/frchandra/gmcgo/app"
+	"github.com/frchandra/gmcgo/app/controller"
+	"github.com/frchandra/gmcgo/app/repository"
+	"github.com/frchandra/gmcgo/app/service"
 	"github.com/frchandra/gmcgo/config"
 	"github.com/frchandra/gmcgo/database"
+	"github.com/gin-gonic/gin"
 )
 
 // Injectors from injector.go:
 
-func InitializeServer() *app.Server {
-	appConfig := config.NewAppConfig()
-	server := app.NewServer(appConfig)
-	return server
+func InitializeRouter() *gin.Engine {
+	db := app.NewDatabase()
+	userRepository := repository.NewUserRepository(db)
+	userService := service.NewUserService(userRepository)
+	userController := controller.NewUserController(userService)
+	engine := app.NewRouter(userController)
+	return engine
 }
 
 func InitializeMigrator() *database.Migrator {
