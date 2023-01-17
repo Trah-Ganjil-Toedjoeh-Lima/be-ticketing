@@ -46,39 +46,33 @@ func (this *Migrator) RunMigration(option string) {
 	switch option {
 	case "migrate:fresh":
 		err = m.RollbackTo("init")
-		if err == nil {
-			err = m.Migrate()
+		if err != nil {
+			panic(err)
 		}
-		this.RunSeeder(this.Database)
+		err = m.Migrate()
 	default:
 		panic("option " + option + " unknown")
 	}
 
-	if err == nil {
-		fmt.Println("Migration did run successfully")
-	} else {
-		fmt.Printf("Could not migrate: %v", err)
+	err = this.RunFactory()
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("Migration did run successfully")
+
+}
+
+func (this *Migrator) GetFactory() []factory.Factory {
+	return []factory.Factory{
+		factory.NewUserFactory(this.Database),
 	}
 }
 
-type Seeder struct {
-	Factory factory.Factory
-	Count   int
-}
-
-func NewFactory() []Seeder {
-	return []Seeder{
-		Seeder{Factory: factory.NewUserFactory(), Count: 3},
-	}
-}
-
-func (this *Migrator) RunSeeder(db *gorm.DB) error {
-	for _, seeder := range NewFactory() {
-		for i := 0; i < seeder.Count; i++ {
-			err := db.Debug().Create(seeder.Factory.GetData()).Error
-			if err != nil {
-				return err
-			}
+func (this *Migrator) RunFactory() error {
+	for _, seeder := range this.GetFactory() {
+		err := seeder.RunFactory(3)
+		if err != nil {
+			return err
 		}
 	}
 	return nil

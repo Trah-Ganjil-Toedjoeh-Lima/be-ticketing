@@ -8,13 +8,14 @@ import (
 )
 
 type UserFactory struct {
+	Database *gorm.DB
 }
 
-func NewUserFactory() *UserFactory {
-	return &UserFactory{}
+func NewUserFactory(db *gorm.DB) UserFactory {
+	return UserFactory{Database: db}
 }
 
-func (this *UserFactory) GetData() interface{} {
+func (this UserFactory) GetData() interface{} {
 	return &model.User{
 		Name:      faker.Name(),
 		Email:     faker.Email(),
@@ -23,4 +24,14 @@ func (this *UserFactory) GetData() interface{} {
 		UpdatedAt: time.Time{},
 		DeletedAt: gorm.DeletedAt{},
 	}
+}
+
+func (this UserFactory) RunFactory(count int) error {
+	for i := 0; i < count; i++ {
+		err := this.Database.Debug().Create(this.GetData()).Error
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
