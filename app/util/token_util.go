@@ -2,6 +2,7 @@ package util
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/frchandra/gmcgo/config"
 	"github.com/gin-gonic/gin"
@@ -32,7 +33,7 @@ func NewTokenUtil(db *redis.Client) *TokenUtil {
 	}
 }
 
-func (this *TokenUtil) CreateToken(userId uint) (*TokenDetails, error) {
+func (this *TokenUtil) CreateToken(userId uint64) (*TokenDetails, error) {
 	td := &TokenDetails{}
 	td.AtExpires = time.Now().Add(time.Minute * 15).Unix()
 	td.AccessUuid = uuid.New().String()
@@ -67,7 +68,7 @@ func (this *TokenUtil) CreateToken(userId uint) (*TokenDetails, error) {
 	return td, nil
 }
 
-func (this *TokenUtil) CreateAuth(userid uint, td *TokenDetails) error {
+func (this *TokenUtil) StoreAuthn(userid uint64, td *TokenDetails) error {
 	at := time.Unix(td.AtExpires, 0) //converting Unix to UTC(to Time object)
 	rt := time.Unix(td.RtExpires, 0)
 	now := time.Now()
@@ -81,6 +82,86 @@ func (this *TokenUtil) CreateAuth(userid uint, td *TokenDetails) error {
 		return errRefresh
 	}
 	return nil
+}
+
+func (this *TokenUtil) FetchAuthn(authnD *AccessDetails) (uint64, error) {
+	var ctx = context.Background()
+	userid, err := this.db.Get(ctx, authnD.AccessUuid).Result()
+	if err != nil {
+		return 0, err
+	}
+	userID, _ := strconv.ParseUint(userid, 10, 64)
+	return userID, nil
+}
+
+func (this *TokenUtil) ExtractToken(c *gin.Context) string {
+	token := c.Query("token")
+	if token != "" {
+		return token
+	}
+	bearerToken := c.Request.Header.Get("Authorization")
+	if len(strings.Split(bearerToken, " ")) == 2 {
+		return strings.Split(bearerToken, " ")[1]
+	}
+	return ""
+}
+
+func (this *TokenUtil) VerifyToken(c *gin.Context) (*jwt.Token, error) {
+	tokenString := this.ExtractToken(c)
+	if tokenString == "" {
+		return nil, errors.New("tidak ada")
+	}
+
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		//Make sure that the token method conform to "SigningMethodHMAC"
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+		return []byte(config.NewAppConfig().AccessSecret), nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return token, nil
+}
+
+func (this *TokenUtil) ValidateToken(c *gin.Context) error {
+	token, err := this.VerifyToken(c)
+	if err != nil {
+		return err
+	}
+	if _, ok := token.Claims.(jwt.Claims); !ok && !token.Valid {
+		return err
+	}
+	return nil
+}
+
+type AccessDetails struct {
+	AccessUuid string
+	UserId     uint64
+}
+
+func (this *TokenUtil) ExtractTokenMetadata(c *gin.Context) (*AccessDetails, error) {
+	token, err := this.VerifyToken(c)
+	if err != nil {
+		return nil, err
+	}
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if ok && token.Valid {
+		accessUuid, ok := claims["access_uuid"].(string)
+		if !ok {
+			return nil, err
+		}
+		userId, err := strconv.ParseUint(fmt.Sprintf("%.f", claims["user_id"]), 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		return &AccessDetails{
+			AccessUuid: accessUuid,
+			UserId:     userId,
+		}, nil
+	}
+	return nil, err
 }
 
 // TODO: learn this all
@@ -100,7 +181,7 @@ func (this *TokenUtil) CreateAuth(userid uint, td *TokenDetails) error {
 	return token.SignedString([]byte(appConfig.APISecret))
 }*/
 
-func ValidateToken(c *gin.Context) error {
+/*func ValidateToken(c *gin.Context) error {
 	tokenString := ExtractToken(c)
 	_, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -112,9 +193,9 @@ func ValidateToken(c *gin.Context) error {
 		return err
 	}
 	return nil
-}
+}*/
 
-func ExtractToken(c *gin.Context) string {
+/*func ExtractToken(c *gin.Context) string {
 	token := c.Query("token")
 	if token != "" {
 		return token
@@ -147,4 +228,4 @@ func ExtractTokenID(c *gin.Context) (uint, error) {
 		return uint(uid), nil
 	}
 	return 0, nil
-}
+}*/

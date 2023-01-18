@@ -89,12 +89,12 @@ func (this *UserController) Login(c *gin.Context) {
 }
 
 func (this *UserController) CurrentUser(c *gin.Context) {
-	userId, err := util.ExtractTokenID(c)
+	accessDetails, err := this.tokenUtil.ExtractTokenMetadata(c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	user, err := this.userService.GetById(userId)
+	user, err := this.userService.GetById(accessDetails.UserId)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"status": "fail",

@@ -53,13 +53,13 @@ func (this *UserService) ValidateLogin(userInput *model.User) (*util.TokenDetail
 	if err != nil {
 		return tokenDetails, err
 	}
-	if err = this.tokenUtil.CreateAuth(userOut.UserId, tokenDetails); err != nil {
+	if err = this.tokenUtil.StoreAuthn(userOut.UserId, tokenDetails); err != nil {
 		return tokenDetails, err
 	}
 	return tokenDetails, nil
 }
 
-func (this *UserService) GetById(userId uint) (model.User, error) {
+func (this *UserService) GetById(userId uint64) (model.User, error) {
 	var userOut model.User
 	result := this.userRepository.GetById(userId, &userOut)
 	if result.Error != nil {

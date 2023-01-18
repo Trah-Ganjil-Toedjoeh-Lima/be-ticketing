@@ -29,7 +29,7 @@ func (this *UserRepository) GetByPairs(userInput, userOut *model.User) *gorm.DB 
 	return result
 }
 
-func (this *UserRepository) GetById(userId uint, userOut *model.User) *gorm.DB {
+func (this *UserRepository) GetById(userId uint64, userOut *model.User) *gorm.DB {
 	result := this.db.First(userOut, userId)
 	return result
 
