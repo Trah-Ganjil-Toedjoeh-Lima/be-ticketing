@@ -33,20 +33,27 @@ func (this *UserService) verifyCredentials(cred, hashedCred string) error {
 }
 
 func (this *UserService) ValidateLogin(userInput *model.User) (string, error) {
-	var oldUser model.User
-	result := this.userRepository.GetByPairs(userInput)
+	var userOut model.User
+	result := this.userRepository.GetByPairs(userInput, &userOut)
 	if result.Error != nil {
 		return "", result.Error
 	}
-	result.First(&oldUser)
-	err := this.verifyCredentials(userInput.Phone, oldUser.Phone)
+	err := this.verifyCredentials(userInput.Phone, userOut.Phone)
 	if err != nil && err == bcrypt.ErrMismatchedHashAndPassword {
 		return "", err
 	}
-	token, err := token.GenerateToken(oldUser.UserId)
+	jwt, err := token.GenerateToken(userOut.UserId)
 	if err != nil {
 		return "", err
 	}
-	return token, nil
+	return jwt, nil
+}
 
+func (this *UserService) GetById(userId uint) (model.User, error) {
+	var userOut model.User
+	result := this.userRepository.GetById(userId, &userOut)
+	if result.Error != nil {
+		return userOut, result.Error
+	}
+	return userOut, nil
 }

@@ -18,15 +18,19 @@ func (this *UserRepository) InsertOne(user *model.User) *gorm.DB {
 	return result
 }
 
-func (this *UserRepository) GetByPairs(user *model.User) *gorm.DB {
-	var oldUser model.User
+func (this *UserRepository) GetByPairs(userInput, userOut *model.User) *gorm.DB {
 	var result *gorm.DB
-	if result = this.db.Model(model.User{}).Where("name = ?", user.Name).Take(&oldUser); result.Error == nil {
+	if result = this.db.Model(model.User{}).Where("name = ?", userInput.Name).Take(userOut); result.Error == nil {
 		return result
 	}
-	if result = this.db.Model(model.User{}).Where("email = ?", user.Email).Take(&oldUser); result.Error == nil {
+	if result = this.db.Model(model.User{}).Where("email = ?", userInput.Email).Take(userOut); result.Error == nil {
 		return result
 	}
+	return result
+}
+
+func (this *UserRepository) GetById(userId uint, userOut *model.User) *gorm.DB {
+	result := this.db.First(userOut, userId)
 	return result
 
 }
