@@ -17,15 +17,6 @@ func NewUserController(userSercive *service.UserService) *UserController {
 	return &UserController{userSercive: userSercive}
 }
 
-func (this *UserController) Index(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{
-		"hello": "world",
-		"halo":  "dunia",
-	})
-
-	return
-}
-
 func (this *UserController) Register(c *gin.Context) {
 	var userData validation.RegisterValidation
 	if err := c.ShouldBindJSON(&userData); err != nil {

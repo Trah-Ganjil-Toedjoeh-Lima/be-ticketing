@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-// TODO: learn this all, change the getenv to getconfig
+// TODO: learn this all
 func GenerateToken(user_id uint) (string, error) {
 	appConfig := config.NewAppConfig()
 	token_lifespan, err := strconv.Atoi(appConfig.TokenDuration)
