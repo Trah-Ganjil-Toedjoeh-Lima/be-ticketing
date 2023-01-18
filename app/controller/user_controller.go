@@ -94,7 +94,12 @@ func (this *UserController) CurrentUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	user, err := this.userService.GetById(accessDetails.UserId)
+	userId, err := this.tokenUtil.FetchAuthn(accessDetails)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, "unauthorized")
+		return
+	}
+	user, err := this.userService.GetById(userId)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"status": "fail",
@@ -107,4 +112,20 @@ func (this *UserController) CurrentUser(c *gin.Context) {
 		"data":   user,
 	})
 	return
+}
+
+func (this *UserController) Logout(c *gin.Context) {
+	accessDetails, err := this.tokenUtil.ExtractTokenMetadata(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	deleted, err := this.tokenUtil.DeleteAuthn(accessDetails.AccessUuid)
+	if err != nil || deleted == 0 { //if any goes wrong
+		c.JSON(http.StatusUnauthorized, "unauthorized")
+		return
+	}
+	c.JSON(http.StatusOK, "Successfully logged out")
+	return
+
 }
