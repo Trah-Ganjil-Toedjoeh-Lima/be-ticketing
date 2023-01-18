@@ -10,6 +10,7 @@ go 1.19
 //go get -u github.com/google/wire
 //go get -u github.com/go-gormigrate/gormigrate/v2
 //go get -u go get -u github.com/go-factory/factory/v4
+//go get -u github.com/golang-jwt/jwt/v4
 
 require (
 	github.com/bxcodec/faker/v4 v4.0.0-beta.3 // indirect
@@ -20,6 +21,7 @@ require (
 	github.com/go-playground/universal-translator v0.18.0 // indirect
 	github.com/go-playground/validator/v10 v10.11.1 // indirect
 	github.com/goccy/go-json v0.10.0 // indirect
+	github.com/golang-jwt/jwt/v4 v4.4.3 // indirect
 	github.com/google/wire v0.5.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect

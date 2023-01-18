@@ -11,7 +11,8 @@ func NewRouter(
 	router := gin.Default()
 
 	v1 := router.Group("/api/v1")
-	v1.POST("/user", userController.Register)
+	v1.POST("/user/register", userController.Register)
+	v1.POST("/user/login", userController.Login)
 
 	return router
 }

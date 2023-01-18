@@ -52,5 +52,40 @@ func (this *UserController) Register(c *gin.Context) {
 		"rows_affected": rowsAffected,
 	})
 	return
+}
 
+func (this *UserController) Login(c *gin.Context) {
+	var userData validation.LoginValidation
+	var oldUser model.User
+	if err := c.ShouldBindJSON(&userData); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status": "fail",
+			"error":  err.Error(),
+		})
+		return
+	}
+	if userData.Name == "" {
+		oldUser = model.User{
+			Email: userData.Email,
+			Phone: userData.Phone,
+		}
+	} else {
+		oldUser = model.User{
+			Name:  userData.Name,
+			Phone: userData.Phone,
+		}
+	}
+	token, err := this.userSercive.ValidateLogin(&oldUser)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status": "fail",
+			"error":  err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"status": "success",
+		"token":  token,
+	})
+	return
 }
