@@ -20,6 +20,11 @@ type AppConfig struct {
 	DBPort        string
 	APISecret     string
 	TokenDuration string
+	RedisPassword string
+	RedisHost     string
+	RedisPort     string
+	AccessSecret  string
+	RefreshSecret string
 }
 
 func NewAppConfig() *AppConfig {
@@ -35,6 +40,11 @@ func NewAppConfig() *AppConfig {
 		DBPort:        getEnv("DB_PORT", "5432"),
 		APISecret:     getEnv("API_SECRET", ""),
 		TokenDuration: getEnv("TOKEN_HOUR_LIFESPAN", "1"),
+		RedisPassword: getEnv("REDIS_PASSWORD", ""),
+		RedisHost:     getEnv("REDIS_HOST", "127.0.0.1"),
+		RedisPort:     getEnv("REDIS_PORT", "6379"),
+		AccessSecret:  "secret1",
+		RefreshSecret: "secret2",
 	}
 	return &appConfig
 

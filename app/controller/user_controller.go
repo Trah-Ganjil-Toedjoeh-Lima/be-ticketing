@@ -3,18 +3,22 @@ package controller
 import (
 	"github.com/frchandra/gmcgo/app/model"
 	"github.com/frchandra/gmcgo/app/service"
-	"github.com/frchandra/gmcgo/app/util/token"
+	"github.com/frchandra/gmcgo/app/util"
 	"github.com/frchandra/gmcgo/app/validation"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
 type UserController struct {
-	userSercive *service.UserService
+	userService *service.UserService
+	tokenUtil   *util.TokenUtil
 }
 
-func NewUserController(userSercive *service.UserService) *UserController {
-	return &UserController{userSercive: userSercive}
+func NewUserController(userSercive *service.UserService, tokenUtil *util.TokenUtil) *UserController {
+	return &UserController{
+		userService: userSercive,
+		tokenUtil:   tokenUtil,
+	}
 }
 
 func (this *UserController) Register(c *gin.Context) {
@@ -31,7 +35,7 @@ func (this *UserController) Register(c *gin.Context) {
 		Email: userData.Email,
 		Phone: userData.Phone,
 	}
-	rowsAffected, err := this.userSercive.InsertOne(&newUser)
+	rowsAffected, err := this.userService.InsertOne(&newUser)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"status": "fail",
@@ -67,7 +71,7 @@ func (this *UserController) Login(c *gin.Context) {
 			Phone: userData.Phone,
 		}
 	}
-	token, err := this.userSercive.ValidateLogin(&oldUser)
+	token, err := this.userService.ValidateLogin(&oldUser)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"status": "fail",
@@ -76,7 +80,7 @@ func (this *UserController) Login(c *gin.Context) {
 		return
 	}
 	c.SetSameSite(http.SameSiteNoneMode)
-	c.SetCookie("token", token, 3600, "/", "127.0.0.1", false, true)
+	//c.SetCookie("token", token, 3600, "/", "127.0.0.1", false, true)
 	c.JSON(http.StatusOK, gin.H{
 		"status": "success",
 		"token":  token,
@@ -85,12 +89,12 @@ func (this *UserController) Login(c *gin.Context) {
 }
 
 func (this *UserController) CurrentUser(c *gin.Context) {
-	userId, err := token.ExtractTokenID(c)
+	userId, err := util.ExtractTokenID(c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	user, err := this.userSercive.GetById(userId)
+	user, err := this.userService.GetById(userId)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"status": "fail",

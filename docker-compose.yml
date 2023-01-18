@@ -3,19 +3,29 @@ version: '3.7'
 services:
   db:
     image: 'postgres:15-alpine'
-    container_name: gmcgo-db #change me [2]
+    container_name: gmcgo-db
     restart: unless-stopped
     ports:
-      - "5432:5432"
+      - "5432:${DB_PORT}"
     environment:
-      POSTGRES_DB: gmcgo_db #change me [6]
-      POSTGRES_PASSWORD: root #change me
-      POSTGRES_USER: root #change me
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_USER: ${DB_USER}
     volumes:
-      - ./.docker/dbdata:/var/lib/postgresql/data #change me [2]
+      - ./.docker/dbdata:/var/lib/postgresql/data
     networks:
-      - gmcgo-network #change me [5]
+      - gmcgo-network
+
+  cache:
+    container_name: gmcgo-cache
+    image: redis:7.0-bullseye
+    restart: always
+    ports:
+      - '6379:6379'
+    command: redis-server --loglevel warning --requirepass ${REDIS_PASSWORD}
+    networks:
+      - gmcgo-network
 
 networks:
-  gmcgo-network: #change me [5]
+  gmcgo-network:
     driver: bridge

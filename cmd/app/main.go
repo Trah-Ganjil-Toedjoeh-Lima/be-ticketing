@@ -7,6 +7,6 @@ import (
 
 func main() {
 	appConfig := config.NewAppConfig()
-	router := injector.InitializeRouter()
+	router := injector.InitializeServer()
 	router.Run(":" + appConfig.AppPort)
 }

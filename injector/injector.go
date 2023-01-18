@@ -8,6 +8,7 @@ import (
 	"github.com/frchandra/gmcgo/app/controller"
 	"github.com/frchandra/gmcgo/app/repository"
 	"github.com/frchandra/gmcgo/app/service"
+	"github.com/frchandra/gmcgo/app/util"
 	"github.com/frchandra/gmcgo/database"
 	"github.com/gin-gonic/gin"
 	"github.com/google/wire"
@@ -19,9 +20,15 @@ var UserSet = wire.NewSet(
 	controller.NewUserController,
 )
 
-func InitializeRouter() *gin.Engine {
+var UtilSet = wire.NewSet(
+	util.NewTokenUtil,
+)
+
+func InitializeServer() *gin.Engine {
 	wire.Build(
 		app.NewDatabase,
+		app.NewCache,
+		UtilSet,
 		UserSet,
 		app.NewRouter,
 	)

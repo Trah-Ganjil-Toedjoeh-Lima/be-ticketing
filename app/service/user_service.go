@@ -3,16 +3,20 @@ package service
 import (
 	"github.com/frchandra/gmcgo/app/model"
 	"github.com/frchandra/gmcgo/app/repository"
-	"github.com/frchandra/gmcgo/app/util/token"
+	"github.com/frchandra/gmcgo/app/util"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type UserService struct {
 	userRepository *repository.UserRepository
+	tokenUtil      *util.TokenUtil
 }
 
-func NewUserService(userRepository *repository.UserRepository) *UserService {
-	return &UserService{userRepository: userRepository}
+func NewUserService(userRepository *repository.UserRepository, tokenUtil *util.TokenUtil) *UserService {
+	return &UserService{
+		tokenUtil:      tokenUtil,
+		userRepository: userRepository,
+	}
 }
 
 func (this *UserService) InsertOne(user *model.User) (int64, error) {
@@ -32,21 +36,27 @@ func (this *UserService) verifyCredentials(cred, hashedCred string) error {
 	return bcrypt.CompareHashAndPassword([]byte(hashedCred), []byte(cred))
 }
 
-func (this *UserService) ValidateLogin(userInput *model.User) (string, error) {
+func (this *UserService) ValidateLogin(userInput *model.User) (*util.TokenDetails, error) {
 	var userOut model.User
+	var err error
+	var tokenDetails *util.TokenDetails
 	result := this.userRepository.GetByPairs(userInput, &userOut)
 	if result.Error != nil {
-		return "", result.Error
+		return tokenDetails, result.Error
 	}
-	err := this.verifyCredentials(userInput.Phone, userOut.Phone)
+	err = this.verifyCredentials(userInput.Phone, userOut.Phone)
 	if err != nil && err == bcrypt.ErrMismatchedHashAndPassword {
-		return "", err
+		return tokenDetails, err
 	}
-	jwt, err := token.GenerateToken(userOut.UserId)
+	//jwt, err := token.GenerateToken(userOut.UserId)
+	tokenDetails, err = this.tokenUtil.CreateToken(userOut.UserId)
 	if err != nil {
-		return "", err
+		return tokenDetails, err
 	}
-	return jwt, nil
+	if err = this.tokenUtil.CreateAuth(userOut.UserId, tokenDetails); err != nil {
+		return tokenDetails, err
+	}
+	return tokenDetails, nil
 }
 
 func (this *UserService) GetById(userId uint) (model.User, error) {
