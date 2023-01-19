@@ -9,6 +9,7 @@ package injector
 import (
 	"github.com/frchandra/gmcgo/app"
 	"github.com/frchandra/gmcgo/app/controller"
+	"github.com/frchandra/gmcgo/app/middleware"
 	"github.com/frchandra/gmcgo/app/repository"
 	"github.com/frchandra/gmcgo/app/service"
 	"github.com/frchandra/gmcgo/app/util"
@@ -26,7 +27,8 @@ func InitializeServer() *gin.Engine {
 	tokenUtil := util.NewTokenUtil(client)
 	userService := service.NewUserService(userRepository, tokenUtil)
 	userController := controller.NewUserController(userService, tokenUtil)
-	engine := app.NewRouter(userController)
+	userMiddleware := middleware.NewUserMiddleware(tokenUtil)
+	engine := app.NewRouter(userController, userMiddleware)
 	return engine
 }
 
@@ -39,6 +41,6 @@ func InitializeMigrator() *database.Migrator {
 
 // injector.go:
 
-var UserSet = wire.NewSet(repository.NewUserRepository, service.NewUserService, controller.NewUserController)
+var UserSet = wire.NewSet(repository.NewUserRepository, service.NewUserService, controller.NewUserController, middleware.NewUserMiddleware)
 
 var UtilSet = wire.NewSet(util.NewTokenUtil)

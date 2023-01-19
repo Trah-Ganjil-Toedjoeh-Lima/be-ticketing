@@ -20,11 +20,13 @@ func NewUserService(userRepository *repository.UserRepository, tokenUtil *util.T
 }
 
 func (this *UserService) InsertOne(user *model.User) (int64, error) {
+	//hash the credential
 	hashedCred, err := bcrypt.GenerateFromPassword([]byte(user.Phone), bcrypt.DefaultCost)
 	if err != nil {
 		return 0, err
 	}
 	user.Phone = string(hashedCred)
+	//store user to db
 	result := this.userRepository.InsertOne(user)
 	if result.Error != nil {
 		return 0, err
@@ -36,26 +38,34 @@ func (this *UserService) verifyCredentials(cred, hashedCred string) error {
 	return bcrypt.CompareHashAndPassword([]byte(hashedCred), []byte(cred))
 }
 
-func (this *UserService) ValidateLogin(userInput *model.User) (*util.TokenDetails, error) {
+func (this *UserService) ValidateLogin(userInput *model.User) error {
 	var userOut model.User
 	var err error
-	var tokenDetails *util.TokenDetails
+	//get the user credential pairs email/name & password
 	result := this.userRepository.GetByPairs(userInput, &userOut)
 	if result.Error != nil {
-		return tokenDetails, result.Error
+		return result.Error
 	}
+	//verify the user credential
 	err = this.verifyCredentials(userInput.Phone, userOut.Phone)
 	if err != nil && err == bcrypt.ErrMismatchedHashAndPassword {
-		return tokenDetails, err
+		return err
 	}
-	//jwt, err := token.GenerateToken(userOut.UserId)
-	tokenDetails, err = this.tokenUtil.CreateToken(userOut.UserId)
+	*userInput = userOut
+	return nil
+}
+
+func (this *UserService) GenerateToken(userInput *model.User) (*util.TokenDetails, error) {
+	//create token for this user
+	tokenDetails, err := this.tokenUtil.CreateToken(userInput.UserId)
 	if err != nil {
 		return tokenDetails, err
 	}
-	if err = this.tokenUtil.StoreAuthn(userOut.UserId, tokenDetails); err != nil {
+	//store the token to redis
+	if err = this.tokenUtil.StoreAuthn(userInput.UserId, tokenDetails); err != nil {
 		return tokenDetails, err
 	}
+	//return the new created token
 	return tokenDetails, nil
 }
 

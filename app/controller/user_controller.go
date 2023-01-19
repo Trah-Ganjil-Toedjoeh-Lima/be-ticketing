@@ -22,6 +22,7 @@ func NewUserController(userSercive *service.UserService, tokenUtil *util.TokenUt
 }
 
 func (this *UserController) Register(c *gin.Context) {
+	//validate the input data
 	var userData validation.RegisterValidation
 	if err := c.ShouldBindJSON(&userData); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -30,6 +31,7 @@ func (this *UserController) Register(c *gin.Context) {
 		})
 		return
 	}
+	//insert the new user data
 	newUser := model.User{
 		Name:  userData.Name,
 		Email: userData.Email,
@@ -43,6 +45,7 @@ func (this *UserController) Register(c *gin.Context) {
 		})
 		return
 	}
+	//return success
 	c.JSON(http.StatusOK, gin.H{
 		"status":        "success",
 		"rows_affected": rowsAffected,
@@ -51,27 +54,30 @@ func (this *UserController) Register(c *gin.Context) {
 }
 
 func (this *UserController) Login(c *gin.Context) {
-	var userData validation.LoginValidation
-	var oldUser model.User
-	if err := c.ShouldBindJSON(&userData); err != nil {
+	var inputData validation.LoginValidation
+	var userInput model.User
+	//validate the input data
+	if err := c.ShouldBindJSON(&inputData); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"status": "fail",
 			"error":  err.Error(),
 		})
 		return
 	}
-	if userData.Name == "" {
-		oldUser = model.User{
-			Email: userData.Email,
-			Phone: userData.Phone,
+	//choose between the given credential. Can be user's name or email
+	if inputData.Name == "" {
+		userInput = model.User{
+			Email: inputData.Email,
+			Phone: inputData.Phone,
 		}
 	} else {
-		oldUser = model.User{
-			Name:  userData.Name,
-			Phone: userData.Phone,
+		userInput = model.User{
+			Name:  inputData.Name,
+			Phone: inputData.Phone,
 		}
 	}
-	token, err := this.userService.ValidateLogin(&oldUser)
+	//validate if user exist and credential is correct
+	err := this.userService.ValidateLogin(&userInput)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"status": "fail",
@@ -79,6 +85,16 @@ func (this *UserController) Login(c *gin.Context) {
 		})
 		return
 	}
+	//generate token for this user
+	token, err := this.userService.GenerateToken(&userInput)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status": "fail",
+			"error":  err.Error(),
+		})
+		return
+	}
+	//return success
 	c.SetSameSite(http.SameSiteNoneMode)
 	//c.SetCookie("token", token, 3600, "/", "127.0.0.1", false, true)
 	c.JSON(http.StatusOK, gin.H{
@@ -89,19 +105,19 @@ func (this *UserController) Login(c *gin.Context) {
 }
 
 func (this *UserController) CurrentUser(c *gin.Context) {
-	accessDetails, err := this.tokenUtil.ExtractTokenMetadata(c)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	userId, err := this.tokenUtil.FetchAuthn(accessDetails)
-	if err != nil {
-		c.JSON(http.StatusUnauthorized, "unauthorized")
-		return
-	}
-	user, err := this.userService.GetById(userId)
-	if err != nil {
+	contextData, isExist := c.Get("accessDetails")
+	if isExist == false {
 		c.JSON(http.StatusBadRequest, gin.H{
+			"status": "fail",
+			"error":  "cannot get access details",
+		})
+		return
+	}
+	accessDetails, _ := contextData.(*util.AccessDetails)
+	//get the user data given the user id from the token
+	user, err := this.userService.GetById(accessDetails.UserId)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
 			"status": "fail",
 			"error":  err.Error(),
 		})
@@ -115,7 +131,7 @@ func (this *UserController) CurrentUser(c *gin.Context) {
 }
 
 func (this *UserController) Logout(c *gin.Context) {
-	accessDetails, err := this.tokenUtil.ExtractTokenMetadata(c)
+	accessDetails, err := this.tokenUtil.GetValidatedAccess(c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -125,7 +141,9 @@ func (this *UserController) Logout(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, "unauthorized")
 		return
 	}
-	c.JSON(http.StatusOK, "Successfully logged out")
+	c.JSON(http.StatusOK, gin.H{
+		"status": "success",
+	})
 	return
 
 }

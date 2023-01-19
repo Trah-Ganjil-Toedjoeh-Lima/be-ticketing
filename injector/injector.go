@@ -6,6 +6,7 @@ package injector
 import (
 	"github.com/frchandra/gmcgo/app"
 	"github.com/frchandra/gmcgo/app/controller"
+	"github.com/frchandra/gmcgo/app/middleware"
 	"github.com/frchandra/gmcgo/app/repository"
 	"github.com/frchandra/gmcgo/app/service"
 	"github.com/frchandra/gmcgo/app/util"
@@ -18,6 +19,7 @@ var UserSet = wire.NewSet(
 	repository.NewUserRepository,
 	service.NewUserService,
 	controller.NewUserController,
+	middleware.NewUserMiddleware,
 )
 
 var UtilSet = wire.NewSet(

@@ -35,7 +35,7 @@ func NewTokenUtil(db *redis.Client) *TokenUtil {
 
 func (this *TokenUtil) CreateToken(userId uint64) (*TokenDetails, error) {
 	td := &TokenDetails{}
-	td.AtExpires = time.Now().Add(time.Minute * 15).Unix()
+	td.AtExpires = time.Now().Add(time.Minute * 15).Unix() //TODO: set this on config
 	td.AccessUuid = uuid.New().String()
 
 	td.RtExpires = time.Now().Add(time.Hour * 24 * 7).Unix()
@@ -55,6 +55,7 @@ func (this *TokenUtil) CreateToken(userId uint64) (*TokenDetails, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	//Creating Refresh Token
 	rtClaims := jwt.MapClaims{}
 	rtClaims["refresh_uuid"] = td.RefreshUuid
@@ -74,28 +75,34 @@ func (this *TokenUtil) StoreAuthn(userid uint64, td *TokenDetails) error {
 	now := time.Now()
 	var ctx = context.Background()
 
-	if errAccess := this.db.Set(ctx, td.AccessUuid, strconv.Itoa(int(userid)), at.Sub(now)).Err(); errAccess != nil {
-		return errAccess
-
+	//store access token (at) to redis
+	if err := this.db.Set(ctx, td.AccessUuid, strconv.Itoa(int(userid)), at.Sub(now)).Err(); err != nil {
+		return err
 	}
-	if errRefresh := this.db.Set(ctx, td.RefreshUuid, strconv.Itoa(int(userid)), rt.Sub(now)).Err(); errRefresh != nil {
-		return errRefresh
+	//store refresh token (rt) to redis
+	if err := this.db.Set(ctx, td.RefreshUuid, strconv.Itoa(int(userid)), rt.Sub(now)).Err(); err != nil {
+		return err
 	}
 	return nil
 }
 
-func (this *TokenUtil) FetchAuthn(authnD *AccessDetails) (uint64, error) {
+func (this *TokenUtil) FetchAuthn(uuid string) error {
 	var ctx = context.Background()
-	userid, err := this.db.Get(ctx, authnD.AccessUuid).Result()
+	//check if token is present in the token storage. get user id from redis given the authentication detail's access uuid
+	_, err := this.db.Get(ctx, uuid).Result()
 	if err != nil {
-		return 0, err
+		return err
 	}
-	userID, _ := strconv.ParseUint(userid, 10, 64)
-	return userID, nil
+	return nil
+	/*	//convert user id from string to int64
+		userId, _ := strconv.ParseUint(userid, 10, 64)
+		return userId, nil*/
 }
 
+// TODO: delete the refreshtoken as well
 func (this *TokenUtil) DeleteAuthn(givenUuid string) (int64, error) {
 	var ctx = context.Background()
+	//delete the given uuid from redis
 	deleted, err := this.db.Del(ctx, givenUuid).Result()
 	if err != nil {
 		return 0, err
@@ -104,10 +111,12 @@ func (this *TokenUtil) DeleteAuthn(givenUuid string) (int64, error) {
 }
 
 func (this *TokenUtil) ExtractToken(c *gin.Context) string {
+	//extract token if it on the request param
 	token := c.Query("token")
 	if token != "" {
 		return token
 	}
+	//extract token if it on the request header
 	bearerToken := c.Request.Header.Get("Authorization")
 	if len(strings.Split(bearerToken, " ")) == 2 {
 		return strings.Split(bearerToken, " ")[1]
@@ -116,14 +125,14 @@ func (this *TokenUtil) ExtractToken(c *gin.Context) string {
 }
 
 func (this *TokenUtil) VerifyToken(c *gin.Context) (*jwt.Token, error) {
+	//verify the token format and algorithm
 	tokenString := this.ExtractToken(c)
 	if tokenString == "" {
-		return nil, errors.New("tidak ada")
+		return nil, errors.New("cannot find token")
 	}
 
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		//Make sure that the token method conform to "SigningMethodHMAC"
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok { //Make sure that the token method conform to "SigningMethodHMAC"
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
 		return []byte(config.NewAppConfig().AccessSecret), nil
@@ -134,15 +143,16 @@ func (this *TokenUtil) VerifyToken(c *gin.Context) (*jwt.Token, error) {
 	return token, nil
 }
 
-func (this *TokenUtil) ValidateToken(c *gin.Context) error {
+func (this *TokenUtil) ValidateToken(c *gin.Context) (*jwt.Token, error) {
+	//verify the token claims
 	token, err := this.VerifyToken(c)
 	if err != nil {
-		return err
+		return token, err
 	}
 	if _, ok := token.Claims.(jwt.Claims); !ok && !token.Valid {
-		return err
+		return token, err
 	}
-	return nil
+	return token, nil
 }
 
 type AccessDetails struct {
@@ -150,27 +160,27 @@ type AccessDetails struct {
 	UserId     uint64
 }
 
-func (this *TokenUtil) ExtractTokenMetadata(c *gin.Context) (*AccessDetails, error) {
-	token, err := this.VerifyToken(c)
+func (this *TokenUtil) GetValidatedAccess(c *gin.Context) (*AccessDetails, error) {
+	token, err := this.ValidateToken(c)
 	if err != nil {
 		return nil, err
 	}
-	claims, ok := token.Claims.(jwt.MapClaims)
-	if ok && token.Valid {
-		accessUuid, ok := claims["access_uuid"].(string)
-		if !ok {
-			return nil, err
-		}
-		userId, err := strconv.ParseUint(fmt.Sprintf("%.f", claims["user_id"]), 10, 64)
-		if err != nil {
-			return nil, err
-		}
-		return &AccessDetails{
-			AccessUuid: accessUuid,
-			UserId:     userId,
-		}, nil
+
+	claims, _ := token.Claims.(jwt.MapClaims)
+	accessUuid, ok := claims["access_uuid"].(string)
+	if !ok {
+		return nil, err
 	}
-	return nil, err
+
+	userId, err := strconv.ParseUint(fmt.Sprintf("%.f", claims["user_id"]), 10, 64)
+	if err != nil {
+		return nil, err
+	}
+
+	return &AccessDetails{
+		AccessUuid: accessUuid,
+		UserId:     userId,
+	}, nil
 }
 
 // TODO: learn this all
