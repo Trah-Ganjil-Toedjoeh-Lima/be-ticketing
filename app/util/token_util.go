@@ -37,10 +37,10 @@ func NewTokenUtil(db *redis.Client, appConfig *config.AppConfig) *TokenUtil {
 
 func (tu *TokenUtil) CreateToken(userId uint64) (*TokenDetails, error) {
 	td := &TokenDetails{}
-	td.AtExpires = time.Now().Add(time.Minute * 15).Unix() //TODO: set tu on config
+	td.AtExpires = time.Now().Add(time.Minute * tu.appConfig.AccessMinute).Unix()
 	td.AccessUuid = uuid.New().String()
 
-	td.RtExpires = time.Now().Add(time.Minute * 60 * 24 * 7).Unix()
+	td.RtExpires = time.Now().Add(time.Minute * tu.appConfig.RefreshMinute).Unix()
 	td.RefreshUuid = uuid.New().String()
 
 	var err error
