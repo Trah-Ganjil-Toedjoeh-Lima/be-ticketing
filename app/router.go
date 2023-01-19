@@ -12,12 +12,15 @@ func NewRouter(
 ) *gin.Engine {
 	router := gin.Default()
 
-	v1 := router.Group("/api/v1")
+	public := router.Group("/api/v1")
 
-	v1.POST("/user/register", userController.Register)
-	v1.POST("/user/login", userController.Login)
-	v1.Use(userMiddleware.HandleUserAccess).POST("/user/logout", userController.Logout)
-	v1.Use(userMiddleware.HandleUserAccess).GET("/me", userController.CurrentUser)
+	public.POST("/user/register", userController.Register)
+	public.POST("/user/login", userController.Login)
+	public.POST("/user/refresh", userController.RefreshToken)
+
+	user := router.Group("/api/v1").Use(userMiddleware.HandleUserAccess)
+	user.POST("/user/logout", userController.Logout)
+	user.GET("/user", userController.CurrentUser)
 
 	return router
 }

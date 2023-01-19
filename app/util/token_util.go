@@ -94,9 +94,6 @@ func (this *TokenUtil) FetchAuthn(uuid string) error {
 		return err
 	}
 	return nil
-	/*	//convert user id from string to int64
-		userId, _ := strconv.ParseUint(userid, 10, 64)
-		return userId, nil*/
 }
 
 // TODO: delete the refreshtoken as well
@@ -124,7 +121,7 @@ func (this *TokenUtil) ExtractToken(c *gin.Context) string {
 	return ""
 }
 
-func (this *TokenUtil) VerifyToken(c *gin.Context) (*jwt.Token, error) {
+func (this *TokenUtil) VerifyToken(c *gin.Context, secret string) (*jwt.Token, error) {
 	//verify the token format and algorithm
 	tokenString := this.ExtractToken(c)
 	if tokenString == "" {
@@ -135,7 +132,7 @@ func (this *TokenUtil) VerifyToken(c *gin.Context) (*jwt.Token, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok { //Make sure that the token method conform to "SigningMethodHMAC"
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
-		return []byte(config.NewAppConfig().AccessSecret), nil
+		return []byte(secret), nil
 	})
 	if err != nil {
 		return nil, err
@@ -143,9 +140,9 @@ func (this *TokenUtil) VerifyToken(c *gin.Context) (*jwt.Token, error) {
 	return token, nil
 }
 
-func (this *TokenUtil) ValidateToken(c *gin.Context) (*jwt.Token, error) {
+func (this *TokenUtil) ValidateToken(c *gin.Context, secret string) (*jwt.Token, error) {
 	//verify the token claims
-	token, err := this.VerifyToken(c)
+	token, err := this.VerifyToken(c, secret)
 	if err != nil {
 		return token, err
 	}
@@ -161,7 +158,7 @@ type AccessDetails struct {
 }
 
 func (this *TokenUtil) GetValidatedAccess(c *gin.Context) (*AccessDetails, error) {
-	token, err := this.ValidateToken(c)
+	token, err := this.ValidateToken(c, config.NewAppConfig().AccessSecret)
 	if err != nil {
 		return nil, err
 	}
@@ -184,3 +181,42 @@ func (this *TokenUtil) GetValidatedAccess(c *gin.Context) (*AccessDetails, error
 }
 
 // TODO: learn this all
+
+func (this *TokenUtil) Refresh(c *gin.Context) (map[string]string, error) {
+	token, err := this.ValidateToken(c, config.NewAppConfig().RefreshSecret)
+	if err != nil {
+		return nil, err
+	}
+	//Since token is valid, get the uuid:
+	claims, ok := token.Claims.(jwt.MapClaims) //the token claims should conform to MapClaims
+
+	refreshUuid, ok := claims["refresh_uuid"].(string) //convert the interface to string
+	if !ok {
+		return nil, err
+	}
+	userId, err := strconv.ParseUint(fmt.Sprintf("%.f", claims["user_id"]), 10, 64)
+	if err != nil {
+		return nil, err
+	}
+
+	//Delete the previous Refresh Token
+	deleted, err := this.DeleteAuthn(refreshUuid)
+	if err != nil || deleted == 0 { //if any goes wrong
+		return nil, err
+	}
+	//Create new pairs of refresh and access tokens
+	tokenDetails, err := this.CreateToken(userId)
+	if err != nil {
+		return nil, err
+	}
+	//save the tokens metadata to redis
+	saveErr := this.StoreAuthn(userId, tokenDetails)
+	if saveErr != nil {
+		return nil, err
+	}
+	tokens := map[string]string{
+		"access_token":  tokenDetails.AccessToken,
+		"refresh_token": tokenDetails.RefreshToken,
+	}
+	return tokens, nil
+}

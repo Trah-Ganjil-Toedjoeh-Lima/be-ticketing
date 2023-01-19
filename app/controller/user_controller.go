@@ -145,5 +145,24 @@ func (this *UserController) Logout(c *gin.Context) {
 		"status": "success",
 	})
 	return
+}
+
+func (this *UserController) RefreshToken(c *gin.Context) {
+	/*	c.JSON(http.StatusOK, gin.H{
+		"status": "success",
+	});	return*/
+	token, err := this.tokenUtil.Refresh(c)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"status": "fail",
+			"error":  err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"status": "success",
+		"token":  token,
+	})
+	return
 
 }
