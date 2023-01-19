@@ -24,25 +24,26 @@ type TokenDetails struct {
 }
 
 type TokenUtil struct {
-	db *redis.Client
+	db        *redis.Client
+	appConfig *config.AppConfig
 }
 
-func NewTokenUtil(db *redis.Client) *TokenUtil {
+func NewTokenUtil(db *redis.Client, appConfig *config.AppConfig) *TokenUtil {
 	return &TokenUtil{
-		db: db,
+		db:        db,
+		appConfig: appConfig,
 	}
 }
 
-func (this *TokenUtil) CreateToken(userId uint64) (*TokenDetails, error) {
+func (tu *TokenUtil) CreateToken(userId uint64) (*TokenDetails, error) {
 	td := &TokenDetails{}
-	td.AtExpires = time.Now().Add(time.Minute * 15).Unix() //TODO: set this on config
+	td.AtExpires = time.Now().Add(time.Minute * 15).Unix() //TODO: set tu on config
 	td.AccessUuid = uuid.New().String()
 
-	td.RtExpires = time.Now().Add(time.Hour * 24 * 7).Unix()
+	td.RtExpires = time.Now().Add(time.Minute * 60 * 24 * 7).Unix()
 	td.RefreshUuid = uuid.New().String()
 
 	var err error
-	var appConfig = config.NewAppConfig()
 
 	//Creating Access Token
 	atClaims := jwt.MapClaims{}
@@ -51,7 +52,7 @@ func (this *TokenUtil) CreateToken(userId uint64) (*TokenDetails, error) {
 	atClaims["user_id"] = userId
 	atClaims["exp"] = td.AtExpires
 	at := jwt.NewWithClaims(jwt.SigningMethodHS256, atClaims)
-	td.AccessToken, err = at.SignedString([]byte(appConfig.AccessSecret))
+	td.AccessToken, err = at.SignedString([]byte(tu.appConfig.AccessSecret))
 	if err != nil {
 		return nil, err
 	}
@@ -62,52 +63,51 @@ func (this *TokenUtil) CreateToken(userId uint64) (*TokenDetails, error) {
 	rtClaims["user_id"] = userId
 	rtClaims["exp"] = td.RtExpires
 	rt := jwt.NewWithClaims(jwt.SigningMethodHS256, rtClaims)
-	td.RefreshToken, err = rt.SignedString([]byte(appConfig.RefreshSecret))
+	td.RefreshToken, err = rt.SignedString([]byte(tu.appConfig.RefreshSecret))
 	if err != nil {
 		return nil, err
 	}
 	return td, nil
 }
 
-func (this *TokenUtil) StoreAuthn(userid uint64, td *TokenDetails) error {
+func (tu *TokenUtil) StoreAuthn(userid uint64, td *TokenDetails) error {
 	at := time.Unix(td.AtExpires, 0) //converting Unix to UTC(to Time object)
 	rt := time.Unix(td.RtExpires, 0)
 	now := time.Now()
 	var ctx = context.Background()
 
 	//store access token (at) to redis
-	if err := this.db.Set(ctx, td.AccessUuid, strconv.Itoa(int(userid)), at.Sub(now)).Err(); err != nil {
+	if err := tu.db.Set(ctx, td.AccessUuid, strconv.Itoa(int(userid)), at.Sub(now)).Err(); err != nil {
 		return err
 	}
 	//store refresh token (rt) to redis
-	if err := this.db.Set(ctx, td.RefreshUuid, strconv.Itoa(int(userid)), rt.Sub(now)).Err(); err != nil {
+	if err := tu.db.Set(ctx, td.RefreshUuid, strconv.Itoa(int(userid)), rt.Sub(now)).Err(); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (this *TokenUtil) FetchAuthn(uuid string) error {
+func (tu *TokenUtil) FetchAuthn(uuid string) error {
 	var ctx = context.Background()
 	//check if token is present in the token storage. get user id from redis given the authentication detail's access uuid
-	_, err := this.db.Get(ctx, uuid).Result()
+	_, err := tu.db.Get(ctx, uuid).Result()
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-// TODO: delete the refreshtoken as well
-func (this *TokenUtil) DeleteAuthn(givenUuid string) (int64, error) {
+func (tu *TokenUtil) DeleteAuthn(givenUuid string) (int64, error) {
 	var ctx = context.Background()
 	//delete the given uuid from redis
-	deleted, err := this.db.Del(ctx, givenUuid).Result()
+	deleted, err := tu.db.Del(ctx, givenUuid).Result()
 	if err != nil {
 		return 0, err
 	}
 	return deleted, nil
 }
 
-func (this *TokenUtil) ExtractToken(c *gin.Context) string {
+func (tu *TokenUtil) ExtractToken(c *gin.Context) string {
 	//extract token if it on the request param
 	token := c.Query("token")
 	if token != "" {
@@ -121,9 +121,9 @@ func (this *TokenUtil) ExtractToken(c *gin.Context) string {
 	return ""
 }
 
-func (this *TokenUtil) VerifyToken(c *gin.Context, secret string) (*jwt.Token, error) {
+func (tu *TokenUtil) VerifyToken(c *gin.Context, secret string) (*jwt.Token, error) {
 	//verify the token format and algorithm
-	tokenString := this.ExtractToken(c)
+	tokenString := tu.ExtractToken(c)
 	if tokenString == "" {
 		return nil, errors.New("cannot find token")
 	}
@@ -140,9 +140,9 @@ func (this *TokenUtil) VerifyToken(c *gin.Context, secret string) (*jwt.Token, e
 	return token, nil
 }
 
-func (this *TokenUtil) ValidateToken(c *gin.Context, secret string) (*jwt.Token, error) {
+func (tu *TokenUtil) ValidateToken(c *gin.Context, secret string) (*jwt.Token, error) {
 	//verify the token claims
-	token, err := this.VerifyToken(c, secret)
+	token, err := tu.VerifyToken(c, secret)
 	if err != nil {
 		return token, err
 	}
@@ -157,8 +157,8 @@ type AccessDetails struct {
 	UserId     uint64
 }
 
-func (this *TokenUtil) GetValidatedAccess(c *gin.Context) (*AccessDetails, error) {
-	token, err := this.ValidateToken(c, config.NewAppConfig().AccessSecret)
+func (tu *TokenUtil) GetValidatedAccess(c *gin.Context) (*AccessDetails, error) {
+	token, err := tu.ValidateToken(c, tu.appConfig.AccessSecret)
 	if err != nil {
 		return nil, err
 	}
@@ -180,10 +180,10 @@ func (this *TokenUtil) GetValidatedAccess(c *gin.Context) (*AccessDetails, error
 	}, nil
 }
 
-// TODO: learn this all
+// TODO: learn tu all
 
-func (this *TokenUtil) Refresh(c *gin.Context) (map[string]string, error) {
-	token, err := this.ValidateToken(c, config.NewAppConfig().RefreshSecret)
+func (tu *TokenUtil) Refresh(c *gin.Context) (map[string]string, error) {
+	token, err := tu.ValidateToken(c, tu.appConfig.RefreshSecret)
 	if err != nil {
 		return nil, err
 	}
@@ -200,17 +200,17 @@ func (this *TokenUtil) Refresh(c *gin.Context) (map[string]string, error) {
 	}
 
 	//Delete the previous Refresh Token
-	deleted, err := this.DeleteAuthn(refreshUuid)
+	deleted, err := tu.DeleteAuthn(refreshUuid)
 	if err != nil || deleted == 0 { //if any goes wrong
 		return nil, err
 	}
 	//Create new pairs of refresh and access tokens
-	tokenDetails, err := this.CreateToken(userId)
+	tokenDetails, err := tu.CreateToken(userId)
 	if err != nil {
 		return nil, err
 	}
 	//save the tokens metadata to redis
-	saveErr := this.StoreAuthn(userId, tokenDetails)
+	saveErr := tu.StoreAuthn(userId, tokenDetails)
 	if saveErr != nil {
 		return nil, err
 	}

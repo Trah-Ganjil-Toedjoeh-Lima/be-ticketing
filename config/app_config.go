@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-//TODO: make this a singleton
+//TODO: make this a singleton => use injection strategy?
 
 type AppConfig struct {
 	AppName       string
@@ -38,13 +38,11 @@ func NewAppConfig() *AppConfig {
 		DBPassword:    getEnv("DB_PASSWORD", "root"),
 		DBName:        getEnv("DB_NAME", "giscust"),
 		DBPort:        getEnv("DB_PORT", "5432"),
-		APISecret:     getEnv("API_SECRET", ""),
-		TokenDuration: getEnv("TOKEN_HOUR_LIFESPAN", "1"),
 		RedisPassword: getEnv("REDIS_PASSWORD", ""),
 		RedisHost:     getEnv("REDIS_HOST", "127.0.0.1"),
 		RedisPort:     getEnv("REDIS_PORT", "6379"),
-		AccessSecret:  "secret1",
-		RefreshSecret: "secret2",
+		AccessSecret:  getEnv("ACCESS_MINUTE", "15"),
+		RefreshSecret: getEnv("SECRET_MINUTE", "240"),
 	}
 	return &appConfig
 

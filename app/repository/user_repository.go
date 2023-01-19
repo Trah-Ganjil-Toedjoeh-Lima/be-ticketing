@@ -13,24 +13,24 @@ func NewUserRepository(db *gorm.DB) *UserRepository {
 	return &UserRepository{db: db}
 }
 
-func (this *UserRepository) InsertOne(user *model.User) *gorm.DB {
-	result := this.db.Create(user)
+func (ur *UserRepository) InsertOne(user *model.User) *gorm.DB {
+	result := ur.db.Create(user)
 	return result
 }
 
-func (this *UserRepository) GetByPairs(userInput, userOut *model.User) *gorm.DB {
+func (ur *UserRepository) GetByPairs(userInput, userOut *model.User) *gorm.DB {
 	var result *gorm.DB
-	if result = this.db.Model(model.User{}).Where("name = ?", userInput.Name).Take(userOut); result.Error == nil {
+	if result = ur.db.Model(model.User{}).Where("name = ?", userInput.Name).Take(userOut); result.Error == nil {
 		return result
 	}
-	if result = this.db.Model(model.User{}).Where("email = ?", userInput.Email).Take(userOut); result.Error == nil {
+	if result = ur.db.Model(model.User{}).Where("email = ?", userInput.Email).Take(userOut); result.Error == nil {
 		return result
 	}
 	return result
 }
 
-func (this *UserRepository) GetById(userId uint64, userOut *model.User) *gorm.DB {
-	result := this.db.First(userOut, userId)
+func (ur *UserRepository) GetById(userId uint64, userOut *model.User) *gorm.DB {
+	result := ur.db.First(userOut, userId)
 	return result
 
 }

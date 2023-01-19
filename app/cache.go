@@ -7,18 +7,18 @@ import (
 	"github.com/go-redis/redis/v9"
 )
 
-func NewCache() *redis.Client {
-	appConfig := config.NewAppConfig()
-	client := redis.NewClient(&redis.Options{
+func NewCache(appConfig *config.AppConfig) *redis.Client {
+	cache := redis.NewClient(&redis.Options{
 		Password: appConfig.RedisPassword,
 		Addr:     appConfig.RedisHost + ":" + appConfig.RedisPort,
 	})
 	var ctx = context.Background()
-	_, err := client.Ping(ctx).Result()
+	_, err := cache.Ping(ctx).Result()
 	if err != nil {
 		panic(err)
 	}
+	cache.FlushAll(ctx)
 	fmt.Println("redis connected")
-	return client
+	return cache
 
 }

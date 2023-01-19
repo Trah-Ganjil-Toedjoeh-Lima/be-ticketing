@@ -16,10 +16,10 @@ func NewUserMiddleware(tokenUtil *util.TokenUtil) *UserMiddleware {
 	}
 }
 
-func (this *UserMiddleware) HandleUserAccess(c *gin.Context) {
+func (um *UserMiddleware) HandleUserAccess(c *gin.Context) {
 
 	//get the user data from the token in the request header
-	accessDetails, err := this.tokenUtil.GetValidatedAccess(c)
+	accessDetails, err := um.tokenUtil.GetValidatedAccess(c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
@@ -28,7 +28,7 @@ func (this *UserMiddleware) HandleUserAccess(c *gin.Context) {
 		return
 	}
 	//check if token exist in the token storage (Check if the token is expired)
-	err = this.tokenUtil.FetchAuthn(accessDetails.AccessUuid)
+	err = um.tokenUtil.FetchAuthn(accessDetails.AccessUuid)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"status":      "fail",

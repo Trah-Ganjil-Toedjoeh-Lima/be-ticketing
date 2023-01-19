@@ -10,6 +10,7 @@ import (
 	"github.com/frchandra/gmcgo/app/repository"
 	"github.com/frchandra/gmcgo/app/service"
 	"github.com/frchandra/gmcgo/app/util"
+	"github.com/frchandra/gmcgo/config"
 	"github.com/frchandra/gmcgo/database"
 	"github.com/gin-gonic/gin"
 	"github.com/google/wire"
@@ -28,6 +29,7 @@ var UtilSet = wire.NewSet(
 
 func InitializeServer() *gin.Engine {
 	wire.Build(
+		config.NewAppConfig,
 		app.NewDatabase,
 		app.NewCache,
 		UtilSet,
@@ -39,6 +41,7 @@ func InitializeServer() *gin.Engine {
 
 func InitializeMigrator() *database.Migrator {
 	wire.Build(
+		config.NewAppConfig,
 		app.NewDatabase,
 		database.NewMigration,
 		database.NewMigrator,

@@ -19,7 +19,7 @@ func NewUserService(userRepository *repository.UserRepository, tokenUtil *util.T
 	}
 }
 
-func (this *UserService) InsertOne(user *model.User) (int64, error) {
+func (us *UserService) InsertOne(user *model.User) (int64, error) {
 	//hash the credential
 	hashedCred, err := bcrypt.GenerateFromPassword([]byte(user.Phone), bcrypt.DefaultCost)
 	if err != nil {
@@ -27,27 +27,27 @@ func (this *UserService) InsertOne(user *model.User) (int64, error) {
 	}
 	user.Phone = string(hashedCred)
 	//store user to db
-	result := this.userRepository.InsertOne(user)
+	result := us.userRepository.InsertOne(user)
 	if result.Error != nil {
 		return 0, err
 	}
 	return result.RowsAffected, nil
 }
 
-func (this *UserService) verifyCredentials(cred, hashedCred string) error {
+func (us *UserService) verifyCredentials(cred, hashedCred string) error {
 	return bcrypt.CompareHashAndPassword([]byte(hashedCred), []byte(cred))
 }
 
-func (this *UserService) ValidateLogin(userInput *model.User) error {
+func (us *UserService) ValidateLogin(userInput *model.User) error {
 	var userOut model.User
 	var err error
 	//get the user credential pairs email/name & password
-	result := this.userRepository.GetByPairs(userInput, &userOut)
+	result := us.userRepository.GetByPairs(userInput, &userOut)
 	if result.Error != nil {
 		return result.Error
 	}
 	//verify the user credential
-	err = this.verifyCredentials(userInput.Phone, userOut.Phone)
+	err = us.verifyCredentials(userInput.Phone, userOut.Phone)
 	if err != nil && err == bcrypt.ErrMismatchedHashAndPassword {
 		return err
 	}
@@ -55,23 +55,23 @@ func (this *UserService) ValidateLogin(userInput *model.User) error {
 	return nil
 }
 
-func (this *UserService) GenerateToken(userInput *model.User) (*util.TokenDetails, error) {
-	//create token for this user
-	tokenDetails, err := this.tokenUtil.CreateToken(userInput.UserId)
+func (us *UserService) GenerateToken(userInput *model.User) (*util.TokenDetails, error) {
+	//create token for us user
+	tokenDetails, err := us.tokenUtil.CreateToken(userInput.UserId)
 	if err != nil {
 		return tokenDetails, err
 	}
 	//store the token to redis
-	if err = this.tokenUtil.StoreAuthn(userInput.UserId, tokenDetails); err != nil {
+	if err = us.tokenUtil.StoreAuthn(userInput.UserId, tokenDetails); err != nil {
 		return tokenDetails, err
 	}
 	//return the new created token
 	return tokenDetails, nil
 }
 
-func (this *UserService) GetById(userId uint64) (model.User, error) {
+func (us *UserService) GetById(userId uint64) (model.User, error) {
 	var userOut model.User
-	result := this.userRepository.GetById(userId, &userOut)
+	result := us.userRepository.GetById(userId, &userOut)
 	if result.Error != nil {
 		return userOut, result.Error
 	}
