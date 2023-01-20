@@ -41,13 +41,13 @@ func (r *ReservationController) GetSeatsInfo(c *gin.Context) {
 
 // TODO: finish this
 func (r *ReservationController) ReserveSeats(c *gin.Context) {
-	var requestData validation.SeatResrvRequest
-	if err := c.ShouldBindJSON(&requestData); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"status": "fail",
-			"error":  err.Error(),
-		})
-		return
-	}
+	//var requestData validation.SeatResrvRequest
+	//if err := c.ShouldBindJSON(&requestData); err != nil {
+	c.JSON(http.StatusBadRequest, gin.H{
+		"status": "fail",
+		"error":  "err.Error()",
+	})
+	return
+	//}
 
 }
