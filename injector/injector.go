@@ -23,6 +23,12 @@ var UserSet = wire.NewSet(
 	middleware.NewUserMiddleware,
 )
 
+var ReservationSet = wire.NewSet(
+	repository.NewReservationRepository,
+	service.NewReservationService,
+	controller.NewReservationController,
+)
+
 var UtilSet = wire.NewSet(
 	util.NewTokenUtil,
 )
@@ -34,6 +40,7 @@ func InitializeServer() *gin.Engine {
 		app.NewCache,
 		UtilSet,
 		UserSet,
+		ReservationSet,
 		app.NewRouter,
 	)
 	return nil

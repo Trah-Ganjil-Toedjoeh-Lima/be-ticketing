@@ -30,7 +30,10 @@ func InitializeServer() *gin.Engine {
 	userService := service.NewUserService(userRepository, tokenUtil)
 	userController := controller.NewUserController(userService, tokenUtil)
 	userMiddleware := middleware.NewUserMiddleware(tokenUtil)
-	engine := app.NewRouter(userController, userMiddleware)
+	reservationRepository := repository.NewReservationRepository(db)
+	reservationService := service.NewReservationService(reservationRepository)
+	reservationController := controller.NewReservationController(reservationService)
+	engine := app.NewRouter(userController, userMiddleware, reservationController)
 	return engine
 }
 
@@ -44,5 +47,7 @@ func InitializeMigrator() *database.Migrator {
 // injector.go:
 
 var UserSet = wire.NewSet(repository.NewUserRepository, service.NewUserService, controller.NewUserController, middleware.NewUserMiddleware)
+
+var ReservationSet = wire.NewSet(repository.NewReservationRepository, service.NewReservationService, controller.NewReservationController)
 
 var UtilSet = wire.NewSet(util.NewTokenUtil)
