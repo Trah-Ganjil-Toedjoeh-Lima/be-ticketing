@@ -2,46 +2,32 @@ package database
 
 import (
 	"fmt"
+	"github.com/frchandra/gmcgo/app/model"
 	"github.com/frchandra/gmcgo/database/factory"
-	"github.com/go-gormigrate/gormigrate/v2"
 	"gorm.io/gorm"
 )
 
 type Migrator struct {
-	db        *gorm.DB
-	migration Migration
+	db *gorm.DB
 }
 
-func NewMigrator(db *gorm.DB, migration Migration) *Migrator {
+func NewMigrator(db *gorm.DB) *Migrator {
 	return &Migrator{
-		db:        db,
-		migration: migration,
+		db: db,
 	}
 }
 
 func (mi *Migrator) RunMigration(option string) {
-	var err error
-	m := gormigrate.New(mi.db, gormigrate.DefaultOptions, mi.migration.Migrations)
-
-	fmt.Println("option " + option + " is chosen")
-
-	switch option {
-	case "migrate:fresh":
-		err = m.RollbackTo("init")
-		if err != nil {
-			panic(err)
-		}
-		err = m.Migrate()
-	default:
-		panic("option " + option + " unknown")
-	}
-
-	err = mi.RunFactory()
-	if err != nil {
+	if err := mi.db.Migrator().DropTable(&model.User{}, &model.Seat{}, &model.Transaction{}); err != nil {
 		panic(err)
 	}
-	fmt.Println("Migration did run successfully")
-
+	if err := mi.db.AutoMigrate(&model.User{}, &model.Seat{}, &model.Transaction{}); err != nil {
+		panic(err)
+	}
+	if err := mi.RunFactory(); err != nil {
+		panic(err)
+	}
+	fmt.Println("Migration run successfully")
 }
 
 func (mi *Migrator) GetFactory() []factory.Factory {

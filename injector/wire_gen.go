@@ -37,8 +37,7 @@ func InitializeServer() *gin.Engine {
 func InitializeMigrator() *database.Migrator {
 	appConfig := config.NewAppConfig()
 	db := app.NewDatabase(appConfig)
-	migration := database.NewMigration()
-	migrator := database.NewMigrator(db, migration)
+	migrator := database.NewMigrator(db)
 	return migrator
 }
 

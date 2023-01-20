@@ -6,11 +6,12 @@ import (
 )
 
 type User struct {
-	UserId    uint64 `gorm:"primaryKey"`
-	Name      string
-	Email     string
-	Phone     string
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	DeletedAt gorm.DeletedAt
+	UserId      uint64        `gorm:"primaryKey"`
+	Name        string        `gorm:"not null"`
+	Email       string        `gorm:"not null"`
+	Phone       string        `gorm:"not null"`
+	Transaction []Transaction `gorm:"foreignKey:UserId;references:UserId"`
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
+	DeletedAt   gorm.DeletedAt
 }

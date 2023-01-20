@@ -43,7 +43,6 @@ func InitializeMigrator() *database.Migrator {
 	wire.Build(
 		config.NewAppConfig,
 		app.NewDatabase,
-		database.NewMigration,
 		database.NewMigrator,
 	)
 	return nil
