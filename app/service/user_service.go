@@ -19,8 +19,16 @@ func NewUserService(userRepository *repository.UserRepository, tokenUtil *util.T
 	}
 }
 
+func (us *UserService) GetOrInsertOne(user *model.User) (int64, error) {
+	result := us.userRepository.GetOrInsertOne(user)
+	if result.Error != nil {
+		return 0, nil
+	}
+	return result.RowsAffected, nil
+}
+
 func (us *UserService) InsertOne(user *model.User) (int64, error) {
-	//hash the credential
+	//hash the credential //TODO: just for boilerplate. Optional for gmco case
 	hashedCred, err := bcrypt.GenerateFromPassword([]byte(user.Phone), bcrypt.DefaultCost)
 	if err != nil {
 		return 0, err

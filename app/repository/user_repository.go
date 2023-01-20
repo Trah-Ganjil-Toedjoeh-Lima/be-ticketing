@@ -13,6 +13,20 @@ func NewUserRepository(db *gorm.DB) *UserRepository {
 	return &UserRepository{db: db}
 }
 
+func (ur *UserRepository) GetOrInsertOne(user *model.User) *gorm.DB {
+	result := ur.FindOne(user)
+	if result.RowsAffected < 1 {
+		return ur.InsertOne(user)
+	} else {
+		return result
+	}
+
+}
+
+func (ur *UserRepository) FindOne(user *model.User) *gorm.DB {
+	return ur.db.Where("name = ? AND email = ? AND phone = ?", user.Name, user.Email, user.Phone).Find(user)
+}
+
 func (ur *UserRepository) InsertOne(user *model.User) *gorm.DB {
 	result := ur.db.Create(user)
 	return result

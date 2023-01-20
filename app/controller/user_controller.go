@@ -23,8 +23,51 @@ func NewUserController(userService *service.UserService, tokenUtil *util.TokenUt
 
 func (uc *UserController) Register(c *gin.Context) {
 	//validate the input data
-	var userData validation.RegisterValidation
-	if err := c.ShouldBindJSON(&userData); err != nil {
+	var inputData validation.RegisterValidation
+	if err := c.ShouldBindJSON(&inputData); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status": "fail",
+			"error":  err.Error(),
+		})
+		return
+	}
+	//upsert the new user data
+	newUser := model.User{
+		Name:  inputData.Name,
+		Email: inputData.Email,
+		Phone: inputData.Phone,
+	}
+	_, err := uc.userService.GetOrInsertOne(&newUser)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status": "fail",
+			"error":  err.Error(),
+		})
+		return
+	}
+	//generate token for this user
+	token, err := uc.userService.GenerateToken(&newUser)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status": "fail",
+			"error":  err.Error(),
+		})
+		return
+	}
+	//return success
+	c.SetSameSite(http.SameSiteNoneMode)
+	//c.SetCookie("token", token, 3600, "/", "127.0.0.1", false, true)//TODO: cookie?
+	c.JSON(http.StatusOK, gin.H{
+		"status": "success",
+		"token":  token,
+	})
+	return
+}
+
+func (uc *UserController) SignIn(c *gin.Context) {
+	//validate the input data
+	var inputData validation.RegisterValidation
+	if err := c.ShouldBindJSON(&inputData); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"status": "fail",
 			"error":  err.Error(),
@@ -33,9 +76,9 @@ func (uc *UserController) Register(c *gin.Context) {
 	}
 	//insert the new user data
 	newUser := model.User{
-		Name:  userData.Name,
-		Email: userData.Email,
-		Phone: userData.Phone,
+		Name:  inputData.Name,
+		Email: inputData.Email,
+		Phone: inputData.Phone,
 	}
 	rowsAffected, err := uc.userService.InsertOne(&newUser)
 	if err != nil {
@@ -96,7 +139,7 @@ func (uc *UserController) Login(c *gin.Context) {
 	}
 	//return success
 	c.SetSameSite(http.SameSiteNoneMode)
-	//c.SetCookie("token", token, 3600, "/", "127.0.0.1", false, true)
+	//c.SetCookie("token", token, 3600, "/", "127.0.0.1", false, true)//TODO: cookie?
 	c.JSON(http.StatusOK, gin.H{
 		"status": "success",
 		"token":  token,
