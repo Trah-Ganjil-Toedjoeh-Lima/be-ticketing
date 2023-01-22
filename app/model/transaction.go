@@ -6,10 +6,10 @@ import (
 )
 
 type Transaction struct {
-	TransactionId int64 `gorm:"primaryKey"`
-	MidtransTxId  int64 `gorm:"unique"`
-	UserId        int64 `gorm:"not null"`
-	SeatId        int   `gorm:"not null"`
+	TransactionId uint64 `gorm:"primaryKey"`
+	MidtransTxId  string `gorm:"unique"`
+	UserId        uint64 `gorm:"not null"`
+	SeatId        uint   `gorm:"not null"`
 	User          User
 	Seat          Seat
 	Price         string

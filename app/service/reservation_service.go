@@ -1,16 +1,18 @@
 package service
 
 import (
+	"errors"
 	"github.com/frchandra/gmcgo/app/model"
 	"github.com/frchandra/gmcgo/app/repository"
 )
 
 type ReservationService struct {
 	resRepo *repository.ReservationRepository
+	txRepo  *repository.TransactionRepository
 }
 
-func NewReservationService(resRepo *repository.ReservationRepository) *ReservationService {
-	return &ReservationService{resRepo: resRepo}
+func NewReservationService(resRepo *repository.ReservationRepository, txRepo *repository.TransactionRepository) *ReservationService {
+	return &ReservationService{resRepo: resRepo, txRepo: txRepo}
 }
 
 func (s *ReservationService) GetAllSeats() ([]model.Seat, error) {
@@ -19,4 +21,26 @@ func (s *ReservationService) GetAllSeats() ([]model.Seat, error) {
 		return nil, err
 	}
 	return seats, nil
+}
+
+func (s *ReservationService) IsOwned(seatId uint, userId uint64) error {
+	//if kursi masih kosong -> return ok
+	//else
+	//if sudah ada yang ngisi tapi dirinya sendiri -> return ok
+	//return error
+	var seat model.Seat //TODO: think of all edge scenarios
+	if result := s.resRepo.GetSeatById(&seat, seatId); result.Error != nil {
+		return result.Error
+	}
+	if seat.Status == "#" {
+		return nil
+	} else {
+		var tx model.Transaction
+		if result := s.txRepo.GetLastTxBySeatIdUserId(&tx, userId, seat.SeatId); result.RowsAffected == 1 {
+			if tx.Confirmation != "payed" {
+				return nil
+			}
+		}
+		return errors.New("kursi sudah ada yang nge-booking")
+	}
 }

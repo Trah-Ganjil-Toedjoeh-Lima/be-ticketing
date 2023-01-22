@@ -29,6 +29,11 @@ var ReservationSet = wire.NewSet(
 	controller.NewReservationController,
 )
 
+var TransactionSet = wire.NewSet(
+	repository.NewTransactionRepository,
+	service.NewTrsansactionService,
+)
+
 var UtilSet = wire.NewSet(
 	util.NewTokenUtil,
 )
@@ -41,6 +46,7 @@ func InitializeServer() *gin.Engine {
 		UtilSet,
 		UserSet,
 		ReservationSet,
+		TransactionSet,
 		app.NewRouter,
 	)
 	return nil

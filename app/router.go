@@ -21,11 +21,10 @@ func NewRouter(
 	public.POST("/user/login", userController.Login)
 	public.POST("/user/refresh", userController.RefreshToken)
 
-	public.GET("/seat_map", reservationController.GetSeatsInfo)
-
 	user := router.Group("/api/v1").Use(userMiddleware.HandleUserAccess)
 	user.POST("/user/logout", userController.Logout)
 	user.GET("/user", userController.CurrentUser)
+	user.GET("/seat_map", reservationController.GetSeatsInfo)
 	user.POST("/seat_map", reservationController.ReserveSeats)
 
 	return router

@@ -13,6 +13,10 @@ func NewReservationRepository(db *gorm.DB) *ReservationRepository {
 	return &ReservationRepository{db: db}
 }
 
-func (r ReservationRepository) GetAllSeats(seats *[]model.Seat) *gorm.DB {
+func (r *ReservationRepository) GetAllSeats(seats *[]model.Seat) *gorm.DB {
 	return r.db.Find(seats)
+}
+
+func (r *ReservationRepository) GetSeatById(seat *model.Seat, id uint) *gorm.DB {
+	return r.db.First(seat, id)
 }

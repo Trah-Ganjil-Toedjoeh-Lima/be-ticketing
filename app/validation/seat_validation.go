@@ -8,5 +8,5 @@ type SeatResponse struct {
 }
 
 type SeatResrvRequest struct {
-	Data []int `json:"data" binding:"required,unique"`
+	SeatIds []uint `json:"data" binding:"required,unique,max=5"`
 }

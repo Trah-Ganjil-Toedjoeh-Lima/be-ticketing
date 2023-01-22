@@ -148,6 +148,7 @@ func (uc *UserController) Login(c *gin.Context) {
 }
 
 func (uc *UserController) CurrentUser(c *gin.Context) {
+	//get the details about the current user that make request from the context passed by user middleware
 	contextData, isExist := c.Get("accessDetails")
 	if isExist == false {
 		c.JSON(http.StatusBadRequest, gin.H{
