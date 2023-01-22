@@ -4,7 +4,6 @@ services:
   db:
     image: 'postgres:15-alpine'
     container_name: gmcgo-db
-    restart: unless-stopped
     ports:
       - "5432:${DB_PORT}"
     environment:
@@ -19,7 +18,6 @@ services:
   cache:
     container_name: gmcgo-cache
     image: redis:7.0-bullseye
-    restart: always
     ports:
       - '6379:6379'
     command: redis-server --loglevel warning --requirepass ${REDIS_PASSWORD}
