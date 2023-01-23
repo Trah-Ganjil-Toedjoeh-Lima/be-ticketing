@@ -88,17 +88,26 @@ func (r *ReservationController) ReserveSeats(c *gin.Context) {
 			err = errors.New(err.Error() + " [kursi ini :] " + strconv.Itoa(int(seatId)))
 			c.JSON(http.StatusBadRequest, gin.H{
 				"status": "success",
-				"data":   err,
+				"data":   err.Error(),
 			})
-			break
+			return
+
 		}
 	}
 
 	//store reservation to tx table
+	if err := r.txService.CreateTx(accessDetails.UserId, inputData.SeatIds); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status": "fail",
+			"error":  err.Error(),
+		})
+		return
+	}
 
 	c.JSON(http.StatusBadRequest, gin.H{
 		"status": "success",
 		"data":   inputData,
+		"ok":     "ok",
 	})
 	return
 }

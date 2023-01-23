@@ -36,7 +36,8 @@ func (s *ReservationService) IsOwned(seatId uint, userId uint64) error {
 		return nil
 	} else {
 		var tx model.Transaction
-		if result := s.txRepo.GetLastTxBySeatIdUserId(&tx, userId, seat.SeatId); result.RowsAffected == 1 {
+		result := s.txRepo.GetLastTxBySeatIdUserId(&tx, seat.SeatId, userId)
+		if result.RowsAffected == 1 {
 			if tx.Confirmation != "payed" {
 				return nil
 			}

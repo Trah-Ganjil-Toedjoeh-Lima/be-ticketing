@@ -33,7 +33,8 @@ func InitializeServer() *gin.Engine {
 	reservationRepository := repository.NewReservationRepository(db)
 	transactionRepository := repository.NewTransactionRepository(db)
 	reservationService := service.NewReservationService(reservationRepository, transactionRepository)
-	trsansactionService := service.NewTrsansactionService(transactionRepository)
+	seatRepository := repository.NewSeatRepository(db)
+	trsansactionService := service.NewTrsansactionService(transactionRepository, userRepository, seatRepository)
 	reservationController := controller.NewReservationController(reservationService, userService, trsansactionService)
 	engine := app.NewRouter(userController, userMiddleware, reservationController)
 	return engine
@@ -51,6 +52,8 @@ func InitializeMigrator() *database.Migrator {
 var UserSet = wire.NewSet(repository.NewUserRepository, service.NewUserService, controller.NewUserController, middleware.NewUserMiddleware)
 
 var ReservationSet = wire.NewSet(repository.NewReservationRepository, service.NewReservationService, controller.NewReservationController)
+
+var SeatSet = wire.NewSet(repository.NewSeatRepository)
 
 var TransactionSet = wire.NewSet(repository.NewTransactionRepository, service.NewTrsansactionService)
 
