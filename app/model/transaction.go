@@ -14,8 +14,7 @@ type Transaction struct {
 	Seat          Seat
 	Vendor        string
 	Confirmation  string
-	CreatedAt     time.Time      `json:"-"`c
-
+	CreatedAt     time.Time      `json:"-"`
 	UpdatedAt     time.Time      `json:"-"`
 	DeletedAt     gorm.DeletedAt `json:"-"`
 }
