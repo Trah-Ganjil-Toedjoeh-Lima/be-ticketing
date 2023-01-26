@@ -6,17 +6,17 @@ import (
 	"github.com/google/uuid"
 )
 
-type TrsansactionService struct {
+type TransactionService struct {
 	txRepo   *repository.TransactionRepository
 	userRepo *repository.UserRepository
 	seatRepo *repository.SeatRepository
 }
 
-func NewTrsansactionService(txRepo *repository.TransactionRepository, userRepo *repository.UserRepository, seatRepo *repository.SeatRepository) *TrsansactionService {
-	return &TrsansactionService{txRepo: txRepo, userRepo: userRepo, seatRepo: seatRepo}
+func NewTransactionService(txRepo *repository.TransactionRepository, userRepo *repository.UserRepository, seatRepo *repository.SeatRepository) *TransactionService {
+	return &TransactionService{txRepo: txRepo, userRepo: userRepo, seatRepo: seatRepo}
 }
 
-func (s *TrsansactionService) CreateTx(userId uint64, seatIds []uint) error {
+func (s *TransactionService) CreateTx(userId uint64, seatIds []uint) error {
 	txId := uuid.New().String()
 	var user model.User
 	if result := s.userRepo.GetById(userId, &user); result.Error != nil {

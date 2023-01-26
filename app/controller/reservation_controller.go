@@ -13,11 +13,12 @@ import (
 type ReservationController struct {
 	resSvc      *service.ReservationService
 	userService *service.UserService
-	txService   *service.TrsansactionService
+	txService   *service.TransactionService
+	seatService *service.SeatService
 }
 
-func NewReservationController(resSvc *service.ReservationService, userService *service.UserService, txService *service.TrsansactionService) *ReservationController {
-	return &ReservationController{resSvc: resSvc, userService: userService, txService: txService}
+func NewReservationController(resSvc *service.ReservationService, userService *service.UserService, txService *service.TransactionService, seatService *service.SeatService) *ReservationController {
+	return &ReservationController{resSvc: resSvc, userService: userService, txService: txService, seatService: seatService}
 }
 
 func (r *ReservationController) GetSeatsInfo(c *gin.Context) {
@@ -89,7 +90,7 @@ func (r *ReservationController) ReserveSeats(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"status": "success",
 				"data":   err.Error(),
-			})
+			});
 			return
 
 		}
@@ -102,6 +103,17 @@ func (r *ReservationController) ReserveSeats(c *gin.Context) {
 			"error":  err.Error(),
 		})
 		return
+	}
+
+	//update seat availability
+	for _, seatId := range inputData.SeatIds {
+		if err := r.seatService.UpdateStatus(seatId, "reserved"); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"status": "fail",
+				"data":   err.Error(),
+			});
+			return
+		}
 	}
 
 	c.JSON(http.StatusBadRequest, gin.H{

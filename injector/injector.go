@@ -31,11 +31,12 @@ var ReservationSet = wire.NewSet(
 
 var SeatSet = wire.NewSet(
 	repository.NewSeatRepository,
+	service.NewSeatService,
 )
 
 var TransactionSet = wire.NewSet(
 	repository.NewTransactionRepository,
-	service.NewTrsansactionService,
+	service.NewTransactionService,
 )
 
 var UtilSet = wire.NewSet(
