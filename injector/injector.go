@@ -35,6 +35,7 @@ var SeatSet = wire.NewSet(
 )
 
 var TransactionSet = wire.NewSet(
+	controller.NewTransactionController,
 	repository.NewTransactionRepository,
 	service.NewTransactionService,
 )

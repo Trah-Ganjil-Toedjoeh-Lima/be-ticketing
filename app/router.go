@@ -7,10 +7,11 @@ import (
 )
 
 func NewRouter(
-	userController *controller.UserController,
 	userMiddleware *middleware.UserMiddleware,
 
+	userController *controller.UserController,
 	reservationController *controller.ReservationController,
+	txController *controller.TransactionController,
 ) *gin.Engine {
 	router := gin.Default()
 
@@ -26,6 +27,7 @@ func NewRouter(
 	user.GET("/user", userController.CurrentUser)
 	user.GET("/seat_map", reservationController.GetSeatsInfo)
 	user.POST("/seat_map", reservationController.ReserveSeats)
+	user.GET("/checkout", txController.GetTransactionDetails)
 
 	return router
 }

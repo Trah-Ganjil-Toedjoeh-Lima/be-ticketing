@@ -23,20 +23,21 @@ import (
 
 func InitializeServer() *gin.Engine {
 	appConfig := config.NewAppConfig()
-	db := app.NewDatabase(appConfig)
-	userRepository := repository.NewUserRepository(db)
 	client := app.NewCache(appConfig)
 	tokenUtil := util.NewTokenUtil(client, appConfig)
+	userMiddleware := middleware.NewUserMiddleware(tokenUtil)
+	db := app.NewDatabase(appConfig)
+	userRepository := repository.NewUserRepository(db)
 	userService := service.NewUserService(userRepository, tokenUtil)
 	userController := controller.NewUserController(userService, tokenUtil)
-	userMiddleware := middleware.NewUserMiddleware(tokenUtil)
 	seatRepository := repository.NewSeatRepository(db)
 	transactionRepository := repository.NewTransactionRepository(db)
 	reservationService := service.NewReservationService(seatRepository, transactionRepository)
 	transactionService := service.NewTransactionService(transactionRepository, userRepository, seatRepository)
 	seatService := service.NewSeatService(seatRepository)
 	reservationController := controller.NewReservationController(reservationService, userService, transactionService, seatService)
-	engine := app.NewRouter(userController, userMiddleware, reservationController)
+	transactionController := controller.NewTransactionController(transactionService, userService)
+	engine := app.NewRouter(userMiddleware, userController, reservationController, transactionController)
 	return engine
 }
 
@@ -55,6 +56,6 @@ var ReservationSet = wire.NewSet(repository.NewReservationRepository, service.Ne
 
 var SeatSet = wire.NewSet(repository.NewSeatRepository, service.NewSeatService)
 
-var TransactionSet = wire.NewSet(repository.NewTransactionRepository, service.NewTransactionService)
+var TransactionSet = wire.NewSet(controller.NewTransactionController, repository.NewTransactionRepository, service.NewTransactionService)
 
 var UtilSet = wire.NewSet(util.NewTokenUtil)

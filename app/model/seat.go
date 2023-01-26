@@ -6,13 +6,13 @@ import (
 )
 
 type Seat struct {
-	SeatId      uint          `gorm:"primaryKey"`
-	Name        string        `gorm:"unique;not null"`
-	Price       uint          `gorm:"not null"`
-	Link        string        `gorm:"not null"`
-	Status      string        `gorm:"not null"`
-	Transaction []Transaction `gorm:"foreignKey:SeatId"`
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
-	DeletedAt   gorm.DeletedAt
+	SeatId      uint           `gorm:"primaryKey"`
+	Name        string         `gorm:"unique;not null"`
+	Price       uint           `gorm:"not null"`
+	Link        string         `gorm:"not null"`
+	Status      string         `gorm:"not null"`
+	Transaction []Transaction  `gorm:"foreignKey:SeatId"json:"-"`
+	CreatedAt   time.Time      `json:"-"`
+	UpdatedAt   time.Time      `json:"-"`
+	DeletedAt   gorm.DeletedAt `json:"-"`
 }

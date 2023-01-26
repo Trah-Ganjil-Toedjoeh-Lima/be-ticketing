@@ -52,7 +52,7 @@ func (r *ReservationController) GetSeatsInfo(c *gin.Context) {
 			seatsResponse[mySeat.SeatId-1].Status = mySeat.Status
 		}
 	}
-
+	//return success
 	c.JSON(http.StatusOK, gin.H{
 		"status": "success",
 		"data":   seatsResponse,
@@ -80,6 +80,7 @@ func (r *ReservationController) ReserveSeats(c *gin.Context) {
 	}
 	//type assertion
 	accessDetails, _ := contextData.(*util.AccessDetails)
+	//verify that the user is exists in the db
 	_, err := r.userService.GetById(accessDetails.UserId)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
