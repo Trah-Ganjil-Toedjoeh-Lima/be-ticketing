@@ -11,6 +11,7 @@ go 1.19
 //go get -u github.com/go-gormigrate/gormigrate/v2
 //go get -u go get -u github.com/go-factory/factory/v4
 //go get -u github.com/golang-jwt/jwt/v4
+//go get -u github.com/midtrans/midtrans-go
 
 require (
 	github.com/bxcodec/faker/v4 v4.0.0-beta.3 // indirect
@@ -36,6 +37,7 @@ require (
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/mattn/go-isatty v0.0.17 // indirect
+	github.com/midtrans/midtrans-go v1.3.6 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.6 // indirect

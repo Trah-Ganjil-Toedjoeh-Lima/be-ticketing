@@ -19,31 +19,37 @@ func NewTransactionService(txRepo *repository.TransactionRepository, userRepo *r
 
 func (s *TransactionService) CreateTx(userId uint64, seatIds []uint) error {
 	txId := uuid.New().String()
-	var user model.User
-	if result := s.userRepo.GetById(userId, &user); result.Error != nil {
-		return result.Error
-	}
+	/*	var user model.User
+		if result := s.userRepo.GetById(userId, &user); result.Error != nil {
+			return result.Error
+		}*/
 
 	for _, seatId := range seatIds {
-		var seat model.Seat
-		if result := s.seatRepo.GetSeatById(&seat, seatId); result.Error != nil {
-			return result.Error
-		}
+		/*		var seat model.Seat
+				if result := s.seatRepo.GetSeatById(&seat, seatId); result.Error != nil {
+					return result.Error
+				}*/
 		newTx := model.Transaction{
-			MidtransTxId: txId,
-			UserId:       userId,
-			SeatId:       seatId,
-			User:         user,
-			Seat:         seat,
+			OrderId: txId,
+			UserId:  userId,
+			SeatId:  seatId,
+			//User:         user,
+			//Seat:         seat,
 			Vendor:       "#",
 			Confirmation: "reserved",
 		}
+		//delete previous failed reservation
+		s.txRepo.SoftDeleteTransaction(seatId, userId)
 
 		if result := s.txRepo.InsertOne(&newTx); result.Error != nil {
 			return result.Error
 		}
 	}
 	return nil
+}
+
+func (s *TransactionService) SoftDeleteTransaction() {
+
 }
 
 func (s *TransactionService) SeatsBelongsToUserId(userId uint64) ([]model.Seat, error) {
@@ -66,3 +72,21 @@ func (s *TransactionService) SeatsBelongsToUserId(userId uint64) ([]model.Seat, 
 	}
 	return seats, nil
 }
+
+func (s *TransactionService) GetUserTransactionDetails(userId uint64) ([]model.Transaction, error) {
+	var transactions []model.Transaction
+	if result := s.txRepo.GetUserTransactionDetails(&transactions, userId); result.Error != nil {
+		return transactions, result.Error
+	}
+	return transactions, nil
+
+}
+
+/*func (s *TransactionService) PrepareTransactionData(user model.User, seat model.Seat, tx model.Transaction) {
+
+	var snapRequest snap.Request = snap.Request{
+		TransactionDetails: midtrans.TransactionDetails{
+			OrderID:
+		}
+	}
+}*/
