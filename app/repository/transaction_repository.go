@@ -17,6 +17,10 @@ func (t *TransactionRepository) GetLastTxBySeatIdUserId(transaction *model.Trans
 	return t.db.Where("seat_id = ? AND user_id = ?", seatId, userId).Find(transaction)
 }
 
+func (t *TransactionRepository) GetLastTxByUserId(transactions *[]model.Transaction, userId uint64) *gorm.DB {
+	return t.db.Where("user_id = ?", userId).Find(transactions)
+}
+
 func (t TransactionRepository) InsertOne(tx *model.Transaction) *gorm.DB {
 	result := t.db.Create(tx)
 	return result

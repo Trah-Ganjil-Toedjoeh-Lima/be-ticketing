@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"github.com/frchandra/gmcgo/app/model"
 	"github.com/frchandra/gmcgo/app/repository"
 	"github.com/google/uuid"
@@ -35,7 +36,7 @@ func (s *TransactionService) CreateTx(userId uint64, seatIds []uint) error {
 			User:         user,
 			Seat:         seat,
 			Vendor:       "#",
-			Confirmation: "#",
+			Confirmation: "reserved",
 		}
 
 		if result := s.txRepo.InsertOne(&newTx); result.Error != nil {
@@ -43,4 +44,25 @@ func (s *TransactionService) CreateTx(userId uint64, seatIds []uint) error {
 		}
 	}
 	return nil
+}
+
+func (s *TransactionService) SeatsBelongsToUserId(userId uint64) ([]model.Seat, error) {
+	var transactions []model.Transaction
+	var seats []model.Seat
+	if result := s.txRepo.GetLastTxByUserId(&transactions, userId); result.RowsAffected < 1 {
+		return seats, errors.New("user belum melakukan pemesanan/transaksi")
+	}
+
+	for _, tx := range transactions {
+		var seat model.Seat
+		s.seatRepo.GetSeatById(&seat, tx.SeatId)
+		if tx.Confirmation == "reserved" {
+			seat.Status = "reserved_by_me"
+		}
+		if tx.Confirmation == "settlement" {
+			seat.Status = "purchased_by_me"
+		}
+		seats = append(seats, seat)
+	}
+	return seats, nil
 }

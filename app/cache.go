@@ -18,7 +18,7 @@ func NewCache(appConfig *config.AppConfig) *redis.Client {
 		panic(err)
 	}
 	//uncomment this during development phase
-	//cache.FlushAll(ctx)
+	cache.FlushAll(ctx)
 	fmt.Println("redis connected")
 	return cache
 

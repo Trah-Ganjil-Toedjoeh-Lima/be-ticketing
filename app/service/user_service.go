@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"github.com/frchandra/gmcgo/app/model"
 	"github.com/frchandra/gmcgo/app/repository"
 	"github.com/frchandra/gmcgo/app/util"
@@ -82,6 +83,9 @@ func (us *UserService) GetById(userId uint64) (model.User, error) {
 	result := us.userRepository.GetById(userId, &userOut)
 	if result.Error != nil {
 		return userOut, result.Error
+	}
+	if result.RowsAffected < 1 {
+		return userOut, errors.New("user tidak ditemukan")
 	}
 	return userOut, nil
 }

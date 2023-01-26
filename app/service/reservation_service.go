@@ -7,17 +7,17 @@ import (
 )
 
 type ReservationService struct {
-	resRepo *repository.ReservationRepository
-	txRepo  *repository.TransactionRepository
+	seatRepo *repository.SeatRepository
+	txRepo   *repository.TransactionRepository
 }
 
-func NewReservationService(resRepo *repository.ReservationRepository, txRepo *repository.TransactionRepository) *ReservationService {
-	return &ReservationService{resRepo: resRepo, txRepo: txRepo}
+func NewReservationService(seatRepo *repository.SeatRepository, txRepo *repository.TransactionRepository) *ReservationService {
+	return &ReservationService{seatRepo: seatRepo, txRepo: txRepo}
 }
 
 func (s *ReservationService) GetAllSeats() ([]model.Seat, error) {
 	seats := []model.Seat{}
-	if err := s.resRepo.GetAllSeats(&seats).Error; err != nil {
+	if err := s.seatRepo.GetAllSeats(&seats).Error; err != nil {
 		return nil, err
 	}
 	return seats, nil
@@ -29,7 +29,7 @@ func (s *ReservationService) IsOwned(seatId uint, userId uint64) error {
 	//if sudah ada yang ngisi tapi dirinya sendiri -> return ok
 	//return error
 	var seat model.Seat //TODO: think of all edge scenarios
-	if result := s.resRepo.GetSeatById(&seat, seatId); result.Error != nil {
+	if result := s.seatRepo.GetSeatById(&seat, seatId); result.Error != nil {
 		return result.Error
 	}
 	if seat.Status == "#" {

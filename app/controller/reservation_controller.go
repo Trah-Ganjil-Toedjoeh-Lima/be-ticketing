@@ -22,6 +22,7 @@ func NewReservationController(resSvc *service.ReservationService, userService *s
 }
 
 func (r *ReservationController) GetSeatsInfo(c *gin.Context) {
+	//get all seats from db
 	seats, err := r.resSvc.GetAllSeats()
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
@@ -30,13 +31,28 @@ func (r *ReservationController) GetSeatsInfo(c *gin.Context) {
 		})
 		return
 	}
+	//create response object
 	seatsResponse := make([]validation.SeatResponse, len(seats), len(seats))
-	for i, seat := range seats { //TODO: add is_reserved field to consumed by FE, this field can be dynamic for each user
-		seatsResponse[i].SeatId = seat.SeatId
-		seatsResponse[i].Name = seat.Name
-		seatsResponse[i].Status = seat.Status
-		seatsResponse[i].Price = seat.Price
+	for _, seat := range seats { //TODO: add is_reserved field to consumed by FE, this field can be dynamic for each user
+		seatsResponse[seat.SeatId-1].SeatId = seat.SeatId
+		seatsResponse[seat.SeatId-1].Name = seat.Name
+		seatsResponse[seat.SeatId-1].Status = seat.Status
+		seatsResponse[seat.SeatId-1].Price = seat.Price
 	}
+	//get the details about the current user that make request from the context passed by user middleware
+	contextData, _ := c.Get("accessDetails")
+	//type assertion
+	accessDetails, _ := contextData.(*util.AccessDetails)
+	//verify that the user is present in the db
+	_, err = r.userService.GetById(accessDetails.UserId)
+	//overwrite the response object for this user
+	if err == nil {
+		mySeats, _ := r.txService.SeatsBelongsToUserId(accessDetails.UserId)
+		for _, mySeat := range mySeats {
+			seatsResponse[mySeat.SeatId-1].Status = mySeat.Status
+		}
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"status": "success",
 		"data":   seatsResponse,
@@ -90,7 +106,7 @@ func (r *ReservationController) ReserveSeats(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"status": "success",
 				"data":   err.Error(),
-			});
+			})
 			return
 
 		}
@@ -111,14 +127,14 @@ func (r *ReservationController) ReserveSeats(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"status": "fail",
 				"data":   err.Error(),
-			});
+			})
 			return
 		}
 	}
 
 	c.JSON(http.StatusBadRequest, gin.H{
 		"status": "success",
-		"data":   inputData,
+		"data":   inputData.SeatIds,
 		"ok":     "ok",
 	})
 	return
