@@ -10,10 +10,11 @@ import (
 type TransactionController struct {
 	txService   *service.TransactionService
 	userService *service.UserService
+	snapUtil    *util.SnapUtil
 }
 
-func NewTransactionController(txService *service.TransactionService, userService *service.UserService) *TransactionController {
-	return &TransactionController{txService: txService, userService: userService}
+func NewTransactionController(txService *service.TransactionService, userService *service.UserService, snapUtil *util.SnapUtil) *TransactionController {
+	return &TransactionController{txService: txService, userService: userService, snapUtil: snapUtil}
 }
 
 func (t *TransactionController) GetTransactionDetails(c *gin.Context) {
@@ -41,28 +42,19 @@ func (t *TransactionController) InitiateTransaction(c *gin.Context) {
 	contextData, _ := c.Get("accessDetails")
 	//type assertion
 	accessDetails, _ := contextData.(*util.AccessDetails)
-
-	/*	//get seats reserved by user
-		userSeats, err := t.txService.SeatsBelongsToUserId(accessDetails.UserId)
-		if err != nil {
-			c.JSON(http.StatusOK, gin.H{
-				"status": "fail",
-				"err":    err.Error(),
-			})
-			return
-		}
-		//get user details data
-		user, err := t.userService.GetById(accessDetails.UserId)
-		if err != nil {
-			c.JSON(http.StatusOK, gin.H{
-				"status": "fail",
-				"err":    err.Error(),
-			})
-			return
-		}*/
+	//prepare snap request
+	snapRequest := t.txService.PrepareTransactionData(accessDetails.UserId)
+	//send request to midtrans
+	response, err := t.snapUtil.CreateTransaction(&snapRequest)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"status": "fail",
+			"err":    err.GetMessage(),
+		})
+	}
 	c.JSON(http.StatusOK, gin.H{
-		"status": "fail",
-		"err":    t.txService.GetUserTransactionDetails(accessDetails.UserId),
+		"status": "success",
+		"err":    response,
 	})
 	return
 }

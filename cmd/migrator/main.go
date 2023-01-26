@@ -10,4 +10,5 @@ func main() {
 	migrator := injector.InitializeMigrator()
 	migrator.RunMigration("migrate:fresh")
 	//TODO: minimizing open too many connection to database by improving query with eager loading
+	//TODO: create logger
 }

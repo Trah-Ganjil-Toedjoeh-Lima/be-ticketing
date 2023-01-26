@@ -42,6 +42,7 @@ var TransactionSet = wire.NewSet(
 
 var UtilSet = wire.NewSet(
 	util.NewTokenUtil,
+	util.NewSnapUtil,
 )
 
 func InitializeServer() *gin.Engine {

@@ -5,6 +5,8 @@ import (
 	"github.com/frchandra/gmcgo/app/model"
 	"github.com/frchandra/gmcgo/app/repository"
 	"github.com/google/uuid"
+	"github.com/midtrans/midtrans-go"
+	"github.com/midtrans/midtrans-go/snap"
 )
 
 type TransactionService struct {
@@ -82,11 +84,36 @@ func (s *TransactionService) GetUserTransactionDetails(userId uint64) ([]model.T
 
 }
 
-/*func (s *TransactionService) PrepareTransactionData(user model.User, seat model.Seat, tx model.Transaction) {
+func (s *TransactionService) PrepareTransactionData(userId uint64) snap.Request {
+	txDetails, _ := s.GetUserTransactionDetails(userId)
+	var grossAmt int64
+	var itemDetails []midtrans.ItemDetails
+
+	customerDetails := midtrans.CustomerDetails{
+		FName: txDetails[0].User.Name,
+		LName: "",
+		Email: txDetails[0].User.Email,
+		Phone: txDetails[0].User.Phone,
+	}
+
+	for _, tx := range txDetails {
+		grossAmt += int64(tx.Seat.Price)
+		itemDetail := midtrans.ItemDetails{
+			ID:    string(tx.SeatId),
+			Price: int64(tx.Seat.Price),
+			Qty:   1,
+			Name:  tx.Seat.Name,
+		}
+		itemDetails = append(itemDetails, itemDetail)
+	}
 
 	var snapRequest snap.Request = snap.Request{
 		TransactionDetails: midtrans.TransactionDetails{
-			OrderID:
-		}
+			OrderID:  txDetails[0].OrderId,
+			GrossAmt: grossAmt,
+		},
+		CustomerDetail: &customerDetails,
+		Items:          &itemDetails,
 	}
-}*/
+	return snapRequest
+}
