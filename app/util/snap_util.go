@@ -1,6 +1,9 @@
 package util
 
 import (
+	"crypto/sha512"
+	"errors"
+	"fmt"
 	"github.com/frchandra/gmcgo/config"
 	"github.com/midtrans/midtrans-go"
 	"github.com/midtrans/midtrans-go/snap"
@@ -30,6 +33,29 @@ func (u *SnapUtil) CreateTransaction(request *snap.Request) (*snap.Response, *mi
 		return resp, err
 	}
 	return resp, nil
+}
+
+func (u *SnapUtil) CheckSignature(message map[string]interface{}) error {
+	orderId := message["order_id"].(string)
+	statusCode := message["status_code"].(string)
+	grossAmt := message["gross_amount"].(string)
+	signatureKey := message["signature_key"].(string)
+	var serverKey string
+	if u.app.MidtransIsProduction == false {
+		serverKey = u.app.ServerKeySandbox
+	} else {
+		serverKey = u.app.ServerKeySandbox //TODO: make this production
+	}
+	//debugging
+	//serverKey = "VT-server-HJMpl9HLr_ntOKt5mRONdmKj"
+	payload := orderId + statusCode + grossAmt + serverKey
+	hasher := sha512.New()
+	hasher.Write([]byte(payload))
+	hashStr := fmt.Sprintf("%x", hasher.Sum(nil))
+	if hashStr != signatureKey {
+		return errors.New("SIGNATURE KEY NOT MATCH. Signature key: " + signatureKey + " given: " + hashStr)
+	}
+	return nil
 }
 
 func (u *SnapUtil) HandleCallback() {

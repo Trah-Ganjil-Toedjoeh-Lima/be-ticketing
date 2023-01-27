@@ -2,29 +2,46 @@ package controller
 
 import (
 	"github.com/frchandra/gmcgo/app/service"
+	"github.com/frchandra/gmcgo/app/util"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
 type SnapController struct {
 	snapService *service.SnapService
+	snapUtil    *util.SnapUtil
+	txService   *service.TransactionService
 }
 
-func NewSnapController(snapService *service.SnapService) *SnapController {
-	return &SnapController{snapService: snapService}
+func NewSnapController(snapService *service.SnapService, snapUtil *util.SnapUtil, txService *service.TransactionService) *SnapController {
+	return &SnapController{snapService: snapService, snapUtil: snapUtil, txService: txService}
 }
 
 func (s *SnapController) HandleCallback(c *gin.Context) {
 	message := make(map[string]interface{})
 	if err := c.ShouldBindJSON(&message); err != nil {
-		c.JSON(http.StatusOK, gin.H{
-			"error": err.Error(),
-		})
+		c.Status(http.StatusBadRequest)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{
-		"message": message,
-	})
+	if err := s.snapUtil.CheckSignature(message); err != nil {
+		c.Status(http.StatusBadRequest)
+		return
+	}
+	txStatus := message["transaction_status"].(string)
+	orderId := message["order_id"].(string)
+	if txStatus == "pending" {
+		//TODO send email
+	} else if txStatus == "settlement" {
+		if err := s.snapService.HandleSettlement(orderId); err != nil {
+			c.Status(http.StatusNotFound)
+		}
+	} else if txStatus == "expire" || txStatus == "failure" {
+		if err := s.snapService.HandleFailure(orderId); err != nil {
+			c.Status(http.StatusNotFound)
+		}
+	}
+
+	c.Status(200)
 	return
 
 }

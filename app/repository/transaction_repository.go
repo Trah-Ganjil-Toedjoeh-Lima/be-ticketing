@@ -33,3 +33,7 @@ func (t *TransactionRepository) SoftDeleteTransaction(seatId uint, userId uint64
 func (t *TransactionRepository) GetUserTransactionDetails(transactions *[]model.Transaction, userId uint64) *gorm.DB {
 	return t.db.Joins("User").Joins("Seat").Where("transactions.user_id = ?", userId).Find(transactions)
 }
+
+func (t *TransactionRepository) GetTxByOrderId(transactions *[]model.Transaction, orderId string) *gorm.DB {
+	return t.db.Where("order_id = ?", orderId).Find(transactions)
+}

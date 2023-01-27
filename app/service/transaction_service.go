@@ -117,3 +117,11 @@ func (s *TransactionService) PrepareTransactionData(userId uint64) snap.Request 
 	}
 	return snapRequest
 }
+
+func (s TransactionService) GetTxByOrderId(orderId string) ([]model.Transaction, error) {
+	var transactions []model.Transaction
+	if result := s.txRepo.GetTxByOrderId(&transactions, orderId); result.Error != nil {
+		return transactions, result.Error
+	}
+	return transactions, nil
+}
