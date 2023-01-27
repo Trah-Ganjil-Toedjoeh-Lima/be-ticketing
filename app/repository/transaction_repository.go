@@ -37,3 +37,7 @@ func (t *TransactionRepository) GetUserTransactionDetails(transactions *[]model.
 func (t *TransactionRepository) GetTxByOrderId(transactions *[]model.Transaction, orderId string) *gorm.DB {
 	return t.db.Where("order_id = ?", orderId).Find(transactions)
 }
+
+func (t TransactionRepository) UpdatePaymentStatus(orderId, vendor, confirmation string) *gorm.DB {
+	return t.db.Model(&model.Transaction{}).Where("order_id = ?", orderId).Updates(model.Transaction{Vendor: vendor, Confirmation: confirmation})
+}

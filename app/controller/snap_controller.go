@@ -28,15 +28,14 @@ func (s *SnapController) HandleCallback(c *gin.Context) {
 		return
 	}
 	txStatus := message["transaction_status"].(string)
-	orderId := message["order_id"].(string)
 	if txStatus == "pending" {
 		//TODO send email
 	} else if txStatus == "settlement" {
-		if err := s.snapService.HandleSettlement(orderId); err != nil {
+		if err := s.snapService.HandleSettlement(message); err != nil {
 			c.Status(http.StatusNotFound)
 		}
 	} else if txStatus == "expire" || txStatus == "failure" {
-		if err := s.snapService.HandleFailure(orderId); err != nil {
+		if err := s.snapService.HandleFailure(message); err != nil {
 			c.Status(http.StatusNotFound)
 		}
 	}

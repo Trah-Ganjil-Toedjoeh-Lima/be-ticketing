@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/midtrans/midtrans-go"
 	"github.com/midtrans/midtrans-go/snap"
+	"strconv"
 )
 
 type TransactionService struct {
@@ -99,7 +100,7 @@ func (s *TransactionService) PrepareTransactionData(userId uint64) snap.Request 
 	for _, tx := range txDetails {
 		grossAmt += int64(tx.Seat.Price)
 		itemDetail := midtrans.ItemDetails{
-			ID:    string(tx.SeatId),
+			ID:    strconv.FormatUint(uint64(tx.SeatId), 10),
 			Price: int64(tx.Seat.Price),
 			Qty:   1,
 			Name:  tx.Seat.Name,
@@ -118,10 +119,17 @@ func (s *TransactionService) PrepareTransactionData(userId uint64) snap.Request 
 	return snapRequest
 }
 
-func (s TransactionService) GetTxByOrderId(orderId string) ([]model.Transaction, error) {
+func (s *TransactionService) GetTxByOrderId(orderId string) ([]model.Transaction, error) {
 	var transactions []model.Transaction
 	if result := s.txRepo.GetTxByOrderId(&transactions, orderId); result.Error != nil {
 		return transactions, result.Error
 	}
 	return transactions, nil
+}
+
+func (s *TransactionService) UpdatePaymentStatus(orderId, vendor, confirmation string) error {
+	if result := s.txRepo.UpdatePaymentStatus(orderId, vendor, confirmation); result.Error != nil {
+		return result.Error
+	}
+	return nil
 }
