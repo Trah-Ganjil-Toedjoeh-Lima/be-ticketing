@@ -38,7 +38,9 @@ func InitializeServer() *gin.Engine {
 	reservationController := controller.NewReservationController(reservationService, userService, transactionService, seatService)
 	snapUtil := util.NewSnapUtil(appConfig)
 	transactionController := controller.NewTransactionController(transactionService, userService, snapUtil)
-	engine := app.NewRouter(userMiddleware, userController, reservationController, transactionController)
+	snapService := service.NewSnapService(transactionRepository, seatRepository, snapUtil)
+	snapController := controller.NewSnapController(snapService)
+	engine := app.NewRouter(userMiddleware, userController, reservationController, transactionController, snapController)
 	return engine
 }
 
@@ -58,5 +60,7 @@ var ReservationSet = wire.NewSet(repository.NewReservationRepository, service.Ne
 var SeatSet = wire.NewSet(repository.NewSeatRepository, service.NewSeatService)
 
 var TransactionSet = wire.NewSet(controller.NewTransactionController, repository.NewTransactionRepository, service.NewTransactionService)
+
+var SnapSet = wire.NewSet(controller.NewSnapController, service.NewSnapService)
 
 var UtilSet = wire.NewSet(util.NewTokenUtil, util.NewSnapUtil)

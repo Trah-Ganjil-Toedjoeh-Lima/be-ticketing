@@ -24,10 +24,14 @@ func NewSnapUtil(app *config.AppConfig) *SnapUtil {
 	}
 }
 
-func (u SnapUtil) CreateTransaction(request *snap.Request) (*snap.Response, *midtrans.Error) {
+func (u *SnapUtil) CreateTransaction(request *snap.Request) (*snap.Response, *midtrans.Error) {
 	resp, err := u.snapClient.CreateTransaction(request)
 	if err != nil {
 		return resp, err
 	}
 	return resp, nil
+}
+
+func (u *SnapUtil) HandleCallback() {
+
 }

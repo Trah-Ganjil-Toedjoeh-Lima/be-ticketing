@@ -40,6 +40,11 @@ var TransactionSet = wire.NewSet(
 	service.NewTransactionService,
 )
 
+var SnapSet = wire.NewSet(
+	controller.NewSnapController,
+	service.NewSnapService,
+)
+
 var UtilSet = wire.NewSet(
 	util.NewTokenUtil,
 	util.NewSnapUtil,
@@ -55,6 +60,7 @@ func InitializeServer() *gin.Engine {
 		SeatSet,
 		ReservationSet,
 		TransactionSet,
+		SnapSet,
 		app.NewRouter,
 	)
 	return nil
