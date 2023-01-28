@@ -62,17 +62,24 @@ func (s *TransactionService) SeatsBelongsToUserId(userId uint64) ([]model.Seat, 
 	return seats, nil
 }
 
-func (s *TransactionService) GetUserTransactionDetails(userId uint64) ([]model.Transaction, error) {
+func (s *TransactionService) GeTxDetailsByUser(userId uint64) ([]model.Transaction, error) {
 	var transactions []model.Transaction
-	if result := s.txRepo.GetUserTransactionDetails(&transactions, userId); result.Error != nil {
+	if result := s.txRepo.GetTxDetailsByUser(&transactions, userId); result.Error != nil {
 		return transactions, result.Error
 	}
 	return transactions, nil
+}
 
+func (s TransactionService) GetTxDetailsByOrder(orderId string) ([]model.Transaction, error) {
+	var transactions []model.Transaction
+	if result := s.txRepo.GetTxDetailsByOrder(&transactions, orderId); result.Error != nil {
+		return transactions, result.Error
+	}
+	return transactions, nil
 }
 
 func (s *TransactionService) PrepareTransactionData(userId uint64) snap.Request {
-	txDetails, _ := s.GetUserTransactionDetails(userId)
+	txDetails, _ := s.GeTxDetailsByUser(userId)
 	var grossAmt int64
 	var itemDetails []midtrans.ItemDetails
 

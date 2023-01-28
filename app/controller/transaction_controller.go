@@ -22,7 +22,7 @@ func (t *TransactionController) GetTransactionDetails(c *gin.Context) { //TODO: 
 	contextData, _ := c.Get("accessDetails")
 	//type assertion
 	accessDetails, _ := contextData.(*util.AccessDetails)
-	txDetails, err := t.txService.GetUserTransactionDetails(accessDetails.UserId)
+	txDetails, err := t.txService.GeTxDetailsByUser(accessDetails.UserId)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"status": "fail",

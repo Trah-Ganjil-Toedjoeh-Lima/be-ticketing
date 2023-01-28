@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/frchandra/gmcgo/app/model"
 	"github.com/frchandra/gmcgo/app/repository"
+	"strconv"
 )
 
 type ReservationService struct {
@@ -52,9 +53,32 @@ func (s *ReservationService) IsOwned(seatId uint, userId uint64) error {
 }
 
 func (s *ReservationService) CheckUserSeatCount(seatIds []uint, userId uint64) error {
-	userTxs, _ := s.txService.GetUserTransactionDetails(userId)
-	if totalSeat := cap(seatIds) + cap(userTxs); totalSeat > 5 {
-		return errors.New("user telah memesan " + string(cap(userTxs)) + " kursi, tidak bisa memesan " + string(cap(seatIds)) + " kursi lagi")
+	//ambil data transaksi user yang sudah tercatat
+	prevTransaction, _ := s.txService.GeTxDetailsByUser(userId)
+	//ambil data seatId nya saja
+	var prevTxSeatIds []uint
+	for _, tx := range prevTransaction {
+		prevTxSeatIds = append(prevTxSeatIds, tx.SeatId)
+	}
+	//ambil perbedaan seatId sesudah dan sebelum
+	diff := difference(seatIds, prevTxSeatIds)
+	//jika jumlah kursi sebelumnya + jumlah kursi pesanan yang belum ada di transaksi sebelumnya > 5 return error
+	if totalSeat := len(diff) + len(prevTransaction); totalSeat > 5 {
+		return errors.New("user telah memesan " + strconv.Itoa(len(prevTransaction)) + " kursi, tidak bisa memesan " + strconv.Itoa(len(seatIds)) + " kursi lagi")
 	}
 	return nil
+}
+
+func difference(after, before []uint) []uint {
+	mb := make(map[uint]struct{}, len(before))
+	for _, x := range before {
+		mb[x] = struct{}{}
+	}
+	var diff []uint
+	for _, x := range after {
+		if _, found := mb[x]; !found {
+			diff = append(diff, x)
+		}
+	}
+	return diff
 }

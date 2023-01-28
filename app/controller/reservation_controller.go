@@ -118,7 +118,7 @@ func (r *ReservationController) ReserveSeats(c *gin.Context) {
 	}
 
 	//store reservation to tx table
-	if err := r.txService.CreateTx(accessDetails.UserId, inputData.SeatIds); err != nil { //TODO: batasi maksimum pembelian
+	if err := r.txService.CreateTx(accessDetails.UserId, inputData.SeatIds); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"status": "fail",
 			"error":  err.Error(),

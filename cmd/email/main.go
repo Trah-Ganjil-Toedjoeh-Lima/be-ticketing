@@ -1,21 +1,16 @@
 package main
 
-import (
-	"fmt"
-	"github.com/frchandra/gmcgo/injector"
-)
-
 func main() {
-	fmt.Println("sending email")
-	mailer := injector.InitializeEmail()
+	/*	fmt.Println("sending email")
+		mailer := injector.InitializeEmail()
 
-	reciever := "nismara.chandra@gmail.com"
-	data := map[string]any{
-		"Name":  "Chandra Herd",
-		"Seats": []string{"a1", "a2", "a3"},
-	}
-	err := mailer.SendGomail("./resource/template/info.gohtml", data, reciever)
-	if err != nil {
-		panic(err)
-	}
+		reciever := "nismara.chandra@gmail.com"
+		data := map[string]any{
+			"Name":  "Chandra Herd",
+			"Seats": []string{"a1", "a2", "a3"},
+		}
+		err := mailer.SendGomail("./resource/template/info.gohtml", data, reciever)
+		if err != nil {
+			panic(err)
+		}*/
 }
