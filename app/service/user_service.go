@@ -29,7 +29,8 @@ func (us *UserService) GetOrInsertOne(user *model.User) (int64, error) {
 }
 
 func (us *UserService) InsertOne(user *model.User) (int64, error) {
-	//hash the credential //TODO: just for boilerplate. Optional for gmco case
+	//hash the credential
+	//TODO: just for boilerplate. Optional for gmco case
 	hashedCred, err := bcrypt.GenerateFromPassword([]byte(user.Phone), bcrypt.DefaultCost)
 	if err != nil {
 		return 0, err

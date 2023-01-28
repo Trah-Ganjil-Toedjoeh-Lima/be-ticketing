@@ -56,7 +56,8 @@ func (uc *UserController) Register(c *gin.Context) {
 	}
 	//return success
 	c.SetSameSite(http.SameSiteNoneMode)
-	//c.SetCookie("token", token, 3600, "/", "127.0.0.1", false, true)//TODO: cookie?
+	//c.SetCookie("token", token, 3600, "/", "127.0.0.1", false, true)
+	//TODO: cookie?
 	c.JSON(http.StatusOK, gin.H{
 		"status": "success",
 		"token":  token,
@@ -139,7 +140,8 @@ func (uc *UserController) Login(c *gin.Context) {
 	}
 	//return success
 	c.SetSameSite(http.SameSiteNoneMode)
-	//c.SetCookie("token", token, 3600, "/", "127.0.0.1", false, true)//TODO: cookie?
+	//c.SetCookie("token", token, 3600, "/", "127.0.0.1", false, true)
+	//TODO: cookie?
 	c.JSON(http.StatusOK, gin.H{
 		"status": "success",
 		"token":  token,

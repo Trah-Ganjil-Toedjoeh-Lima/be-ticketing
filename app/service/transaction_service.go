@@ -22,37 +22,23 @@ func NewTransactionService(txRepo *repository.TransactionRepository, userRepo *r
 
 func (s *TransactionService) CreateTx(userId uint64, seatIds []uint) error {
 	txId := uuid.New().String()
-	/*	var user model.User
-		if result := s.userRepo.GetById(userId, &user); result.Error != nil {
-			return result.Error
-		}*/
-
 	for _, seatId := range seatIds {
-		/*		var seat model.Seat
-				if result := s.seatRepo.GetSeatById(&seat, seatId); result.Error != nil {
-					return result.Error
-				}*/
+		//create tx for each seat
 		newTx := model.Transaction{
-			OrderId: txId,
-			UserId:  userId,
-			SeatId:  seatId,
-			//User:         user,
-			//Seat:         seat,
+			OrderId:      txId,
+			UserId:       userId,
+			SeatId:       seatId,
 			Vendor:       "#",
 			Confirmation: "reserved",
 		}
 		//delete previous failed reservation
 		s.txRepo.SoftDeleteTransaction(seatId, userId)
-
+		//save transaction
 		if result := s.txRepo.InsertOne(&newTx); result.Error != nil {
 			return result.Error
 		}
 	}
 	return nil
-}
-
-func (s *TransactionService) SoftDeleteTransaction() {
-
 }
 
 func (s *TransactionService) SeatsBelongsToUserId(userId uint64) ([]model.Seat, error) {

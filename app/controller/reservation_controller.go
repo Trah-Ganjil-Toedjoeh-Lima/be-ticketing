@@ -45,7 +45,7 @@ func (r *ReservationController) GetSeatsInfo(c *gin.Context) {
 	accessDetails, _ := contextData.(*util.AccessDetails)
 	//verify that the user is present in the db
 	_, err = r.userService.GetById(accessDetails.UserId)
-	//overwrite the response object for this user
+	//if user exist, overwrite the response object for this user
 	if err == nil {
 		mySeats, _ := r.txService.SeatsBelongsToUserId(accessDetails.UserId)
 		for _, mySeat := range mySeats {
@@ -61,14 +61,7 @@ func (r *ReservationController) GetSeatsInfo(c *gin.Context) {
 	return
 }
 
-// TODO: finish this
 func (r *ReservationController) ReserveSeats(c *gin.Context) {
-	//ambil informasi user
-	//ambil informasi kursi yang akan dipesan
-	//cek eligibility
-	//simpan didatabase
-	//return success with user data
-
 	//get the details about the current user that make request from the context passed by user middleware
 	contextData, isExist := c.Get("accessDetails")
 	if isExist == false {
@@ -78,8 +71,10 @@ func (r *ReservationController) ReserveSeats(c *gin.Context) {
 		})
 		return
 	}
+
 	//type assertion
 	accessDetails, _ := contextData.(*util.AccessDetails)
+
 	//verify that the user is exists in the db
 	_, err := r.userService.GetById(accessDetails.UserId)
 	if err != nil {
@@ -111,6 +106,15 @@ func (r *ReservationController) ReserveSeats(c *gin.Context) {
 			return
 
 		}
+	}
+
+	//check user seat limit
+	if err := r.resSvc.CheckUserSeatCount(inputData.SeatIds, accessDetails.UserId); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status": "success",
+			"data":   err.Error(),
+		})
+		return
 	}
 
 	//store reservation to tx table
