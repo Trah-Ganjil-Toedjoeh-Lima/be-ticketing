@@ -37,3 +37,9 @@ func (s *SnapService) HandleFailure(message map[string]any) error {
 	}
 	return nil
 }
+
+func (s *SnapService) HandlePending(message map[string]any) error {
+	//update tx status
+	s.txService.UpdatePaymentStatus(message["order_id"].(string), message["payment_type"].(string), message["transaction_status"].(string))
+	return nil
+}

@@ -4,6 +4,7 @@ import (
 	"github.com/joho/godotenv"
 	"log"
 	"os"
+	"strconv"
 	"time"
 )
 
@@ -29,12 +30,18 @@ type AppConfig struct {
 	AccessMinute         time.Duration
 	RefreshMinute        time.Duration
 	MerchId              string
+	MidtransIsProduction bool
 	ClientKeySandbox     string
 	ServerKeySandbox     string
-	MidtransIsProduction bool
+	ClientKeyProduction  string
+	ServerKeyProduction  string
 }
 
 func NewAppConfig() *AppConfig {
+	midtransIsProduction, _ := strconv.ParseBool(getEnv("MIDTRANS_IS_PRODUCTION", "0"))
+	accessMinute, _ := time.ParseDuration(getEnv("ACCESS_MINUTE", "15m"))
+	refreshMinute, _ := time.ParseDuration(getEnv("ACCESS_MINUTE", "60m"))
+
 	var appConfig = AppConfig{
 		AppName:              getEnv("APP_NAME", "gmcgo"),
 		IsProduction:         getEnv("IS_PRODUCTION", "false"),
@@ -50,12 +57,12 @@ func NewAppConfig() *AppConfig {
 		RedisPort:            getEnv("REDIS_PORT", "6379"),
 		AccessSecret:         getEnv("ACCESS_MINUTE", "15"),
 		RefreshSecret:        getEnv("SECRET_MINUTE", "240"),
-		AccessMinute:         15,
-		RefreshMinute:        60,
-		MerchId:              "G556738445",
-		ClientKeySandbox:     "SB-Mid-client-pjvOAswUBeykWbzt",
-		ServerKeySandbox:     "SB-Mid-server-MdUI6E3XDQWWswmqW4KzwWiN",
-		MidtransIsProduction: false,
+		AccessMinute:         accessMinute,
+		RefreshMinute:        refreshMinute,
+		MerchId:              getEnv("MERCH_ID", ""),
+		ClientKeySandbox:     getEnv("CLIENT_KEY_SANDBOX", ""),
+		ServerKeySandbox:     getEnv("SERVER_KEY_SANDBOX", ""),
+		MidtransIsProduction: midtransIsProduction,
 	}
 	return &appConfig
 
