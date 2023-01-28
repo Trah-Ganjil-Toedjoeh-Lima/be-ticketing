@@ -12,6 +12,7 @@ go 1.19
 //go get -u go get -u github.com/go-factory/factory/v4
 //go get -u github.com/golang-jwt/jwt/v4
 //go get -u github.com/midtrans/midtrans-go
+//go get -u gopkg.in/gomail.v2
 
 require (
 	github.com/bxcodec/faker/v4 v4.0.0-beta.3 // indirect
@@ -47,6 +48,8 @@ require (
 	golang.org/x/sys v0.4.0 // indirect
 	golang.org/x/text v0.6.0 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
+	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
+	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df // indirect
 	gopkg.in/validator.v2 v2.0.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gorm.io/driver/postgres v1.4.6 // indirect

@@ -44,7 +44,7 @@ func (u *SnapUtil) CheckSignature(message map[string]interface{}) error {
 	if u.app.MidtransIsProduction == false {
 		serverKey = u.app.ServerKeySandbox
 	} else {
-		serverKey = u.app.ServerKeySandbox //TODO: make this production
+		serverKey = u.app.ServerKeyProduction
 	}
 	//debugging
 	//serverKey = "VT-server-HJMpl9HLr_ntOKt5mRONdmKj"

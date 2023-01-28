@@ -8,8 +8,6 @@ import (
 	"time"
 )
 
-//TODO: make this a singleton => use injection strategy?
-
 type AppConfig struct {
 	AppName              string
 	IsProduction         string
@@ -35,6 +33,14 @@ type AppConfig struct {
 	ServerKeySandbox     string
 	ClientKeyProduction  string
 	ServerKeyProduction  string
+	MailMailer           string
+	MailHost             string
+	MailPort             string
+	MailUsername         string
+	MailPassword         string
+	MailEncryption       string
+	MailFromAddress      string
+	MailFromName         string
 }
 
 func NewAppConfig() *AppConfig {
@@ -60,9 +66,19 @@ func NewAppConfig() *AppConfig {
 		AccessMinute:         accessMinute,
 		RefreshMinute:        refreshMinute,
 		MerchId:              getEnv("MERCH_ID", ""),
+		MidtransIsProduction: midtransIsProduction,
 		ClientKeySandbox:     getEnv("CLIENT_KEY_SANDBOX", ""),
 		ServerKeySandbox:     getEnv("SERVER_KEY_SANDBOX", ""),
-		MidtransIsProduction: midtransIsProduction,
+		ClientKeyProduction:  getEnv("CLIENT_KEY_PRODUCTION", ""),
+		ServerKeyProduction:  getEnv("SERVER_KEY_PRODUCTION", ""),
+		MailMailer:           getEnv("MAIL_MAILER", "smtp"),
+		MailHost:             getEnv("MAIL_HOST", "smtp.gmail.com"),
+		MailPort:             getEnv("MAIL_PORT", "465"),
+		MailUsername:         getEnv("MAIL_USERNAME", ""),
+		MailPassword:         getEnv("MAIL_PASSWORD", ""),
+		MailEncryption:       getEnv("MAIL_ENCRYPTION", "ssl"),
+		MailFromAddress:      getEnv("MAIL_FROM_ADDRESS", ""),
+		MailFromName:         getEnv("MAIL_FROM_NAME", "golang"),
 	}
 	return &appConfig
 

@@ -48,6 +48,7 @@ var SnapSet = wire.NewSet(
 var UtilSet = wire.NewSet(
 	util.NewTokenUtil,
 	util.NewSnapUtil,
+	util.NewEmailUtil,
 )
 
 func InitializeServer() *gin.Engine {
@@ -71,6 +72,14 @@ func InitializeMigrator() *database.Migrator {
 		config.NewAppConfig,
 		app.NewDatabase,
 		database.NewMigrator,
+	)
+	return nil
+}
+
+func InitializeEmail() *util.EmailUtil {
+	wire.Build(
+		config.NewAppConfig,
+		util.NewEmailUtil,
 	)
 	return nil
 }

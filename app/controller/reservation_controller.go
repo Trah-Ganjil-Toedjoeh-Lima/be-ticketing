@@ -91,7 +91,7 @@ func (r *ReservationController) ReserveSeats(c *gin.Context) {
 	}
 
 	//get the requested seats
-	var inputData validation.SeatResrvRequest
+	var inputData validation.SeatReservationRequest
 	if err := c.ShouldBindJSON(&inputData); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"status": "fail",
@@ -114,7 +114,7 @@ func (r *ReservationController) ReserveSeats(c *gin.Context) {
 	}
 
 	//store reservation to tx table
-	if err := r.txService.CreateTx(accessDetails.UserId, inputData.SeatIds); err != nil {
+	if err := r.txService.CreateTx(accessDetails.UserId, inputData.SeatIds); err != nil { //TODO: batasi maksimum pembelian
 		c.JSON(http.StatusBadRequest, gin.H{
 			"status": "fail",
 			"error":  err.Error(),

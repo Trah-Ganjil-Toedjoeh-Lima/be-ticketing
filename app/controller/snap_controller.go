@@ -30,6 +30,9 @@ func (s *SnapController) HandleCallback(c *gin.Context) {
 	txStatus := message["transaction_status"].(string)
 	if txStatus == "pending" {
 		//TODO send email
+		if err := s.snapService.HandlePending(message); err != nil {
+			c.Status(http.StatusNotFound)
+		}
 	} else if txStatus == "settlement" {
 		if err := s.snapService.HandleSettlement(message); err != nil {
 			c.Status(http.StatusNotFound)

@@ -7,6 +7,6 @@ type SeatResponse struct {
 	Status string `json:"status"`
 }
 
-type SeatResrvRequest struct {
+type SeatReservationRequest struct {
 	SeatIds []uint `json:"data" binding:"required,unique,max=5"`
 }

@@ -51,6 +51,12 @@ func InitializeMigrator() *database.Migrator {
 	return migrator
 }
 
+func InitializeEmail() *util.EmailUtil {
+	appConfig := config.NewAppConfig()
+	emailUtil := util.NewEmailUtil(appConfig)
+	return emailUtil
+}
+
 // injector.go:
 
 var UserSet = wire.NewSet(repository.NewUserRepository, service.NewUserService, controller.NewUserController, middleware.NewUserMiddleware)
@@ -63,4 +69,4 @@ var TransactionSet = wire.NewSet(controller.NewTransactionController, repository
 
 var SnapSet = wire.NewSet(controller.NewSnapController, service.NewSnapService)
 
-var UtilSet = wire.NewSet(util.NewTokenUtil, util.NewSnapUtil)
+var UtilSet = wire.NewSet(util.NewTokenUtil, util.NewSnapUtil, util.NewEmailUtil)
