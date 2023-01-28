@@ -21,11 +21,11 @@ func NewTransactionService(txRepo *repository.TransactionRepository, userRepo *r
 }
 
 func (s *TransactionService) CreateTx(userId uint64, seatIds []uint) error {
-	txId := uuid.New().String()
+
 	for _, seatId := range seatIds {
 		//create tx for each seat
 		newTx := model.Transaction{
-			OrderId:      txId,
+			OrderId:      "",
 			UserId:       userId,
 			SeatId:       seatId,
 			Vendor:       "no_vendor",
@@ -79,9 +79,16 @@ func (s TransactionService) GetTxDetailsByOrder(orderId string) ([]model.Transac
 }
 
 func (s *TransactionService) PrepareTransactionData(userId uint64) snap.Request {
-	txDetails, _ := s.GeTxDetailsByUser(userId)
+	//get user's transaction that haven`t been started
+	var txDetails []model.Transaction
+	s.txRepo.GetTxDetailsByUser(&txDetails, userId).Where("order_id = ?", "")
 	var grossAmt int64
 	var itemDetails []midtrans.ItemDetails
+
+	//create order_id
+	orderId := uuid.New().String()
+	//update order_id
+	s.txRepo.UpdateUserOrderId(userId, orderId)
 
 	customerDetails := midtrans.CustomerDetails{
 		FName: txDetails[0].User.Name,
@@ -103,7 +110,7 @@ func (s *TransactionService) PrepareTransactionData(userId uint64) snap.Request 
 
 	var snapRequest snap.Request = snap.Request{
 		TransactionDetails: midtrans.TransactionDetails{
-			OrderID:  txDetails[0].OrderId,
+			OrderID:  orderId,
 			GrossAmt: grossAmt,
 		},
 		CustomerDetail: &customerDetails,

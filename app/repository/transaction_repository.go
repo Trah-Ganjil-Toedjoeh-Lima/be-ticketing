@@ -21,14 +21,6 @@ func (t *TransactionRepository) GetLastTxByUserId(transactions *[]model.Transact
 	return t.db.Where("user_id = ?", userId).Find(transactions)
 }
 
-func (t *TransactionRepository) InsertOne(tx *model.Transaction) *gorm.DB {
-	return t.db.Create(tx)
-}
-
-func (t *TransactionRepository) SoftDeleteTransaction(seatId uint, userId uint64) *gorm.DB {
-	return t.db.Where("seat_id = ? AND user_id = ?", seatId, userId).Delete(&model.Transaction{})
-}
-
 func (t *TransactionRepository) GetTxDetailsByUser(transactions *[]model.Transaction, userId uint64) *gorm.DB {
 	return t.db.Joins("User").Joins("Seat").Where("transactions.user_id = ?", userId).Find(transactions)
 }
@@ -43,4 +35,16 @@ func (t TransactionRepository) GetTxDetailsByOrder(transactions *[]model.Transac
 
 func (t *TransactionRepository) UpdatePaymentStatus(orderId, vendor, confirmation string) *gorm.DB {
 	return t.db.Model(&model.Transaction{}).Where("order_id = ?", orderId).Updates(model.Transaction{Vendor: vendor, Confirmation: confirmation})
+}
+
+func (t *TransactionRepository) InsertOne(tx *model.Transaction) *gorm.DB {
+	return t.db.Create(tx)
+}
+
+func (t *TransactionRepository) SoftDeleteTransaction(seatId uint, userId uint64) *gorm.DB {
+	return t.db.Where("seat_id = ? AND user_id = ?", seatId, userId).Delete(&model.Transaction{})
+}
+
+func (t *TransactionRepository) UpdateUserOrderId(userId uint64, orderId string) *gorm.DB {
+	return t.db.Model(&model.Transaction{}).Where("user_id = ? AND order_id = ?", userId, "").Update("order_id", orderId)
 }
