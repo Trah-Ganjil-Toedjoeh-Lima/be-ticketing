@@ -28,7 +28,7 @@ func (s *TransactionService) CreateTx(userId uint64, seatIds []uint) error {
 			OrderId:      txId,
 			UserId:       userId,
 			SeatId:       seatId,
-			Vendor:       "#",
+			Vendor:       "no_vendor",
 			Confirmation: "reserved",
 		}
 		//delete previous failed reservation

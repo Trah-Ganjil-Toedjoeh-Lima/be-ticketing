@@ -5,9 +5,11 @@ import (
 	"github.com/frchandra/gmcgo/app/service"
 	"github.com/frchandra/gmcgo/app/util"
 	"github.com/frchandra/gmcgo/app/validation"
+	"github.com/frchandra/gmcgo/config"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 type ReservationController struct {
@@ -15,13 +17,15 @@ type ReservationController struct {
 	userService *service.UserService
 	txService   *service.TransactionService
 	seatService *service.SeatService
+	config      *config.AppConfig
 }
 
-func NewReservationController(resSvc *service.ReservationService, userService *service.UserService, txService *service.TransactionService, seatService *service.SeatService) *ReservationController {
-	return &ReservationController{resSvc: resSvc, userService: userService, txService: txService, seatService: seatService}
+func NewReservationController(resSvc *service.ReservationService, userService *service.UserService, txService *service.TransactionService, seatService *service.SeatService, config *config.AppConfig) *ReservationController {
+	return &ReservationController{resSvc: resSvc, userService: userService, txService: txService, seatService: seatService, config: config}
 }
 
 func (r *ReservationController) GetSeatsInfo(c *gin.Context) {
+	//TODO: ganti dengan logic timestamp seperti di laravel
 	//get all seats from db
 	seats, err := r.resSvc.GetAllSeats()
 	if err != nil {
@@ -44,14 +48,25 @@ func (r *ReservationController) GetSeatsInfo(c *gin.Context) {
 	//type assertion
 	accessDetails, _ := contextData.(*util.AccessDetails)
 	//verify that the user is present in the db
-	_, err = r.userService.GetById(accessDetails.UserId)
+	if _, err := r.userService.GetById(accessDetails.UserId); err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"status": "fail",
+			"error":  err,
+		})
+		return
+	}
 	//if user exist, overwrite the response object for this user
-	if err == nil {
-		mySeats, _ := r.txService.SeatsBelongsToUserId(accessDetails.UserId)
-		for _, mySeat := range mySeats {
-			seatsResponse[mySeat.SeatId-1].Status = mySeat.Status
+	mySeats, _ := r.txService.SeatsBelongsToUserId(accessDetails.UserId)
+	for _, mySeat := range mySeats {
+		seatsResponse[mySeat.SeatId-1].Status = mySeat.Status
+	}
+	//overwrite with timestamp logic
+	for _, seat := range seats {
+		if time.Now().After(seat.UpdatedAt.Add(r.config.TransactionMinute)) {
+			seatsResponse[seat.SeatId-1].Status = "available"
 		}
 	}
+
 	//return success
 	c.JSON(http.StatusOK, gin.H{
 		"status": "success",
@@ -76,8 +91,7 @@ func (r *ReservationController) ReserveSeats(c *gin.Context) {
 	accessDetails, _ := contextData.(*util.AccessDetails)
 
 	//verify that the user is exists in the db
-	_, err := r.userService.GetById(accessDetails.UserId)
-	if err != nil {
+	if _, err := r.userService.GetById(accessDetails.UserId); err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
 			"status": "fail",
 			"error":  err.Error(),
@@ -128,7 +142,7 @@ func (r *ReservationController) ReserveSeats(c *gin.Context) {
 
 	//update seat availability
 	for _, seatId := range inputData.SeatIds {
-		if err := r.seatService.UpdateStatus(seatId, "reserved"); err != nil {
+		if err := r.seatService.UpdateStatus(seatId, "reserved"); err != nil { //TODO: ganti dengan logic timestamp seperti di laravel => tidak usah, pake update_at saja, langsung otomatis
 			c.JSON(http.StatusBadRequest, gin.H{
 				"status": "fail",
 				"data":   err.Error(),

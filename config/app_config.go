@@ -41,12 +41,14 @@ type AppConfig struct {
 	MailEncryption       string
 	MailFromAddress      string
 	MailFromName         string
+	TransactionMinute    time.Duration
 }
 
 func NewAppConfig() *AppConfig {
 	midtransIsProduction, _ := strconv.ParseBool(getEnv("MIDTRANS_IS_PRODUCTION", "0"))
 	accessMinute, _ := time.ParseDuration(getEnv("ACCESS_MINUTE", "15m"))
 	refreshMinute, _ := time.ParseDuration(getEnv("ACCESS_MINUTE", "60m"))
+	transactionMinute, _ := time.ParseDuration(getEnv("TRANSACTION_MINUTE", "15m"))
 
 	var appConfig = AppConfig{
 		AppName:              getEnv("APP_NAME", "gmcgo"),
@@ -79,6 +81,7 @@ func NewAppConfig() *AppConfig {
 		MailEncryption:       getEnv("MAIL_ENCRYPTION", "ssl"),
 		MailFromAddress:      getEnv("MAIL_FROM_ADDRESS", ""),
 		MailFromName:         getEnv("MAIL_FROM_NAME", "golang"),
+		TransactionMinute:    transactionMinute,
 	}
 	return &appConfig
 

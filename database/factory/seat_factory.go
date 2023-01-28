@@ -23,7 +23,7 @@ func (this SeatFactory) RunFactory() error {
 				Name:   name,
 				Price:  165000,
 				Link:   "#",
-				Status: "#",
+				Status: "available",
 			}
 			err := this.db.Debug().Create(seat).Error
 			if err != nil {
@@ -40,7 +40,7 @@ func (this SeatFactory) RunFactory() error {
 				Name:   name,
 				Price:  165000,
 				Link:   "#",
-				Status: "#",
+				Status: "available",
 			}
 			err := this.db.Debug().Create(seat).Error
 			if err != nil {
@@ -57,7 +57,7 @@ func (this SeatFactory) RunFactory() error {
 				Name:   name,
 				Price:  145000,
 				Link:   "#",
-				Status: "#",
+				Status: "available",
 			}
 			err := this.db.Debug().Create(seat).Error
 			if err != nil {
@@ -74,7 +74,7 @@ func (this SeatFactory) RunFactory() error {
 				Name:   name,
 				Price:  145000,
 				Link:   "#",
-				Status: "#",
+				Status: "available",
 			}
 			err := this.db.Debug().Create(seat).Error
 			if err != nil {
@@ -88,7 +88,7 @@ func (this SeatFactory) RunFactory() error {
 			Name:   "M" + strconv.Itoa(i),
 			Price:  165000,
 			Link:   "#",
-			Status: "#",
+			Status: "available",
 		}
 		err := this.db.Debug().Create(seat).Error
 		if err != nil {
@@ -104,7 +104,7 @@ func (this SeatFactory) RunFactory() error {
 				Name:   name,
 				Price:  145000,
 				Link:   "#",
-				Status: "#",
+				Status: "available",
 			}
 			err := this.db.Debug().Create(seat).Error
 			if err != nil {
@@ -121,7 +121,7 @@ func (this SeatFactory) RunFactory() error {
 				Name:   name,
 				Price:  145000,
 				Link:   "#",
-				Status: "#",
+				Status: "available",
 			}
 			err := this.db.Debug().Create(seat).Error
 			if err != nil {
@@ -135,7 +135,7 @@ func (this SeatFactory) RunFactory() error {
 			Name:   "O" + strconv.Itoa(i),
 			Price:  145000,
 			Link:   "#",
-			Status: "#",
+			Status: "available",
 		}
 		err := this.db.Debug().Create(seat).Error
 		if err != nil {
@@ -148,7 +148,7 @@ func (this SeatFactory) RunFactory() error {
 			Name:   "O" + strconv.Itoa(i),
 			Price:  145000,
 			Link:   "#",
-			Status: "#",
+			Status: "available",
 		}
 		err := this.db.Debug().Create(seat).Error
 		if err != nil {
@@ -160,7 +160,7 @@ func (this SeatFactory) RunFactory() error {
 		Name:   "A8",
 		Price:  145000,
 		Link:   "#",
-		Status: "#",
+		Status: "available",
 	}
 	err := this.db.Debug().Create(seat).Error
 	if err != nil {
@@ -171,7 +171,7 @@ func (this SeatFactory) RunFactory() error {
 		Name:   "A9",
 		Price:  145000,
 		Link:   "#",
-		Status: "#",
+		Status: "available",
 	}
 	err = this.db.Debug().Create(seat).Error
 	if err != nil {
@@ -182,7 +182,7 @@ func (this SeatFactory) RunFactory() error {
 		Name:   "A22",
 		Price:  145000,
 		Link:   "#",
-		Status: "#",
+		Status: "available",
 	}
 	err = this.db.Debug().Create(seat).Error
 	if err != nil {
@@ -193,7 +193,7 @@ func (this SeatFactory) RunFactory() error {
 		Name:   "A23",
 		Price:  145000,
 		Link:   "#",
-		Status: "#",
+		Status: "available",
 	}
 	err = this.db.Debug().Create(seat).Error
 	if err != nil {
@@ -204,7 +204,7 @@ func (this SeatFactory) RunFactory() error {
 		Name:   "C1",
 		Price:  165000,
 		Link:   "#",
-		Status: "#",
+		Status: "available",
 	}
 	err = this.db.Debug().Create(seat).Error
 	if err != nil {
@@ -215,7 +215,7 @@ func (this SeatFactory) RunFactory() error {
 		Name:   "C2",
 		Price:  165000,
 		Link:   "#",
-		Status: "#",
+		Status: "available",
 	}
 	err = this.db.Debug().Create(seat).Error
 	if err != nil {
@@ -226,7 +226,7 @@ func (this SeatFactory) RunFactory() error {
 		Name:   "D1",
 		Price:  165000,
 		Link:   "#",
-		Status: "#",
+		Status: "available",
 	}
 	err = this.db.Debug().Create(seat).Error
 	if err != nil {
@@ -237,7 +237,7 @@ func (this SeatFactory) RunFactory() error {
 		Name:   "D2",
 		Price:  165000,
 		Link:   "#",
-		Status: "#",
+		Status: "available",
 	}
 	err = this.db.Debug().Create(seat).Error
 	if err != nil {
@@ -248,7 +248,7 @@ func (this SeatFactory) RunFactory() error {
 		Name:   "C29",
 		Price:  165000,
 		Link:   "#",
-		Status: "#",
+		Status: "available",
 	}
 	err = this.db.Debug().Create(seat).Error
 	if err != nil {
@@ -259,7 +259,7 @@ func (this SeatFactory) RunFactory() error {
 		Name:   "C30",
 		Price:  165000,
 		Link:   "#",
-		Status: "#",
+		Status: "available",
 	}
 	err = this.db.Debug().Create(seat).Error
 	if err != nil {
@@ -270,7 +270,7 @@ func (this SeatFactory) RunFactory() error {
 		Name:   "D29",
 		Price:  165000,
 		Link:   "#",
-		Status: "#",
+		Status: "available",
 	}
 	err = this.db.Debug().Create(seat).Error
 	if err != nil {
@@ -281,7 +281,7 @@ func (this SeatFactory) RunFactory() error {
 		Name:   "D30",
 		Price:  165000,
 		Link:   "#",
-		Status: "#",
+		Status: "available",
 	}
 	err = this.db.Debug().Create(seat).Error
 	if err != nil {
@@ -296,7 +296,7 @@ func (this SeatFactory) RunFactory() error {
 				Name:   name,
 				Price:  165000,
 				Link:   "#",
-				Status: "#",
+				Status: "available",
 			}
 			err = this.db.Debug().Create(seat).Error
 			if err != nil {

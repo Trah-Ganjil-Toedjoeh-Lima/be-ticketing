@@ -4,17 +4,20 @@ import (
 	"errors"
 	"github.com/frchandra/gmcgo/app/model"
 	"github.com/frchandra/gmcgo/app/repository"
+	"github.com/frchandra/gmcgo/config"
 	"strconv"
+	"time"
 )
 
 type ReservationService struct {
 	seatRepo  *repository.SeatRepository
 	txRepo    *repository.TransactionRepository
 	txService *TransactionService
+	config    *config.AppConfig
 }
 
-func NewReservationService(seatRepo *repository.SeatRepository, txRepo *repository.TransactionRepository, txService *TransactionService) *ReservationService {
-	return &ReservationService{seatRepo: seatRepo, txRepo: txRepo, txService: txService}
+func NewReservationService(seatRepo *repository.SeatRepository, txRepo *repository.TransactionRepository, txService *TransactionService, config *config.AppConfig) *ReservationService {
+	return &ReservationService{seatRepo: seatRepo, txRepo: txRepo, txService: txService, config: config}
 }
 
 func (s *ReservationService) GetAllSeats() ([]model.Seat, error) {
@@ -26,29 +29,36 @@ func (s *ReservationService) GetAllSeats() ([]model.Seat, error) {
 }
 
 func (s *ReservationService) IsOwned(seatId uint, userId uint64) error {
-	var seat model.Seat //TODO: think of all edge scenarios
+	var seat model.Seat
 	//get requested seat
 	if result := s.seatRepo.GetSeatById(&seat, seatId); result.Error != nil {
 		return result.Error
 	}
-	//if kursi masih kosong -> return ok
-	if seat.Status == "#" {
+	//if kursi masih kosong
+	//ditentukan oleh status dan timestamp update at
+	//kursi yang dianggap kosong adalah yang memiliki status available atau status reserved dengan update_at+n < timestamp.now(); n adalah waktu transaksi
+	if seat.Status == "available" {
 		return nil
-	} else {
+	} else { //TODO: ganti dengan logic timestamp seperti di laravel
+		//if seat update_at + 15 < time now OR time_now - updated_at > 15m-> return nil
+		if time.Now().After(seat.UpdatedAt.Add(s.config.TransactionMinute)) {
+			return nil
+		}
+
+		//if this seat has been reserved by this user; if sudah ada yang ngisi tapi dirinya sendiri -> return ok (asalkan transaksi belum berjalan/selesai)
 		var tx model.Transaction
 		result := s.txRepo.GetLastTxBySeatIdUserId(&tx, seat.SeatId, userId)
-		//if this seat has been reserved by this user //if sudah ada yang ngisi tapi dirinya sendiri -> return ok (asalkan transaksi belum berjalan/selesai)
 		if result.RowsAffected == 1 {
 			//if transaction has been done or during the transaction
 			if tx.Confirmation == "settlement" || tx.Confirmation == "pending" {
 				return errors.New("seat is pending or payed")
-			} else {
-				return nil
 			}
-
-		} else { //the seat is booked but not by this user
-			return errors.New("kursi sudah ada yang nge-booking")
+			//else
+			return nil
 		}
+		//else: the seat is booked but not by this user
+		return errors.New("kursi sudah ada yang nge-booking")
+
 	}
 }
 
