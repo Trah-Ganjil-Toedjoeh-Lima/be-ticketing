@@ -20,14 +20,17 @@ func NewSnapController(snapService *service.SnapService, snapUtil *util.SnapUtil
 
 func (s *SnapController) HandleCallback(c *gin.Context) {
 	message := make(map[string]interface{})
+	//bind json
 	if err := c.ShouldBindJSON(&message); err != nil {
 		c.Status(http.StatusBadRequest)
 		return
 	}
+	//check signature key
 	if err := s.snapUtil.CheckSignature(message); err != nil {
 		c.Status(http.StatusBadRequest)
 		return
 	}
+	//handle according tx status
 	txStatus := message["transaction_status"].(string)
 	if txStatus == "pending" {
 		if err := s.snapService.HandlePending(message); err != nil {
@@ -56,7 +59,7 @@ func (s *SnapController) HandleCallback(c *gin.Context) {
 		}
 	}
 
-	c.Status(200)
+	c.Status(http.StatusOK)
 	return
 
 }

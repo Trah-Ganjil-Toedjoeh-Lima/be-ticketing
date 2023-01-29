@@ -30,7 +30,7 @@ func (r *ReservationController) GetSeatsInfo(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
 			"status": "fail",
-			"error":  err,
+			"error":  err.Error(),
 		})
 		return
 	}
@@ -70,7 +70,7 @@ func (r *ReservationController) ReserveSeats(c *gin.Context) {
 	//get the details about the current user that make request from the context passed by user middleware
 	contextData, isExist := c.Get("accessDetails")
 	if isExist == false {
-		c.JSON(http.StatusBadRequest, gin.H{
+		c.JSON(http.StatusNotFound, gin.H{
 			"status": "fail",
 			"error":  "cannot get access details",
 		})
@@ -82,7 +82,7 @@ func (r *ReservationController) ReserveSeats(c *gin.Context) {
 
 	//verify that the user is exists in the db
 	if _, err := r.userService.GetById(accessDetails.UserId); err != nil {
-		c.JSON(http.StatusNotFound, gin.H{
+		c.JSON(http.StatusConflict, gin.H{
 			"status": "fail",
 			"error":  err.Error(),
 		})
@@ -92,7 +92,7 @@ func (r *ReservationController) ReserveSeats(c *gin.Context) {
 	//get the requested seats
 	var inputData validation.SeatReservationRequest
 	if err := c.ShouldBindJSON(&inputData); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
+		c.JSON(http.StatusConflict, gin.H{
 			"status": "fail",
 			"error":  err.Error(),
 		})
@@ -102,8 +102,8 @@ func (r *ReservationController) ReserveSeats(c *gin.Context) {
 	//check eligibility for each chair in request
 	for _, seatId := range inputData.SeatIds {
 		if err := r.resSvc.IsOwned(seatId, accessDetails.UserId); err != nil {
-			err = errors.New(err.Error() + " [kursi ini :] " + strconv.Itoa(int(seatId)))
-			c.JSON(http.StatusBadRequest, gin.H{
+			err = errors.New(err.Error() + " | conflict on this seat. seat_id: " + strconv.Itoa(int(seatId)))
+			c.JSON(http.StatusConflict, gin.H{
 				"status": "success",
 				"data":   err.Error(),
 			})
@@ -114,7 +114,7 @@ func (r *ReservationController) ReserveSeats(c *gin.Context) {
 
 	//check user seat limit
 	if err := r.resSvc.CheckUserSeatCount(inputData.SeatIds, accessDetails.UserId); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
+		c.JSON(http.StatusConflict, gin.H{
 			"status": "success",
 			"data":   err.Error(),
 		})
@@ -123,7 +123,7 @@ func (r *ReservationController) ReserveSeats(c *gin.Context) {
 
 	//store reservation to tx table
 	if err := r.txService.CreateTx(accessDetails.UserId, inputData.SeatIds); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
+		c.JSON(http.StatusConflict, gin.H{
 			"status": "fail",
 			"error":  err.Error(),
 		})
@@ -133,7 +133,7 @@ func (r *ReservationController) ReserveSeats(c *gin.Context) {
 	//update seat availability
 	for _, seatId := range inputData.SeatIds {
 		if err := r.seatService.UpdateStatus(seatId, "reserved"); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
+			c.JSON(http.StatusConflict, gin.H{
 				"status": "fail",
 				"data":   err.Error(),
 			})
@@ -141,7 +141,7 @@ func (r *ReservationController) ReserveSeats(c *gin.Context) {
 		}
 	}
 
-	c.JSON(http.StatusBadRequest, gin.H{
+	c.JSON(http.StatusOK, gin.H{
 		"status": "success",
 		"data":   inputData.SeatIds,
 		"ok":     "ok",

@@ -33,7 +33,7 @@ func (ur *UserRepository) InsertOne(user *model.User) *gorm.DB {
 }
 
 func (ur *UserRepository) GetByPairs(userInput, userOut *model.User) *gorm.DB {
-	var result *gorm.DB //TODO: this not need "Model(model.User{})....
+	var result *gorm.DB
 	if result = ur.db.Model(model.User{}).Where("name = ?", userInput.Name).Take(userOut); result.Error == nil {
 		return result
 	}

@@ -17,7 +17,7 @@ func NewTransactionController(txService *service.TransactionService, userService
 	return &TransactionController{txService: txService, userService: userService, snapUtil: snapUtil}
 }
 
-func (t *TransactionController) GetTransactionDetails(c *gin.Context) { //TODO: make the response data more FE friendly
+func (t *TransactionController) GetTransactionDetails(c *gin.Context) {
 	//get the details about the current user that make request from the context passed by user middleware
 	contextData, _ := c.Get("accessDetails")
 	//type assertion
