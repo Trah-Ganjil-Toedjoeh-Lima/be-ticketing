@@ -34,42 +34,29 @@ func (s *ReservationService) IsOwned(seatId uint, userId uint64) error {
 	if result := s.seatRepo.GetSeatById(&seat, seatId); result.Error != nil {
 		return result.Error
 	}
-	//if kursi masih kosong
-	//ditentukan oleh status dan timestamp update at
-	//kursi yang dianggap kosong adalah yang memiliki status available atau status reserved dengan update_at+n < timestamp.now(); n adalah waktu transaksi
-
-	//TODO: jangan lihat dari table seats melainkan tx
+	//start validation logic
 	if seat.Status == "available" {
 		return nil
 	} else {
+		//ambil tx terbaru untuk kursi ini
 		var tx model.Transaction
+		//cek lebih detail status kursi, barangkali not availablenya gara-gara transaksi ngambang
 		if result := s.txRepo.GetBySeat(&tx, seatId).Last(&tx); result.Error != nil {
 			return result.Error
-		}
-
-		//if seat update_at + 15 < time now OR time_now - updated_at > 15m-> return nil
-		if time.Now().After(tx.UpdatedAt.Add(s.config.TransactionMinute)) {
+		} else if result.RowsAffected < 1 { //kalo gak ada berarti aman, lanjut
 			return nil
 		}
-
+		//kalo ada cek updated_at: if seat update_at + 15 < time now OR time_now - updated_at > 15m-> return nil
+		if time.Now().After(tx.UpdatedAt.Add(s.config.TransactionMinute)) {
+			//kalo transaksi sebelumnya "ngambang" maka boleh lanjut
+			return nil
+		}
+		// kalo tx sebelumnya gak "ngambang", asalkan yang pesen usernya sama, lanjut
 		if tx.UserId == userId {
 			return nil
 		}
-
-		//if this seat has been reserved by this user; if sudah ada yang ngisi tapi dirinya sendiri -> return ok (asalkan transaksi belum berjalan/selesai)
-		var tx model.Transaction
-		result := s.txRepo.GetBySeatUser(&tx, seat.SeatId, userId)
-		if result.RowsAffected == 1 {
-			//if transaction has been done or during the transaction
-			if tx.Confirmation == "settlement" || tx.Confirmation == "pending" {
-				return errors.New("seat is pending or payed")
-			}
-			//else
-			return nil
-		}
-		//else: the seat is booked but not by this user
+		//kalo gagal melewati constraint diatas, berarti sedang/sudah di cim orang lain
 		return errors.New("kursi sudah ada yang nge-booking")
-
 	}
 }
 

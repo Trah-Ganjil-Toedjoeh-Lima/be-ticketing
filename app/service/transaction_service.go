@@ -70,21 +70,20 @@ func (s *TransactionService) GetTxDetailsByOrder(orderId string) ([]model.Transa
 }
 
 func (s *TransactionService) CleanUpDeadTransaction(transactions []model.Transaction) []model.Transaction {
+	var newTransaction []model.Transaction
 	//cek apakah ada transaksi ngambang, jika ada buang dari slice dan update db
-	for i, tx := range transactions {
+	for _, tx := range transactions {
 		//if tx update_at + 15 < time now  => berarti transaction ngambang
 		if time.Now().After(tx.UpdatedAt.Add(s.config.TransactionMinute)) {
-			//remove from slice
-			transactions[i] = transactions[len(transactions)-1]
-			transactions = transactions[:len(transactions)-1]
+			//update database
+			s.txRepo.UpdateUserPaymentStatus(tx.UserId, "", "not_continued")
+			s.txRepo.SoftDeleteTransaction(tx.SeatId, tx.UserId)
+		} else {
+			newTransaction = append(newTransaction, tx)
 		}
-		//update database
-		s.txRepo.UpdateUserPaymentStatus(tx.UserId, "", "not_continued")
-		s.txRepo.SoftDeleteTransaction(tx.SeatId, tx.UserId)
 	}
 	//transaksi bersih
-	return transactions
-
+	return newTransaction
 }
 
 func (s *TransactionService) IsSeatsBelongsToUser(userId uint64) ([]model.Seat, error) {
@@ -113,7 +112,7 @@ func (s *TransactionService) IsSeatsBelongsToUser(userId uint64) ([]model.Seat, 
 func (s *TransactionService) PrepareTransactionData(userId uint64) (snap.Request, error) {
 	//get user's transaction
 	var txDetails []model.Transaction
-	s.txRepo.GetDetailsByUser(&txDetails, userId).Where("order_id = ?", "")
+	s.txRepo.GetDetailsByUser(&txDetails, userId)
 	//clean up tx
 	if txDetails = s.CleanUpDeadTransaction(txDetails); len(txDetails) < 1 {
 		return snap.Request{}, errors.New("user tidak memiliki tx")

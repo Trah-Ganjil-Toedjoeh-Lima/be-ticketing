@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 type ReservationController struct {
@@ -49,6 +50,12 @@ func (r *ReservationController) GetSeatsInfo(c *gin.Context) {
 	mySeats, _ := r.txService.IsSeatsBelongsToUser(accessDetails.UserId)
 	for _, mySeat := range mySeats {
 		seatsResponse[mySeat.SeatId-1].Status = mySeat.Status
+	}
+	//overwrite with timestamp logic
+	for _, seat := range seats {
+		if time.Now().After(seat.UpdatedAt.Add(r.config.TransactionMinute)) {
+			seatsResponse[seat.SeatId-1].Status = "available"
+		}
 	}
 	//return success
 	c.JSON(http.StatusOK, gin.H{
