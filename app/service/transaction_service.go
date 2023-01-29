@@ -34,7 +34,7 @@ func (s *TransactionService) CreateTx(userId uint64, seatIds []uint) error {
 			Confirmation: "reserved",
 		}
 		//delete previous failed reservation
-		s.txRepo.SoftDeleteTransaction(seatId, userId)
+		s.txRepo.SoftDeleteBySeatUser(seatId, userId)
 		//save transaction
 		if result := s.txRepo.InsertOne(&newTx); result.Error != nil {
 			return result.Error
@@ -77,7 +77,7 @@ func (s *TransactionService) CleanUpDeadTransaction(transactions []model.Transac
 		if time.Now().After(tx.UpdatedAt.Add(s.config.TransactionMinute)) {
 			//update database
 			s.txRepo.UpdateUserPaymentStatus(tx.UserId, "", "not_continued")
-			s.txRepo.SoftDeleteTransaction(tx.SeatId, tx.UserId)
+			s.txRepo.SoftDeleteBySeatUser(tx.SeatId, tx.UserId)
 		} else {
 			newTransaction = append(newTransaction, tx)
 		}
@@ -94,7 +94,7 @@ func (s *TransactionService) IsSeatsBelongsToUser(userId uint64) ([]model.Seat, 
 		return seats, result.Error
 	}
 	if transactions = s.CleanUpDeadTransaction(transactions); len(transactions) < 1 {
-		return seats, errors.New("error")
+		return seats, errors.New("this user doesen`t have any transaction")
 	}
 	for _, tx := range transactions {
 		var seat model.Seat
@@ -115,7 +115,7 @@ func (s *TransactionService) PrepareTransactionData(userId uint64) (snap.Request
 	s.txRepo.GetDetailsByUser(&txDetails, userId)
 	//clean up tx
 	if txDetails = s.CleanUpDeadTransaction(txDetails); len(txDetails) < 1 {
-		return snap.Request{}, errors.New("user tidak memiliki tx")
+		return snap.Request{}, errors.New("cannot find any transaction for this user")
 	}
 	//create order_id
 	orderId := uuid.New().String()

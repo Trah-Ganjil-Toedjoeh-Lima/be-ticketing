@@ -132,7 +132,7 @@ func (r *ReservationController) ReserveSeats(c *gin.Context) {
 
 	//update seat availability
 	for _, seatId := range inputData.SeatIds {
-		if err := r.seatService.UpdateStatus(seatId, "reserved"); err != nil { //TODO: ganti dengan logic timestamp seperti di laravel => tidak usah, pake update_at saja, langsung otomatis
+		if err := r.seatService.UpdateStatus(seatId, "reserved"); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"status": "fail",
 				"data":   err.Error(),

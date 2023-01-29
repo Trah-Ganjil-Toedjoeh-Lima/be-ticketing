@@ -3,20 +3,21 @@ package service
 import (
 	"fmt"
 	"github.com/frchandra/gmcgo/app/model"
+	"github.com/frchandra/gmcgo/app/repository"
 	"github.com/frchandra/gmcgo/app/util"
 )
 
 type SnapService struct {
 	txService   *TransactionService
 	seatService *SeatService
+	txRepo      *repository.TransactionRepository
 	snapUtil    *util.SnapUtil
-	userService *UserService
 	emailUtil   *util.EmailUtil
 	eticketUtil *util.ETicketUtil
 }
 
-func NewSnapService(txService *TransactionService, seatService *SeatService, snapUtil *util.SnapUtil, userService *UserService, emailUtil *util.EmailUtil, eticketUtil *util.ETicketUtil) *SnapService {
-	return &SnapService{txService: txService, seatService: seatService, snapUtil: snapUtil, userService: userService, emailUtil: emailUtil, eticketUtil: eticketUtil}
+func NewSnapService(txService *TransactionService, seatService *SeatService, txrepo *repository.TransactionRepository, snapUtil *util.SnapUtil, emailUtil *util.EmailUtil, eticketUtil *util.ETicketUtil) *SnapService {
+	return &SnapService{txService: txService, seatService: seatService, txRepo: txrepo, snapUtil: snapUtil, emailUtil: emailUtil, eticketUtil: eticketUtil}
 }
 
 func (s *SnapService) HandleSettlement(message map[string]any) error {
@@ -31,7 +32,6 @@ func (s *SnapService) HandleSettlement(message map[string]any) error {
 	if err := s.txService.UpdatePaymentStatus(message["order_id"].(string), message["payment_type"].(string), message["transaction_status"].(string)); err != nil {
 		return err
 	}
-
 	return nil
 }
 
@@ -42,8 +42,14 @@ func (s *SnapService) HandleFailure(message map[string]any) error {
 			return err
 		}
 	}
+	//update tx status
+	if err := s.txService.UpdatePaymentStatus(message["order_id"].(string), message["payment_type"].(string), message["transaction_status"].(string)); err != nil {
+		return err
+	}
+	//soft delete tx status
+	s.txRepo.SoftDeleteByOrder(message["order_id"].(string))
 	return nil
-	//TODO: soft delete
+
 }
 
 func (s *SnapService) HandlePending(message map[string]any) error {

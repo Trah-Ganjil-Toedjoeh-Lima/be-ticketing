@@ -30,11 +30,11 @@ func (us *UserService) GetOrInsertOne(user *model.User) (int64, error) {
 
 func (us *UserService) InsertOne(user *model.User) (int64, error) {
 	//hash the credential
-	//TODO: just for boilerplate. Optional for gmco case
 	hashedCred, err := bcrypt.GenerateFromPassword([]byte(user.Phone), bcrypt.DefaultCost)
 	if err != nil {
 		return 0, err
 	}
+	//GMCO use case, use password otherwise
 	user.Phone = string(hashedCred)
 	//store user to db
 	result := us.userRepository.InsertOne(user)
@@ -86,7 +86,7 @@ func (us *UserService) GetById(userId uint64) (model.User, error) {
 		return userOut, result.Error
 	}
 	if result.RowsAffected < 1 {
-		return userOut, errors.New("user tidak ditemukan")
+		return userOut, errors.New("cannot find this user")
 	}
 	return userOut, nil
 }
