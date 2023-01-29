@@ -2,6 +2,7 @@ package factory
 
 import (
 	"github.com/frchandra/gmcgo/app/model"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"strconv"
 )
@@ -22,7 +23,7 @@ func (this SeatFactory) RunFactory() error {
 			seat := &model.Seat{
 				Name:   name,
 				Price:  165000,
-				Link:   "#",
+				Link:   uuid.New().String(),
 				Status: "available",
 			}
 			err := this.db.Debug().Create(seat).Error
@@ -39,7 +40,7 @@ func (this SeatFactory) RunFactory() error {
 			seat := &model.Seat{
 				Name:   name,
 				Price:  165000,
-				Link:   "#",
+				Link:   uuid.New().String(),
 				Status: "available",
 			}
 			err := this.db.Debug().Create(seat).Error
@@ -56,7 +57,7 @@ func (this SeatFactory) RunFactory() error {
 			seat := &model.Seat{
 				Name:   name,
 				Price:  145000,
-				Link:   "#",
+				Link:   uuid.New().String(),
 				Status: "available",
 			}
 			err := this.db.Debug().Create(seat).Error
@@ -73,7 +74,7 @@ func (this SeatFactory) RunFactory() error {
 			seat := &model.Seat{
 				Name:   name,
 				Price:  145000,
-				Link:   "#",
+				Link:   uuid.New().String(),
 				Status: "available",
 			}
 			err := this.db.Debug().Create(seat).Error
@@ -87,7 +88,7 @@ func (this SeatFactory) RunFactory() error {
 		seat := &model.Seat{
 			Name:   "M" + strconv.Itoa(i),
 			Price:  165000,
-			Link:   "#",
+			Link:   uuid.New().String(),
 			Status: "available",
 		}
 		err := this.db.Debug().Create(seat).Error
@@ -103,7 +104,7 @@ func (this SeatFactory) RunFactory() error {
 			seat := &model.Seat{
 				Name:   name,
 				Price:  145000,
-				Link:   "#",
+				Link:   uuid.New().String(),
 				Status: "available",
 			}
 			err := this.db.Debug().Create(seat).Error
@@ -120,7 +121,7 @@ func (this SeatFactory) RunFactory() error {
 			seat := &model.Seat{
 				Name:   name,
 				Price:  145000,
-				Link:   "#",
+				Link:   uuid.New().String(),
 				Status: "available",
 			}
 			err := this.db.Debug().Create(seat).Error
@@ -134,7 +135,7 @@ func (this SeatFactory) RunFactory() error {
 		seat := &model.Seat{
 			Name:   "O" + strconv.Itoa(i),
 			Price:  145000,
-			Link:   "#",
+			Link:   uuid.New().String(),
 			Status: "available",
 		}
 		err := this.db.Debug().Create(seat).Error
@@ -147,7 +148,7 @@ func (this SeatFactory) RunFactory() error {
 		seat := &model.Seat{
 			Name:   "O" + strconv.Itoa(i),
 			Price:  145000,
-			Link:   "#",
+			Link:   uuid.New().String(),
 			Status: "available",
 		}
 		err := this.db.Debug().Create(seat).Error
@@ -159,7 +160,7 @@ func (this SeatFactory) RunFactory() error {
 	seat := &model.Seat{
 		Name:   "A8",
 		Price:  145000,
-		Link:   "#",
+		Link:   uuid.New().String(),
 		Status: "available",
 	}
 	err := this.db.Debug().Create(seat).Error
@@ -170,7 +171,7 @@ func (this SeatFactory) RunFactory() error {
 	seat = &model.Seat{
 		Name:   "A9",
 		Price:  145000,
-		Link:   "#",
+		Link:   uuid.New().String(),
 		Status: "available",
 	}
 	err = this.db.Debug().Create(seat).Error
@@ -181,7 +182,7 @@ func (this SeatFactory) RunFactory() error {
 	seat = &model.Seat{
 		Name:   "A22",
 		Price:  145000,
-		Link:   "#",
+		Link:   uuid.New().String(),
 		Status: "available",
 	}
 	err = this.db.Debug().Create(seat).Error
@@ -192,7 +193,7 @@ func (this SeatFactory) RunFactory() error {
 	seat = &model.Seat{
 		Name:   "A23",
 		Price:  145000,
-		Link:   "#",
+		Link:   uuid.New().String(),
 		Status: "available",
 	}
 	err = this.db.Debug().Create(seat).Error
@@ -203,7 +204,7 @@ func (this SeatFactory) RunFactory() error {
 	seat = &model.Seat{
 		Name:   "C1",
 		Price:  165000,
-		Link:   "#",
+		Link:   uuid.New().String(),
 		Status: "available",
 	}
 	err = this.db.Debug().Create(seat).Error
@@ -214,7 +215,7 @@ func (this SeatFactory) RunFactory() error {
 	seat = &model.Seat{
 		Name:   "C2",
 		Price:  165000,
-		Link:   "#",
+		Link:   uuid.New().String(),
 		Status: "available",
 	}
 	err = this.db.Debug().Create(seat).Error
@@ -225,7 +226,7 @@ func (this SeatFactory) RunFactory() error {
 	seat = &model.Seat{
 		Name:   "D1",
 		Price:  165000,
-		Link:   "#",
+		Link:   uuid.New().String(),
 		Status: "available",
 	}
 	err = this.db.Debug().Create(seat).Error
@@ -236,7 +237,7 @@ func (this SeatFactory) RunFactory() error {
 	seat = &model.Seat{
 		Name:   "D2",
 		Price:  165000,
-		Link:   "#",
+		Link:   uuid.New().String(),
 		Status: "available",
 	}
 	err = this.db.Debug().Create(seat).Error
@@ -247,7 +248,7 @@ func (this SeatFactory) RunFactory() error {
 	seat = &model.Seat{
 		Name:   "C29",
 		Price:  165000,
-		Link:   "#",
+		Link:   uuid.New().String(),
 		Status: "available",
 	}
 	err = this.db.Debug().Create(seat).Error
@@ -258,7 +259,7 @@ func (this SeatFactory) RunFactory() error {
 	seat = &model.Seat{
 		Name:   "C30",
 		Price:  165000,
-		Link:   "#",
+		Link:   uuid.New().String(),
 		Status: "available",
 	}
 	err = this.db.Debug().Create(seat).Error
@@ -269,7 +270,7 @@ func (this SeatFactory) RunFactory() error {
 	seat = &model.Seat{
 		Name:   "D29",
 		Price:  165000,
-		Link:   "#",
+		Link:   uuid.New().String(),
 		Status: "available",
 	}
 	err = this.db.Debug().Create(seat).Error
@@ -280,7 +281,7 @@ func (this SeatFactory) RunFactory() error {
 	seat = &model.Seat{
 		Name:   "D30",
 		Price:  165000,
-		Link:   "#",
+		Link:   uuid.New().String(),
 		Status: "available",
 	}
 	err = this.db.Debug().Create(seat).Error
@@ -295,7 +296,7 @@ func (this SeatFactory) RunFactory() error {
 			seat = &model.Seat{
 				Name:   name,
 				Price:  165000,
-				Link:   "#",
+				Link:   uuid.New().String(),
 				Status: "available",
 			}
 			err = this.db.Debug().Create(seat).Error

@@ -1,4 +1,4 @@
-package main
+package util
 
 import (
 	"fmt"
@@ -7,17 +7,25 @@ import (
 	"github.com/skip2/go-qrcode"
 )
 
-func main() {
-	seatName := "H33"
-	url := config.NewAppConfig().AppUrl + config.NewAppConfig().AppPort
+type ETicketUtil struct {
+	config *config.AppConfig
+}
+
+func NewETicketUtil(config *config.AppConfig) *ETicketUtil {
+	return &ETicketUtil{config: config}
+}
+
+func (e *ETicketUtil) GenerateETicket(seatName, seatLink string) error {
+
+	url := e.config.AppUrl + ":" + e.config.AppPort + "/api/v1/seat/" + seatLink
 	qr, err := qrcode.Encode(url, qrcode.Medium, 256)
 	if err != nil {
 		fmt.Println(err.Error())
-
+		return err
 	}
 
 	title := bimg.Watermark{
-		Top:         3,
+		Top:         2,
 		Left:        38,
 		Text:        "GRAND CONCERT GMCO 2023",
 		Opacity:     1,
@@ -30,7 +38,7 @@ func main() {
 	}
 
 	seat := bimg.Watermark{
-		Top:         15,
+		Top:         13,
 		Left:        90,
 		Text:        "SEAT - " + seatName,
 		Opacity:     1,
@@ -55,18 +63,20 @@ func main() {
 	frame, err := bimg.Read("./storage/picture/polite_cat.png")
 	if err != nil {
 		fmt.Println(err.Error())
-
+		return err
 	}
 
 	ticket, err := bimg.NewImage(frame).WatermarkImage(content)
 	if err != nil {
 		fmt.Println(err.Error())
-
+		return err
 	}
 
 	if err := bimg.Write("./storage/ticket/"+seatName+".png", ticket); err != nil {
 		fmt.Println(err.Error())
-
+		return err
 	}
+	fmt.Println("./storage/ticket/" + seatName + ".png GENERATED===")
 
+	return nil
 }

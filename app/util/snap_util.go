@@ -46,8 +46,6 @@ func (u *SnapUtil) CheckSignature(message map[string]interface{}) error {
 	} else {
 		serverKey = u.app.ServerKeyProduction
 	}
-	//debugging
-	//serverKey = "VT-server-HJMpl9HLr_ntOKt5mRONdmKj"
 	payload := orderId + statusCode + grossAmt + serverKey
 	hasher := sha512.New()
 	hasher.Write([]byte(payload))

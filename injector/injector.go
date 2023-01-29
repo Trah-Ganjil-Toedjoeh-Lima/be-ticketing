@@ -49,6 +49,7 @@ var UtilSet = wire.NewSet(
 	util.NewTokenUtil,
 	util.NewSnapUtil,
 	util.NewEmailUtil,
+	util.NewETicketUtil,
 )
 
 func InitializeServer() *gin.Engine {

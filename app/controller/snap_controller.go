@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"github.com/frchandra/gmcgo/app/service"
 	"github.com/frchandra/gmcgo/app/util"
 	"github.com/gin-gonic/gin"
@@ -31,20 +32,27 @@ func (s *SnapController) HandleCallback(c *gin.Context) {
 	if txStatus == "pending" {
 		if err := s.snapService.HandlePending(message); err != nil {
 			c.Status(http.StatusNotFound)
+			return
 		}
 		go func() {
-			_ = s.snapService.SendInfoEmail(s.snapService.PrepareTxDetailsByMsg(message))
+			if err := s.snapService.SendInfoEmail(s.snapService.PrepareTxDetailsByMsg(message)); err != nil {
+				fmt.Println(err.Error())
+			}
 		}()
 	} else if txStatus == "settlement" {
 		if err := s.snapService.HandleSettlement(message); err != nil {
 			c.Status(http.StatusNotFound)
+			return
 		}
 		go func() {
-			_ = s.snapService.SendTicketEmail(s.snapService.PrepareTxDetailsByMsg(message))
+			if err := s.snapService.SendTicketEmail(s.snapService.PrepareTxDetailsByMsg(message)); err != nil {
+				fmt.Println(err.Error())
+			}
 		}()
 	} else if txStatus == "expire" || txStatus == "failure" {
 		if err := s.snapService.HandleFailure(message); err != nil {
 			c.Status(http.StatusNotFound)
+			return
 		}
 	}
 

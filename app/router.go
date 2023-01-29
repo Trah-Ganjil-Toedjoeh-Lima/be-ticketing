@@ -4,6 +4,7 @@ import (
 	"github.com/frchandra/gmcgo/app/controller"
 	"github.com/frchandra/gmcgo/app/middleware"
 	"github.com/gin-gonic/gin"
+	"net/http"
 )
 
 func NewRouter(
@@ -21,6 +22,11 @@ func NewRouter(
 	public.POST("/user/sign_in", userController.SignIn)
 	public.POST("/user/login", userController.Login)
 	public.POST("/user/refresh", userController.RefreshToken)
+
+	public.GET("/seat/:link", func(c *gin.Context) {
+		link := c.Param("link")
+		c.String(http.StatusOK, "Your link: %s", link)
+	})
 
 	webhook := router.Group("api/v1")
 	webhook.POST("/snap/payment/callback", snapController.HandleCallback)

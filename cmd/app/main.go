@@ -11,5 +11,5 @@ func main() {
 	router.Run(":" + appConfig.AppPort)
 
 	//TODO: simulasi runtime error, apakah seluruh aplikasi berhenti?
-	//TODO: edge case => menghijaukan kursi kuning yang di cim oleh user yg tidak bertanggunjawab
+
 }

@@ -35,7 +35,15 @@ func (u *EmailUtil) SendEmail(templatePath string, data map[string]any, receiver
 	m.SetHeader("To", receiver)
 	m.SetHeader("Subject", subject)
 	m.SetBody("text/html", body.String())
-	m.Attach("./storage/picture/polite_cat.jpg")
+
+	fmt.Println(len(attachementPath))
+	if len(attachementPath) > 0 {
+
+		for _, path := range attachementPath {
+			fmt.Println("ATTACHED " + path)
+			m.Attach(path)
+		}
+	}
 
 	port, _ := strconv.Atoi(u.config.MailPort)
 	d := gomail.NewDialer(u.config.MailHost, port, u.config.MailUsername, u.config.MailPassword)
@@ -44,6 +52,7 @@ func (u *EmailUtil) SendEmail(templatePath string, data map[string]any, receiver
 	err = d.DialAndSend(m)
 	if err != nil {
 		fmt.Println("mail not sent!")
+		fmt.Println(err.Error())
 		return err
 	}
 	fmt.Println("mail sent!")
