@@ -46,17 +46,19 @@ func (t *TransactionController) InitiateTransaction(c *gin.Context) {
 	snapRequest, err := t.txService.PrepareTransactionData(accessDetails.UserId)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
-			"error": err.Error(),
+			"status": "fail",
+			"error":  err.Error(),
 		})
 		return
 	}
 	//send request to midtrans
 	response, midtransErr := t.snapUtil.CreateTransaction(&snapRequest)
-	if err != nil {
+	if midtransErr != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"status": "fail",
 			"err":    midtransErr.GetMessage(),
 		})
+		return
 	}
 	c.JSON(http.StatusOK, gin.H{
 		"status":  "success",
