@@ -22,7 +22,7 @@ func (t *TransactionController) GetTransactionDetails(c *gin.Context) { //TODO: 
 	contextData, _ := c.Get("accessDetails")
 	//type assertion
 	accessDetails, _ := contextData.(*util.AccessDetails)
-	txDetails, err := t.txService.GeTxDetailsByUser(accessDetails.UserId)
+	txDetails, err := t.txService.GetTxDetailsByUser(accessDetails.UserId)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"status": "fail",
@@ -43,13 +43,19 @@ func (t *TransactionController) InitiateTransaction(c *gin.Context) {
 	//type assertion
 	accessDetails, _ := contextData.(*util.AccessDetails)
 	//prepare snap request
-	snapRequest := t.txService.PrepareTransactionData(accessDetails.UserId)
+	snapRequest, err := t.txService.PrepareTransactionData(accessDetails.UserId)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
 	//send request to midtrans
-	response, err := t.snapUtil.CreateTransaction(&snapRequest)
+	response, midtransErr := t.snapUtil.CreateTransaction(&snapRequest)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"status": "fail",
-			"err":    err.GetMessage(),
+			"err":    midtransErr.GetMessage(),
 		})
 	}
 	c.JSON(http.StatusOK, gin.H{

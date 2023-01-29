@@ -4,24 +4,26 @@ import (
 	"errors"
 	"github.com/frchandra/gmcgo/app/model"
 	"github.com/frchandra/gmcgo/app/repository"
+	"github.com/frchandra/gmcgo/config"
 	"github.com/google/uuid"
 	"github.com/midtrans/midtrans-go"
 	"github.com/midtrans/midtrans-go/snap"
 	"strconv"
+	"time"
 )
 
 type TransactionService struct {
 	txRepo   *repository.TransactionRepository
 	userRepo *repository.UserRepository
 	seatRepo *repository.SeatRepository
+	config   *config.AppConfig
 }
 
-func NewTransactionService(txRepo *repository.TransactionRepository, userRepo *repository.UserRepository, seatRepo *repository.SeatRepository) *TransactionService {
-	return &TransactionService{txRepo: txRepo, userRepo: userRepo, seatRepo: seatRepo}
+func NewTransactionService(txRepo *repository.TransactionRepository, userRepo *repository.UserRepository, seatRepo *repository.SeatRepository, config *config.AppConfig) *TransactionService {
+	return &TransactionService{txRepo: txRepo, userRepo: userRepo, seatRepo: seatRepo, config: config}
 }
 
 func (s *TransactionService) CreateTx(userId uint64, seatIds []uint) error {
-
 	for _, seatId := range seatIds {
 		//create tx for each seat
 		newTx := model.Transaction{
@@ -41,16 +43,62 @@ func (s *TransactionService) CreateTx(userId uint64, seatIds []uint) error {
 	return nil
 }
 
-func (s *TransactionService) SeatsBelongsToUserId(userId uint64) ([]model.Seat, error) {
+func (s *TransactionService) GetTxDetailsByUser(userId uint64) ([]model.Transaction, error) {
+	//get user's transaction
 	var transactions []model.Transaction
-	var seats []model.Seat
-	if result := s.txRepo.GetLastTxByUserId(&transactions, userId); result.RowsAffected < 1 {
-		return seats, errors.New("user belum melakukan pemesanan/transaksi")
+	if result := s.txRepo.GetByUser(&transactions, userId); result.Error != nil {
+		return transactions, result.Error
 	}
+	transactions = s.CleanUpDeadTransaction(transactions)
+	return transactions, nil
+}
 
+func (s *TransactionService) GetTxByOrder(orderId string) ([]model.Transaction, error) {
+	var transactions []model.Transaction
+	if result := s.txRepo.GetByOrder(&transactions, orderId); result.Error != nil {
+		return transactions, result.Error
+	}
+	return transactions, nil
+}
+
+func (s *TransactionService) GetTxDetailsByOrder(orderId string) ([]model.Transaction, error) {
+	var transactions []model.Transaction
+	if result := s.txRepo.GetDetailsByOrder(&transactions, orderId); result.Error != nil {
+		return transactions, result.Error
+	}
+	return transactions, nil
+}
+
+func (s *TransactionService) CleanUpDeadTransaction(transactions []model.Transaction) []model.Transaction {
+	//cek apakah ada transaksi ngambang, jika ada buang dari slice dan update db
+	for i, tx := range transactions {
+		//if tx update_at + 15 < time now  => berarti transaction ngambang
+		if time.Now().After(tx.UpdatedAt.Add(s.config.TransactionMinute)) {
+			//remove from slice
+			transactions[i] = transactions[len(transactions)-1]
+			transactions = transactions[:len(transactions)-1]
+		}
+		//update database
+		s.txRepo.UpdateUserPaymentStatus(tx.UserId, "", "not_continued")
+		s.txRepo.SoftDeleteTransaction(tx.SeatId, tx.UserId)
+	}
+	//transaksi bersih
+	return transactions
+
+}
+
+func (s *TransactionService) IsSeatsBelongsToUser(userId uint64) ([]model.Seat, error) {
+	var seats []model.Seat
+	//get user's transaction
+	var transactions []model.Transaction
+	if result := s.txRepo.GetDetailsByUser(&transactions, userId); result.Error != nil {
+		return seats, result.Error
+	}
+	if transactions = s.CleanUpDeadTransaction(transactions); len(transactions) < 1 {
+		return seats, errors.New("error")
+	}
 	for _, tx := range transactions {
 		var seat model.Seat
-		s.seatRepo.GetSeatById(&seat, tx.SeatId)
 		if tx.Confirmation == "reserved" {
 			seat.Status = "reserved_by_me"
 		}
@@ -62,41 +110,28 @@ func (s *TransactionService) SeatsBelongsToUserId(userId uint64) ([]model.Seat, 
 	return seats, nil
 }
 
-func (s *TransactionService) GeTxDetailsByUser(userId uint64) ([]model.Transaction, error) {
-	var transactions []model.Transaction
-	if result := s.txRepo.GetTxDetailsByUser(&transactions, userId); result.Error != nil {
-		return transactions, result.Error
-	}
-	return transactions, nil
-}
-
-func (s TransactionService) GetTxDetailsByOrder(orderId string) ([]model.Transaction, error) {
-	var transactions []model.Transaction
-	if result := s.txRepo.GetTxDetailsByOrder(&transactions, orderId); result.Error != nil {
-		return transactions, result.Error
-	}
-	return transactions, nil
-}
-
-func (s *TransactionService) PrepareTransactionData(userId uint64) snap.Request {
-	//get user's transaction that haven`t been started
+func (s *TransactionService) PrepareTransactionData(userId uint64) (snap.Request, error) {
+	//get user's transaction
 	var txDetails []model.Transaction
-	s.txRepo.GetTxDetailsByUser(&txDetails, userId).Where("order_id = ?", "")
-	var grossAmt int64
-	var itemDetails []midtrans.ItemDetails
-
+	s.txRepo.GetDetailsByUser(&txDetails, userId).Where("order_id = ?", "")
+	//clean up tx
+	if txDetails = s.CleanUpDeadTransaction(txDetails); len(txDetails) < 1 {
+		return snap.Request{}, errors.New("user tidak memiliki tx")
+	}
 	//create order_id
 	orderId := uuid.New().String()
 	//update order_id
 	s.txRepo.UpdateUserOrderId(userId, orderId)
-
+	//create customer detail
 	customerDetails := midtrans.CustomerDetails{
 		FName: txDetails[0].User.Name,
 		LName: "",
 		Email: txDetails[0].User.Email,
 		Phone: txDetails[0].User.Phone,
 	}
-
+	//create item detail
+	var grossAmt int64
+	var itemDetails []midtrans.ItemDetails
 	for _, tx := range txDetails {
 		grossAmt += int64(tx.Seat.Price)
 		itemDetail := midtrans.ItemDetails{
@@ -107,7 +142,7 @@ func (s *TransactionService) PrepareTransactionData(userId uint64) snap.Request 
 		}
 		itemDetails = append(itemDetails, itemDetail)
 	}
-
+	//create snap request
 	var snapRequest snap.Request = snap.Request{
 		TransactionDetails: midtrans.TransactionDetails{
 			OrderID:  orderId,
@@ -116,15 +151,7 @@ func (s *TransactionService) PrepareTransactionData(userId uint64) snap.Request 
 		CustomerDetail: &customerDetails,
 		Items:          &itemDetails,
 	}
-	return snapRequest
-}
-
-func (s *TransactionService) GetTxByOrderId(orderId string) ([]model.Transaction, error) {
-	var transactions []model.Transaction
-	if result := s.txRepo.GetTxByOrderId(&transactions, orderId); result.Error != nil {
-		return transactions, result.Error
-	}
-	return transactions, nil
+	return snapRequest, nil
 }
 
 func (s *TransactionService) UpdatePaymentStatus(orderId, vendor, confirmation string) error {

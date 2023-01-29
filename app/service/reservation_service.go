@@ -37,17 +37,28 @@ func (s *ReservationService) IsOwned(seatId uint, userId uint64) error {
 	//if kursi masih kosong
 	//ditentukan oleh status dan timestamp update at
 	//kursi yang dianggap kosong adalah yang memiliki status available atau status reserved dengan update_at+n < timestamp.now(); n adalah waktu transaksi
+
+	//TODO: jangan lihat dari table seats melainkan tx
 	if seat.Status == "available" {
 		return nil
-	} else { //TODO: ganti dengan logic timestamp seperti di laravel
+	} else {
+		var tx model.Transaction
+		if result := s.txRepo.GetBySeat(&tx, seatId).Last(&tx); result.Error != nil {
+			return result.Error
+		}
+
 		//if seat update_at + 15 < time now OR time_now - updated_at > 15m-> return nil
-		if time.Now().After(seat.UpdatedAt.Add(s.config.TransactionMinute)) {
+		if time.Now().After(tx.UpdatedAt.Add(s.config.TransactionMinute)) {
+			return nil
+		}
+
+		if tx.UserId == userId {
 			return nil
 		}
 
 		//if this seat has been reserved by this user; if sudah ada yang ngisi tapi dirinya sendiri -> return ok (asalkan transaksi belum berjalan/selesai)
 		var tx model.Transaction
-		result := s.txRepo.GetLastTxBySeatIdUserId(&tx, seat.SeatId, userId)
+		result := s.txRepo.GetBySeatUser(&tx, seat.SeatId, userId)
 		if result.RowsAffected == 1 {
 			//if transaction has been done or during the transaction
 			if tx.Confirmation == "settlement" || tx.Confirmation == "pending" {
@@ -64,14 +75,14 @@ func (s *ReservationService) IsOwned(seatId uint, userId uint64) error {
 
 func (s *ReservationService) CheckUserSeatCount(seatIds []uint, userId uint64) error {
 	//ambil data transaksi user yang sudah tercatat
-	prevTransaction, _ := s.txService.GeTxDetailsByUser(userId)
+	prevTransaction, _ := s.txService.GetTxDetailsByUser(userId)
 	//ambil data seatId nya saja
 	var prevTxSeatIds []uint
 	for _, tx := range prevTransaction {
 		prevTxSeatIds = append(prevTxSeatIds, tx.SeatId)
 	}
 	//ambil perbedaan seatId sesudah dan sebelum
-	diff := difference(seatIds, prevTxSeatIds)
+	diff := s.difference(seatIds, prevTxSeatIds)
 	//jika jumlah kursi sebelumnya + jumlah kursi pesanan yang belum ada di transaksi sebelumnya > 5 return error
 	if totalSeat := len(diff) + len(prevTransaction); totalSeat > 5 {
 		return errors.New("user telah memesan " + strconv.Itoa(len(prevTransaction)) + " kursi, tidak bisa memesan " + strconv.Itoa(len(seatIds)) + " kursi lagi")
@@ -79,7 +90,7 @@ func (s *ReservationService) CheckUserSeatCount(seatIds []uint, userId uint64) e
 	return nil
 }
 
-func difference(after, before []uint) []uint {
+func (s *ReservationService) difference(after, before []uint) []uint {
 	mb := make(map[uint]struct{}, len(before))
 	for _, x := range before {
 		mb[x] = struct{}{}

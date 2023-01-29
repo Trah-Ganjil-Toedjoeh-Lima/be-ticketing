@@ -20,8 +20,7 @@ func NewSnapService(txService *TransactionService, seatService *SeatService, sna
 }
 
 func (s *SnapService) HandleSettlement(message map[string]any) error {
-	//TODO: create ticket
-	transactions, _ := s.txService.GetTxByOrderId(message["order_id"].(string))
+	transactions, _ := s.txService.GetTxByOrder(message["order_id"].(string))
 	//update seats availability
 	for _, tx := range transactions {
 		if err := s.seatService.UpdateStatus(tx.SeatId, "sold"); err != nil {
@@ -37,13 +36,14 @@ func (s *SnapService) HandleSettlement(message map[string]any) error {
 }
 
 func (s *SnapService) HandleFailure(message map[string]any) error {
-	transactions, _ := s.txService.GetTxByOrderId(message["order_id"].(string))
+	transactions, _ := s.txService.GetTxByOrder(message["order_id"].(string))
 	for _, tx := range transactions {
 		if err := s.seatService.UpdateStatus(tx.SeatId, "#"); err != nil {
 			return err
 		}
 	}
 	return nil
+	//TODO: soft delete
 }
 
 func (s *SnapService) HandlePending(message map[string]any) error {

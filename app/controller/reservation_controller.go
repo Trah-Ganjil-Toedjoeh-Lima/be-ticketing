@@ -9,7 +9,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
-	"time"
 )
 
 type ReservationController struct {
@@ -25,7 +24,6 @@ func NewReservationController(resSvc *service.ReservationService, userService *s
 }
 
 func (r *ReservationController) GetSeatsInfo(c *gin.Context) {
-	//TODO: ganti dengan logic timestamp seperti di laravel
 	//get all seats from db
 	seats, err := r.resSvc.GetAllSeats()
 	if err != nil {
@@ -37,7 +35,7 @@ func (r *ReservationController) GetSeatsInfo(c *gin.Context) {
 	}
 	//create response object
 	seatsResponse := make([]validation.SeatResponse, len(seats), len(seats))
-	for _, seat := range seats { //TODO: add is_reserved field to consumed by FE, this field can be dynamic for each user
+	for _, seat := range seats {
 		seatsResponse[seat.SeatId-1].SeatId = seat.SeatId
 		seatsResponse[seat.SeatId-1].Name = seat.Name
 		seatsResponse[seat.SeatId-1].Status = seat.Status
@@ -47,26 +45,11 @@ func (r *ReservationController) GetSeatsInfo(c *gin.Context) {
 	contextData, _ := c.Get("accessDetails")
 	//type assertion
 	accessDetails, _ := contextData.(*util.AccessDetails)
-	//verify that the user is present in the db
-	if _, err := r.userService.GetById(accessDetails.UserId); err != nil {
-		c.JSON(http.StatusNotFound, gin.H{
-			"status": "fail",
-			"error":  err,
-		})
-		return
-	}
-	//if user exist, overwrite the response object for this user
-	mySeats, _ := r.txService.SeatsBelongsToUserId(accessDetails.UserId)
+	//overwrite the response object for this user
+	mySeats, _ := r.txService.IsSeatsBelongsToUser(accessDetails.UserId)
 	for _, mySeat := range mySeats {
 		seatsResponse[mySeat.SeatId-1].Status = mySeat.Status
 	}
-	//overwrite with timestamp logic
-	for _, seat := range seats {
-		if time.Now().After(seat.UpdatedAt.Add(r.config.TransactionMinute)) {
-			seatsResponse[seat.SeatId-1].Status = "available"
-		}
-	}
-
 	//return success
 	c.JSON(http.StatusOK, gin.H{
 		"status": "success",
