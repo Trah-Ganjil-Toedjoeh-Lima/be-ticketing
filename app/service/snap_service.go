@@ -17,7 +17,7 @@ func NewSnapService(txService *TransactionService, seatService *SeatService, sna
 }
 
 func (s *SnapService) HandleSettlement(message map[string]any) error {
-	//TODO: create qr, send email
+	//TODO: create ticket, send email
 	transactions, _ := s.txService.GetTxByOrderId(message["order_id"].(string))
 	//update seats availability
 	for _, tx := range transactions {
