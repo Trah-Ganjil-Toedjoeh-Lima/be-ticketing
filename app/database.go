@@ -19,5 +19,10 @@ func NewDatabase(appConfig *config.AppConfig) *gorm.DB {
 		fmt.Println("db connection established")
 		fmt.Println("Using migrator " + db.Migrator().CurrentDatabase())
 	}
+	sqlDB, _ := db.DB()
+	sqlDB.SetMaxIdleConns(appConfig.DBMaxIdleConnection)
+	sqlDB.SetMaxOpenConns(appConfig.DBMaxOpenConnection)
+	sqlDB.SetConnMaxLifetime(appConfig.DBConnectionMaxLifeMinute)
+
 	return db
 }
