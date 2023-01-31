@@ -30,7 +30,7 @@ func (s *SnapController) HandleCallback(c *gin.Context) {
 		c.Status(http.StatusBadRequest)
 		return
 	}
-	//handle according tx status
+	//handle according txDb status
 	txStatus := message["transaction_status"].(string)
 	if txStatus == "pending" {
 		if err := s.snapService.HandlePending(message); err != nil {

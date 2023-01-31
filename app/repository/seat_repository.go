@@ -13,23 +13,6 @@ func NewSeatRepository(db *gorm.DB) *SeatRepository {
 	return &SeatRepository{db: db}
 }
 
-func (r *SeatRepository) Atomic(
-	fn func(newSeatRepo *SeatRepository) *gorm.DB,
-) (result *gorm.DB) {
-	txDb := r.db.Begin()
-	defer func() {
-		if result.Error != nil {
-			txDb.Rollback()
-		} else {
-			txDb.Commit()
-		}
-	}()
-	newSeatRepo := NewSeatRepository(txDb)
-	result = fn(newSeatRepo)
-	return result
-
-}
-
 func (r *SeatRepository) UpdateStatus(seatId uint, status string) *gorm.DB {
 	return r.db.Model(&model.Seat{}).Where("seat_id = ?", seatId).Update("status", status)
 }

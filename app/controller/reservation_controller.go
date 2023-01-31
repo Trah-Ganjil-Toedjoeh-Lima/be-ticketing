@@ -15,15 +15,15 @@ import (
 
 type ReservationController struct {
 	config             *config.AppConfig
-	tx                 *gorm.DB
+	txDb               *gorm.DB
 	reservationService *service.ReservationService
 	userService        *service.UserService
 	txService          *service.TransactionService
 	seatService        *service.SeatService
 }
 
-func NewReservationController(resSvc *service.ReservationService, userService *service.UserService, txService *service.TransactionService, seatService *service.SeatService, config *config.AppConfig) *ReservationController {
-	return &ReservationController{reservationService: resSvc, userService: userService, txService: txService, seatService: seatService, config: config}
+func NewReservationController(config *config.AppConfig, txDb *gorm.DB, reservationService *service.ReservationService, userService *service.UserService, txService *service.TransactionService, seatService *service.SeatService) *ReservationController {
+	return &ReservationController{config: config, txDb: txDb, reservationService: reservationService, userService: userService, txService: txService, seatService: seatService}
 }
 
 func (r *ReservationController) GetSeatsInfo(c *gin.Context) {
@@ -93,11 +93,10 @@ func (r *ReservationController) ReserveSeats(c *gin.Context) {
 		})
 		return
 	}
-
-	//tx start
-
+	r.txDb.Begin()                             //start database transaction
 	for _, seatId := range inputData.SeatIds { //check eligibility for each chair in request
 		if err := r.seatService.IsOwned(seatId, accessDetails.UserId); err != nil {
+			r.txDb.Rollback() //abort database transaction
 			err = errors.New(err.Error() + " | conflict on this seat. seat_id: " + strconv.Itoa(int(seatId)))
 			c.JSON(http.StatusConflict, gin.H{
 				"status": "success",
@@ -107,9 +106,9 @@ func (r *ReservationController) ReserveSeats(c *gin.Context) {
 
 		}
 	}
-
 	for _, seatId := range inputData.SeatIds { //update seat availability
 		if err := r.seatService.UpdateStatus(seatId, "reserved"); err != nil {
+			r.txDb.Rollback() //abort database transaction
 			c.JSON(http.StatusConflict, gin.H{
 				"status": "fail",
 				"data":   err.Error(),
@@ -117,10 +116,8 @@ func (r *ReservationController) ReserveSeats(c *gin.Context) {
 			return
 		}
 	}
-
-	//tx end
-
-	if err := r.txService.CreateTx(accessDetails.UserId, inputData.SeatIds); err != nil { //store reservation to tx table
+	r.txDb.Commit()                                                                       //commit database transaction
+	if err := r.txService.CreateTx(accessDetails.UserId, inputData.SeatIds); err != nil { //store reservation to txDb table
 		c.JSON(http.StatusConflict, gin.H{
 			"status": "fail",
 			"error":  err.Error(),
