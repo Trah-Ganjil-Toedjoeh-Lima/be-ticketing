@@ -33,7 +33,7 @@ func (t *TransactionRepository) GetByOrder(transactions *[]model.Transaction, or
 	return t.db.Where("order_id = ?", orderId).Find(transactions)
 }
 
-func (t TransactionRepository) GetDetailsByOrder(transactions *[]model.Transaction, orderId string) *gorm.DB {
+func (t *TransactionRepository) GetDetailsByOrder(transactions *[]model.Transaction, orderId string) *gorm.DB {
 	return t.db.Joins("User").Joins("Seat").Where("transactions.order_id = ?", orderId).Find(transactions)
 }
 
@@ -41,7 +41,7 @@ func (t *TransactionRepository) UpdatePaymentStatus(orderId, vendor, confirmatio
 	return t.db.Model(&model.Transaction{}).Where("order_id = ?", orderId).Updates(model.Transaction{Vendor: vendor, Confirmation: confirmation})
 }
 
-func (t TransactionRepository) UpdateUserPaymentStatus(userId uint64, orderId, confirmation string) *gorm.DB {
+func (t *TransactionRepository) UpdateUserPaymentStatus(userId uint64, orderId, confirmation string) *gorm.DB {
 	return t.db.Model(&model.Transaction{}).Where("user_id = ? AND order_id = ?", userId, orderId).Update("confirmation", confirmation)
 }
 

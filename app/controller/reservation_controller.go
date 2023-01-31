@@ -7,26 +7,28 @@ import (
 	"github.com/frchandra/gmcgo/app/validation"
 	"github.com/frchandra/gmcgo/config"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 	"net/http"
 	"strconv"
 	"time"
 )
 
 type ReservationController struct {
-	resSvc      *service.ReservationService
-	userService *service.UserService
-	txService   *service.TransactionService
-	seatService *service.SeatService
-	config      *config.AppConfig
+	config             *config.AppConfig
+	tx                 *gorm.DB
+	reservationService *service.ReservationService
+	userService        *service.UserService
+	txService          *service.TransactionService
+	seatService        *service.SeatService
 }
 
 func NewReservationController(resSvc *service.ReservationService, userService *service.UserService, txService *service.TransactionService, seatService *service.SeatService, config *config.AppConfig) *ReservationController {
-	return &ReservationController{resSvc: resSvc, userService: userService, txService: txService, seatService: seatService, config: config}
+	return &ReservationController{reservationService: resSvc, userService: userService, txService: txService, seatService: seatService, config: config}
 }
 
 func (r *ReservationController) GetSeatsInfo(c *gin.Context) {
 	//get all seats from db
-	seats, err := r.resSvc.GetAllSeats()
+	seats, err := r.seatService.GetAllSeats()
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
 			"status": "fail",
@@ -89,7 +91,7 @@ func (r *ReservationController) ReserveSeats(c *gin.Context) {
 		return
 	}
 
-	//get the requested seats
+	//get the seats data in request body
 	var inputData validation.SeatReservationRequest
 	if err := c.ShouldBindJSON(&inputData); err != nil {
 		c.JSON(http.StatusConflict, gin.H{
@@ -99,9 +101,20 @@ func (r *ReservationController) ReserveSeats(c *gin.Context) {
 		return
 	}
 
+	//check user seat limit
+	if err := r.reservationService.CheckUserSeatCount(inputData.SeatIds, accessDetails.UserId); err != nil {
+		c.JSON(http.StatusConflict, gin.H{
+			"status": "success",
+			"data":   err.Error(),
+		})
+		return
+	}
+
+	//tx start
+
 	//check eligibility for each chair in request
 	for _, seatId := range inputData.SeatIds {
-		if err := r.resSvc.IsOwned(seatId, accessDetails.UserId); err != nil {
+		if err := r.seatService.IsOwned(seatId, accessDetails.UserId); err != nil {
 			err = errors.New(err.Error() + " | conflict on this seat. seat_id: " + strconv.Itoa(int(seatId)))
 			c.JSON(http.StatusConflict, gin.H{
 				"status": "success",
@@ -110,24 +123,6 @@ func (r *ReservationController) ReserveSeats(c *gin.Context) {
 			return
 
 		}
-	}
-
-	//check user seat limit
-	if err := r.resSvc.CheckUserSeatCount(inputData.SeatIds, accessDetails.UserId); err != nil {
-		c.JSON(http.StatusConflict, gin.H{
-			"status": "success",
-			"data":   err.Error(),
-		})
-		return
-	}
-
-	//store reservation to tx table
-	if err := r.txService.CreateTx(accessDetails.UserId, inputData.SeatIds); err != nil {
-		c.JSON(http.StatusConflict, gin.H{
-			"status": "fail",
-			"error":  err.Error(),
-		})
-		return
 	}
 
 	//update seat availability
@@ -139,6 +134,17 @@ func (r *ReservationController) ReserveSeats(c *gin.Context) {
 			})
 			return
 		}
+	}
+
+	//tx end
+
+	//store reservation to tx table
+	if err := r.txService.CreateTx(accessDetails.UserId, inputData.SeatIds); err != nil {
+		c.JSON(http.StatusConflict, gin.H{
+			"status": "fail",
+			"error":  err.Error(),
+		})
+		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
