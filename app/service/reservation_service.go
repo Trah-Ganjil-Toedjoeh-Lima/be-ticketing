@@ -2,21 +2,18 @@ package service
 
 import (
 	"errors"
-	"github.com/frchandra/gmcgo/app/repository"
 	"github.com/frchandra/gmcgo/app/util"
 	"github.com/frchandra/gmcgo/config"
 	"strconv"
 )
 
 type ReservationService struct {
-	seatRepo  *repository.SeatRepository
-	txRepo    *repository.TransactionRepository
-	txService *TransactionService
 	config    *config.AppConfig
+	txService *TransactionService
 }
 
-func NewReservationService(seatRepo *repository.SeatRepository, txRepo *repository.TransactionRepository, txService *TransactionService, config *config.AppConfig) *ReservationService {
-	return &ReservationService{seatRepo: seatRepo, txRepo: txRepo, txService: txService, config: config}
+func NewReservationService(config *config.AppConfig, txService *TransactionService) *ReservationService {
+	return &ReservationService{config: config, txService: txService}
 }
 
 func (s *ReservationService) CheckUserSeatCount(seatIds []uint, userId uint64) error {
