@@ -90,13 +90,13 @@ func (s *SnapService) SendInfoEmail(seats []model.Seat, receiverName, receiverEm
 }
 
 func (s *SnapService) SendTicketEmail(seats []model.Seat, receiverName, receiverEmail string) error {
-	var attachementPath []string
+	var attachmentPath []string
 	var seatsName []string
 	for _, seat := range seats {
 		if err := s.eticketUtil.GenerateETicket(seat.Name, seat.Link); err != nil {
 			return err
 		}
-		attachementPath = append(attachementPath, "./storage/ticket/"+seat.Name+".png")
+		attachmentPath = append(attachmentPath, "./storage/ticket/"+seat.Name+".png")
 		seatsName = append(seatsName, seat.Name)
 	}
 
@@ -106,7 +106,7 @@ func (s *SnapService) SendTicketEmail(seats []model.Seat, receiverName, receiver
 	}
 	fmt.Println(data)
 	fmt.Println("SENDING OK EMAIL")
-	if err := s.emailUtil.SendEmail("./resource/template/ticket.gohtml", data, receiverEmail, "TIKCET EMAIL", attachementPath); err != nil {
+	if err := s.emailUtil.SendEmail("./resource/template/ticket.gohtml", data, receiverEmail, "TICKET EMAIL", attachmentPath); err != nil {
 		return err
 	}
 	return nil

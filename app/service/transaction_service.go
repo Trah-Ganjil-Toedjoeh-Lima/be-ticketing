@@ -110,26 +110,20 @@ func (s *TransactionService) IsSeatsBelongsToUser(userId uint64) ([]model.Seat, 
 }
 
 func (s *TransactionService) PrepareTransactionData(userId uint64) (snap.Request, error) {
-	//get user's transaction
 	var txDetails []model.Transaction
-	s.txRepo.GetDetailsByUser(&txDetails, userId)
-	//clean up tx
-	if txDetails = s.CleanUpDeadTransaction(txDetails); len(txDetails) < 1 {
+	s.txRepo.GetDetailsByUser(&txDetails, userId)                            //get user's transaction
+	if txDetails = s.CleanUpDeadTransaction(txDetails); len(txDetails) < 1 { //clean up 'ghost' transaction that may be created by this user
 		return snap.Request{}, errors.New("cannot find any transaction for this user")
 	}
-	//create order_id
-	orderId := uuid.New().String()
-	//update order_id
-	s.txRepo.UpdateUserOrderId(userId, orderId)
-	//create customer detail
-	customerDetails := midtrans.CustomerDetails{
+	orderId := uuid.New().String()              //create order_id for the new midtrans transaction
+	s.txRepo.UpdateUserOrderId(userId, orderId) //update order_id of this transaction in the database
+	customerDetails := midtrans.CustomerDetails{ //populate the midtrans request with the customer detail
 		FName: txDetails[0].User.Name,
 		LName: "",
 		Email: txDetails[0].User.Email,
 		Phone: txDetails[0].User.Phone,
 	}
-	//create item detail
-	var grossAmt int64
+	var grossAmt int64 //populate the item detail
 	var itemDetails []midtrans.ItemDetails
 	for _, tx := range txDetails {
 		grossAmt += int64(tx.Seat.Price)
@@ -141,8 +135,7 @@ func (s *TransactionService) PrepareTransactionData(userId uint64) (snap.Request
 		}
 		itemDetails = append(itemDetails, itemDetail)
 	}
-	//create snap request
-	var snapRequest snap.Request = snap.Request{
+	var snapRequest snap.Request = snap.Request{ //create snap request data object
 		TransactionDetails: midtrans.TransactionDetails{
 			OrderID:  orderId,
 			GrossAmt: grossAmt,

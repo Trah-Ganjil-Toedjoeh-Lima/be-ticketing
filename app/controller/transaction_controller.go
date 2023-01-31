@@ -18,10 +18,8 @@ func NewTransactionController(txService *service.TransactionService, userService
 }
 
 func (t *TransactionController) GetTransactionDetails(c *gin.Context) {
-	//get the details about the current user that make request from the context passed by user middleware
-	contextData, _ := c.Get("accessDetails")
-	//type assertion
-	accessDetails, _ := contextData.(*util.AccessDetails)
+	contextData, _ := c.Get("accessDetails")              //get the details about the current user that make request from the context passed by user middleware
+	accessDetails, _ := contextData.(*util.AccessDetails) //type assertion
 	txDetails, err := t.txService.GetTxDetailsByUser(accessDetails.UserId)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
@@ -38,12 +36,9 @@ func (t *TransactionController) GetTransactionDetails(c *gin.Context) {
 }
 
 func (t *TransactionController) InitiateTransaction(c *gin.Context) {
-	//get the details about the current user that make request from the context passed by user middleware
-	contextData, _ := c.Get("accessDetails")
-	//type assertion
-	accessDetails, _ := contextData.(*util.AccessDetails)
-	//prepare snap request
-	snapRequest, err := t.txService.PrepareTransactionData(accessDetails.UserId)
+	contextData, _ := c.Get("accessDetails")                                     //get the details about the current user that make request from the context passed by user middleware
+	accessDetails, _ := contextData.(*util.AccessDetails)                        //type assertion
+	snapRequest, err := t.txService.PrepareTransactionData(accessDetails.UserId) //prepare snap request
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
 			"status": "fail",
@@ -51,8 +46,7 @@ func (t *TransactionController) InitiateTransaction(c *gin.Context) {
 		})
 		return
 	}
-	//send request to midtrans
-	response, midtransErr := t.snapUtil.CreateTransaction(&snapRequest)
+	response, midtransErr := t.snapUtil.CreateTransaction(&snapRequest) //send request to midtrans
 	if midtransErr != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"status": "fail",

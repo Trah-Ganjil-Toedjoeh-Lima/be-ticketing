@@ -20,18 +20,15 @@ func NewSnapController(snapService *service.SnapService, snapUtil *util.SnapUtil
 
 func (s *SnapController) HandleCallback(c *gin.Context) {
 	message := make(map[string]interface{})
-	//bind json
-	if err := c.ShouldBindJSON(&message); err != nil {
+	if err := c.ShouldBindJSON(&message); err != nil { //bind json from request body
 		c.Status(http.StatusBadRequest)
 		return
 	}
-	//check signature key
-	if err := s.snapUtil.CheckSignature(message); err != nil {
+	if err := s.snapUtil.CheckSignature(message); err != nil { //check the authenticity of the signature key from the json data
 		c.Status(http.StatusBadRequest)
 		return
 	}
-	//handle according txDb status
-	txStatus := message["transaction_status"].(string)
+	txStatus := message["transaction_status"].(string) //handle according to the "transaction_status" field from the json data
 	if txStatus == "pending" {
 		if err := s.snapService.HandlePending(message); err != nil {
 			c.Status(http.StatusNotFound)
@@ -52,13 +49,12 @@ func (s *SnapController) HandleCallback(c *gin.Context) {
 				fmt.Println(err.Error())
 			}
 		}()
-	} else if txStatus == "expire" || txStatus == "failure" {
+	} else if txStatus == "expire" || txStatus == "cancel" || txStatus == "deny" {
 		if err := s.snapService.HandleFailure(message); err != nil {
 			c.Status(http.StatusNotFound)
 			return
 		}
 	}
-
 	c.Status(http.StatusOK)
 	return
 

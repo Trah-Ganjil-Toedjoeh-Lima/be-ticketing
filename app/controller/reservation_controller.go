@@ -93,10 +93,10 @@ func (r *ReservationController) ReserveSeats(c *gin.Context) {
 		})
 		return
 	}
-	r.txDb.Begin()                             //start database transaction
+	r.txDb.Begin()                             //START DATABASE TRANSACTION
 	for _, seatId := range inputData.SeatIds { //check eligibility for each chair in request
 		if err := r.seatService.IsOwned(seatId, accessDetails.UserId); err != nil {
-			r.txDb.Rollback() //abort database transaction
+			r.txDb.Rollback() //ABORT DATABASE TRANSACTION
 			err = errors.New(err.Error() + " | conflict on this seat. seat_id: " + strconv.Itoa(int(seatId)))
 			c.JSON(http.StatusConflict, gin.H{
 				"status": "success",
@@ -108,7 +108,7 @@ func (r *ReservationController) ReserveSeats(c *gin.Context) {
 	}
 	for _, seatId := range inputData.SeatIds { //update seat availability
 		if err := r.seatService.UpdateStatus(seatId, "reserved"); err != nil {
-			r.txDb.Rollback() //abort database transaction
+			r.txDb.Rollback() //ABORT DATABASE TRANSACTION
 			c.JSON(http.StatusConflict, gin.H{
 				"status": "fail",
 				"data":   err.Error(),
@@ -116,7 +116,7 @@ func (r *ReservationController) ReserveSeats(c *gin.Context) {
 			return
 		}
 	}
-	r.txDb.Commit()                                                                       //commit database transaction
+	r.txDb.Commit()                                                                       //COMMIT DATABASE TRANSACTION
 	if err := r.txService.CreateTx(accessDetails.UserId, inputData.SeatIds); err != nil { //store reservation to txDb table
 		c.JSON(http.StatusConflict, gin.H{
 			"status": "fail",
