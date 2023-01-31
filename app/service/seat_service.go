@@ -14,8 +14,8 @@ type SeatService struct {
 	txRepo   *repository.TransactionRepository
 }
 
-func NewSeatService(seatRepo *repository.SeatRepository, txRepo *repository.TransactionRepository) *SeatService {
-	return &SeatService{seatRepo: seatRepo, txRepo: txRepo}
+func NewSeatService(config *config.AppConfig, seatRepo *repository.SeatRepository, txRepo *repository.TransactionRepository) *SeatService {
+	return &SeatService{config: config, seatRepo: seatRepo, txRepo: txRepo}
 }
 
 func (s *SeatService) GetAllSeats() ([]model.Seat, error) {

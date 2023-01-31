@@ -27,8 +27,7 @@ func NewReservationController(resSvc *service.ReservationService, userService *s
 }
 
 func (r *ReservationController) GetSeatsInfo(c *gin.Context) {
-	//get all seats from db
-	seats, err := r.seatService.GetAllSeats()
+	seats, err := r.seatService.GetAllSeats() //get all seats from db
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
 			"status": "fail",
@@ -36,31 +35,25 @@ func (r *ReservationController) GetSeatsInfo(c *gin.Context) {
 		})
 		return
 	}
-	//create response object
-	seatsResponse := make([]validation.SeatResponse, len(seats), len(seats))
+	seatsResponse := make([]validation.SeatResponse, len(seats), len(seats)) //create response object
 	for _, seat := range seats {
 		seatsResponse[seat.SeatId-1].SeatId = seat.SeatId
 		seatsResponse[seat.SeatId-1].Name = seat.Name
 		seatsResponse[seat.SeatId-1].Status = seat.Status
 		seatsResponse[seat.SeatId-1].Price = seat.Price
 	}
-	//get the details about the current user that make request from the context passed by user middleware
-	contextData, _ := c.Get("accessDetails")
-	//type assertion
-	accessDetails, _ := contextData.(*util.AccessDetails)
-	//overwrite the response object for this user
-	mySeats, _ := r.txService.IsSeatsBelongsToUser(accessDetails.UserId)
-	for _, mySeat := range mySeats {
+	contextData, _ := c.Get("accessDetails")                             //get the details about the current user that make request from the context passed by user middleware
+	accessDetails, _ := contextData.(*util.AccessDetails)                //type assertion
+	mySeats, _ := r.txService.IsSeatsBelongsToUser(accessDetails.UserId) //overwrite the response object for this user
+	for _, mySeat := range mySeats {                                     //populate the response object
 		seatsResponse[mySeat.SeatId-1].Status = mySeat.Status
 	}
-	//overwrite with timestamp logic
-	for _, seat := range seats {
+	for _, seat := range seats { //overwrite with timestamp logic
 		if time.Now().After(seat.UpdatedAt.Add(r.config.TransactionMinute)) {
 			seatsResponse[seat.SeatId-1].Status = "available"
 		}
 	}
-	//return success
-	c.JSON(http.StatusOK, gin.H{
+	c.JSON(http.StatusOK, gin.H{ //return success
 		"status": "success",
 		"data":   seatsResponse,
 		"count":  len(seatsResponse),
@@ -69,8 +62,7 @@ func (r *ReservationController) GetSeatsInfo(c *gin.Context) {
 }
 
 func (r *ReservationController) ReserveSeats(c *gin.Context) {
-	//get the details about the current user that make request from the context passed by user middleware
-	contextData, isExist := c.Get("accessDetails")
+	contextData, isExist := c.Get("accessDetails") //get the details about the current user that make request from the context passed by user middleware
 	if isExist == false {
 		c.JSON(http.StatusNotFound, gin.H{
 			"status": "fail",
@@ -78,21 +70,15 @@ func (r *ReservationController) ReserveSeats(c *gin.Context) {
 		})
 		return
 	}
-
-	//type assertion
-	accessDetails, _ := contextData.(*util.AccessDetails)
-
-	//verify that the user is exists in the db
-	if _, err := r.userService.GetById(accessDetails.UserId); err != nil {
+	accessDetails, _ := contextData.(*util.AccessDetails)                  //type assertion
+	if _, err := r.userService.GetById(accessDetails.UserId); err != nil { //verify that the user is exists in the db
 		c.JSON(http.StatusConflict, gin.H{
 			"status": "fail",
 			"error":  err.Error(),
 		})
 		return
 	}
-
-	//get the seats data in request body
-	var inputData validation.SeatReservationRequest
+	var inputData validation.SeatReservationRequest //get the seats data in request body
 	if err := c.ShouldBindJSON(&inputData); err != nil {
 		c.JSON(http.StatusConflict, gin.H{
 			"status": "fail",
@@ -100,9 +86,7 @@ func (r *ReservationController) ReserveSeats(c *gin.Context) {
 		})
 		return
 	}
-
-	//check user seat limit
-	if err := r.reservationService.CheckUserSeatCount(inputData.SeatIds, accessDetails.UserId); err != nil {
+	if err := r.reservationService.CheckUserSeatCount(inputData.SeatIds, accessDetails.UserId); err != nil { //check user seat limit
 		c.JSON(http.StatusConflict, gin.H{
 			"status": "success",
 			"data":   err.Error(),
@@ -112,8 +96,7 @@ func (r *ReservationController) ReserveSeats(c *gin.Context) {
 
 	//tx start
 
-	//check eligibility for each chair in request
-	for _, seatId := range inputData.SeatIds {
+	for _, seatId := range inputData.SeatIds { //check eligibility for each chair in request
 		if err := r.seatService.IsOwned(seatId, accessDetails.UserId); err != nil {
 			err = errors.New(err.Error() + " | conflict on this seat. seat_id: " + strconv.Itoa(int(seatId)))
 			c.JSON(http.StatusConflict, gin.H{
@@ -125,8 +108,7 @@ func (r *ReservationController) ReserveSeats(c *gin.Context) {
 		}
 	}
 
-	//update seat availability
-	for _, seatId := range inputData.SeatIds {
+	for _, seatId := range inputData.SeatIds { //update seat availability
 		if err := r.seatService.UpdateStatus(seatId, "reserved"); err != nil {
 			c.JSON(http.StatusConflict, gin.H{
 				"status": "fail",
@@ -138,8 +120,7 @@ func (r *ReservationController) ReserveSeats(c *gin.Context) {
 
 	//tx end
 
-	//store reservation to tx table
-	if err := r.txService.CreateTx(accessDetails.UserId, inputData.SeatIds); err != nil {
+	if err := r.txService.CreateTx(accessDetails.UserId, inputData.SeatIds); err != nil { //store reservation to tx table
 		c.JSON(http.StatusConflict, gin.H{
 			"status": "fail",
 			"error":  err.Error(),
