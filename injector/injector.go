@@ -57,6 +57,7 @@ func InitializeServer() *gin.Engine {
 		config.NewAppConfig,
 		app.NewDatabase,
 		app.NewCache,
+		app.NewLogger,
 		UtilSet,
 		UserSet,
 		SeatSet,
@@ -71,6 +72,7 @@ func InitializeServer() *gin.Engine {
 func InitializeMigrator() *database.Migrator {
 	wire.Build(
 		config.NewAppConfig,
+		app.NewLogger,
 		app.NewDatabase,
 		database.NewMigrator,
 	)

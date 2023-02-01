@@ -3,22 +3,29 @@ package app
 import (
 	"fmt"
 	"github.com/frchandra/gmcgo/config"
+	"github.com/sirupsen/logrus"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
 
-func NewDatabase(appConfig *config.AppConfig) *gorm.DB {
+func NewDatabase(appConfig *config.AppConfig, log *logrus.Logger) *gorm.DB {
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Jakarta", appConfig.DBHost, appConfig.DBUser, appConfig.DBPassword, appConfig.DBName, appConfig.DBPort)
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Info),
-	})
-	if err != nil {
-		panic("Failed on connecting to the migrator server")
+
+	var gormConfig *gorm.Config
+	if appConfig.IsProduction == "false" {
+		gormConfig = &gorm.Config{Logger: logger.Default.LogMode(logger.Info)}
 	} else {
-		fmt.Println("db connection established")
-		fmt.Println("Using migrator " + db.Migrator().CurrentDatabase())
+		gormConfig = &gorm.Config{Logger: logger.Default.LogMode(logger.Error)}
 	}
+
+	db, err := gorm.Open(postgres.Open(dsn), gormConfig)
+	if err != nil {
+		log.Panic("failed on connecting to the database server")
+	} else {
+		log.Info("successfully connected to database " + db.Migrator().CurrentDatabase())
+	}
+
 	sqlDB, _ := db.DB()
 	sqlDB.SetMaxIdleConns(appConfig.DBMaxIdleConnection)
 	sqlDB.SetMaxOpenConns(appConfig.DBMaxOpenConnection)

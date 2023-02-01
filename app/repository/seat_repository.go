@@ -2,15 +2,17 @@ package repository
 
 import (
 	"github.com/frchandra/gmcgo/app/model"
+	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
 
 type SeatRepository struct {
-	db *gorm.DB
+	db     *gorm.DB
+	logger *logrus.Logger
 }
 
-func NewSeatRepository(db *gorm.DB) *SeatRepository {
-	return &SeatRepository{db: db}
+func NewSeatRepository(db *gorm.DB, logger *logrus.Logger) *SeatRepository {
+	return &SeatRepository{db: db, logger: logger}
 }
 
 func (r *SeatRepository) UpdateStatus(seatId uint, status string) *gorm.DB {

@@ -26,12 +26,13 @@ func InitializeServer() *gin.Engine {
 	client := app.NewCache(appConfig)
 	tokenUtil := util.NewTokenUtil(client, appConfig)
 	userMiddleware := middleware.NewUserMiddleware(tokenUtil)
-	db := app.NewDatabase(appConfig)
+	logger := app.NewLogger(appConfig)
+	db := app.NewDatabase(appConfig, logger)
 	userRepository := repository.NewUserRepository(db)
 	userService := service.NewUserService(userRepository, tokenUtil)
 	userController := controller.NewUserController(userService, tokenUtil)
 	transactionRepository := repository.NewTransactionRepository(db)
-	seatRepository := repository.NewSeatRepository(db)
+	seatRepository := repository.NewSeatRepository(db, logger)
 	transactionService := service.NewTransactionService(transactionRepository, userRepository, seatRepository, appConfig)
 	reservationService := service.NewReservationService(appConfig, transactionService)
 	seatService := service.NewSeatService(appConfig, seatRepository, transactionRepository)
@@ -48,7 +49,8 @@ func InitializeServer() *gin.Engine {
 
 func InitializeMigrator() *database.Migrator {
 	appConfig := config.NewAppConfig()
-	db := app.NewDatabase(appConfig)
+	logger := app.NewLogger(appConfig)
+	db := app.NewDatabase(appConfig, logger)
 	migrator := database.NewMigrator(db)
 	return migrator
 }
