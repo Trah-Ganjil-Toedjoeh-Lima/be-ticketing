@@ -2,7 +2,7 @@ package util
 
 import (
 	"fmt"
-	"github.com/frchandra/gmcgo/config"
+	"github.com/frchandra/ticketing-gmcgo/config"
 	"github.com/h2non/bimg"
 	"github.com/skip2/go-qrcode"
 )

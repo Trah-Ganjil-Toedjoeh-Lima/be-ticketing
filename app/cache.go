@@ -3,7 +3,7 @@ package app
 import (
 	"context"
 	"fmt"
-	"github.com/frchandra/gmcgo/config"
+	"github.com/frchandra/ticketing-gmcgo/config"
 	"github.com/go-redis/redis/v9"
 )
 

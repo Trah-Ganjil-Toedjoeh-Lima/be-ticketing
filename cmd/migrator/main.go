@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/frchandra/gmcgo/injector"
+	"github.com/frchandra/ticketing-gmcgo/injector"
 )
 
 func main() {

@@ -4,7 +4,7 @@ import (
 	"crypto/sha512"
 	"errors"
 	"fmt"
-	"github.com/frchandra/gmcgo/config"
+	"github.com/frchandra/ticketing-gmcgo/config"
 	"github.com/midtrans/midtrans-go"
 	"github.com/midtrans/midtrans-go/snap"
 )

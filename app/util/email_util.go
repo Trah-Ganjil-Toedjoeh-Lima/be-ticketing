@@ -3,7 +3,7 @@ package util
 import (
 	"bytes"
 	"fmt"
-	"github.com/frchandra/gmcgo/config"
+	"github.com/frchandra/ticketing-gmcgo/config"
 	"gopkg.in/gomail.v2"
 	"html/template"
 	"strconv"

@@ -2,10 +2,10 @@ package controller
 
 import (
 	"errors"
-	"github.com/frchandra/gmcgo/app/service"
-	"github.com/frchandra/gmcgo/app/util"
-	"github.com/frchandra/gmcgo/app/validation"
-	"github.com/frchandra/gmcgo/config"
+	"github.com/frchandra/ticketing-gmcgo/app/service"
+	"github.com/frchandra/ticketing-gmcgo/app/util"
+	"github.com/frchandra/ticketing-gmcgo/app/validation"
+	"github.com/frchandra/ticketing-gmcgo/config"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"net/http"

@@ -1,8 +1,8 @@
 package controller
 
 import (
-	"github.com/frchandra/gmcgo/app/service"
-	"github.com/frchandra/gmcgo/app/util"
+	"github.com/frchandra/ticketing-gmcgo/app/service"
+	"github.com/frchandra/ticketing-gmcgo/app/util"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )

@@ -1,8 +1,8 @@
 package app
 
 import (
-	"github.com/frchandra/gmcgo/app/controller"
-	"github.com/frchandra/gmcgo/app/middleware"
+	"github.com/frchandra/ticketing-gmcgo/app/controller"
+	"github.com/frchandra/ticketing-gmcgo/app/middleware"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )

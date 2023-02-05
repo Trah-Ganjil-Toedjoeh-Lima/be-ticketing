@@ -24,6 +24,27 @@ services:
     networks:
       - gmcgo-network
 
+  api:
+    build:
+      context: .
+      dockerfile: ./app.Dockerfile
+    hostname: api
+    env_file: .env
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+
+  elasticsearch:
+    image: 'docker.elastic.co/elasticsearch/elasticsearch:7.10.2'
+    environment:
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+    volumes:
+      - ./.docker/esdata:/usr/share/elasticsearch/data
+
 networks:
   gmcgo-network:
     driver: bridge

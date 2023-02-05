@@ -4,14 +4,14 @@
 package injector
 
 import (
-	"github.com/frchandra/gmcgo/app"
-	"github.com/frchandra/gmcgo/app/controller"
-	"github.com/frchandra/gmcgo/app/middleware"
-	"github.com/frchandra/gmcgo/app/repository"
-	"github.com/frchandra/gmcgo/app/service"
-	"github.com/frchandra/gmcgo/app/util"
-	"github.com/frchandra/gmcgo/config"
-	"github.com/frchandra/gmcgo/database"
+	"github.com/frchandra/ticketing-gmcgo/app"
+	"github.com/frchandra/ticketing-gmcgo/app/controller"
+	"github.com/frchandra/ticketing-gmcgo/app/middleware"
+	"github.com/frchandra/ticketing-gmcgo/app/repository"
+	"github.com/frchandra/ticketing-gmcgo/app/service"
+	"github.com/frchandra/ticketing-gmcgo/app/util"
+	"github.com/frchandra/ticketing-gmcgo/config"
+	"github.com/frchandra/ticketing-gmcgo/database"
 	"github.com/gin-gonic/gin"
 	"github.com/google/wire"
 )

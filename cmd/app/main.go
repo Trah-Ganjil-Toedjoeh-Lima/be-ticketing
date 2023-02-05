@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/frchandra/gmcgo/config"
-	"github.com/frchandra/gmcgo/injector"
+	"github.com/frchandra/ticketing-gmcgo/config"
+	"github.com/frchandra/ticketing-gmcgo/injector"
 )
 
 func main() {

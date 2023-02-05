@@ -1,7 +1,7 @@
 package factory
 
 import (
-	"github.com/frchandra/gmcgo/app/model"
+	"github.com/frchandra/ticketing-gmcgo/app/model"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"strconv"

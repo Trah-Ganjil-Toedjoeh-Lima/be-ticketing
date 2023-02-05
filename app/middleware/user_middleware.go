@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"github.com/frchandra/gmcgo/app/util"
+	"github.com/frchandra/ticketing-gmcgo/app/util"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"net/http"

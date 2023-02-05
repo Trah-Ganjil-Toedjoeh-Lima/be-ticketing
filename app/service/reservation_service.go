@@ -2,8 +2,8 @@ package service
 
 import (
 	"errors"
-	"github.com/frchandra/gmcgo/app/util"
-	"github.com/frchandra/gmcgo/config"
+	"github.com/frchandra/ticketing-gmcgo/app/util"
+	"github.com/frchandra/ticketing-gmcgo/config"
 	"strconv"
 )
 

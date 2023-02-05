@@ -1,4 +1,4 @@
-module github.com/frchandra/gmcgo
+module github.com/frchandra/ticketing-gmcgo
 
 go 1.19
 

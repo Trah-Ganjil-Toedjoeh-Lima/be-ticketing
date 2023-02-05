@@ -1,7 +1,7 @@
 package app
 
 import (
-	"github.com/frchandra/gmcgo/config"
+	"github.com/frchandra/ticketing-gmcgo/config"
 	"github.com/sirupsen/logrus"
 	"io"
 	"os"

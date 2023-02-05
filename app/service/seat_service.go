@@ -2,9 +2,9 @@ package service
 
 import (
 	"errors"
-	"github.com/frchandra/gmcgo/app/model"
-	"github.com/frchandra/gmcgo/app/repository"
-	"github.com/frchandra/gmcgo/config"
+	"github.com/frchandra/ticketing-gmcgo/app/model"
+	"github.com/frchandra/ticketing-gmcgo/app/repository"
+	"github.com/frchandra/ticketing-gmcgo/config"
 	"time"
 )
 

@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"github.com/frchandra/gmcgo/app/model"
+	"github.com/frchandra/ticketing-gmcgo/app/model"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )

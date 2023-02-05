@@ -2,8 +2,8 @@ package database
 
 import (
 	"fmt"
-	"github.com/frchandra/gmcgo/app/model"
-	"github.com/frchandra/gmcgo/database/factory"
+	"github.com/frchandra/ticketing-gmcgo/app/model"
+	"github.com/frchandra/ticketing-gmcgo/database/factory"
 	"gorm.io/gorm"
 )
 

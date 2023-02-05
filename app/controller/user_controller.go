@@ -1,10 +1,10 @@
 package controller
 
 import (
-	"github.com/frchandra/gmcgo/app/model"
-	"github.com/frchandra/gmcgo/app/service"
-	"github.com/frchandra/gmcgo/app/util"
-	"github.com/frchandra/gmcgo/app/validation"
+	"github.com/frchandra/ticketing-gmcgo/app/model"
+	"github.com/frchandra/ticketing-gmcgo/app/service"
+	"github.com/frchandra/ticketing-gmcgo/app/util"
+	"github.com/frchandra/ticketing-gmcgo/app/validation"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )

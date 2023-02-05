@@ -2,9 +2,9 @@ package service
 
 import (
 	"errors"
-	"github.com/frchandra/gmcgo/app/model"
-	"github.com/frchandra/gmcgo/app/repository"
-	"github.com/frchandra/gmcgo/config"
+	"github.com/frchandra/ticketing-gmcgo/app/model"
+	"github.com/frchandra/ticketing-gmcgo/app/repository"
+	"github.com/frchandra/ticketing-gmcgo/config"
 	"github.com/google/uuid"
 	"github.com/midtrans/midtrans-go"
 	"github.com/midtrans/midtrans-go/snap"
@@ -115,8 +115,8 @@ func (s *TransactionService) PrepareTransactionData(userId uint64) (snap.Request
 	if txDetails = s.CleanUpDeadTransaction(txDetails); len(txDetails) < 1 { //clean up 'ghost' transaction that may be created by this user
 		return snap.Request{}, errors.New("cannot find any transaction for this user")
 	}
-	orderId := uuid.New().String()              //create order_id for the new midtrans transaction
-	s.txRepo.UpdateUserOrderId(userId, orderId) //update order_id of this transaction in the database
+	orderId := uuid.New().String()               //create order_id for the new midtrans transaction
+	s.txRepo.UpdateUserOrderId(userId, orderId)  //update order_id of this transaction in the database
 	customerDetails := midtrans.CustomerDetails{ //populate the midtrans request with the customer detail
 		FName: txDetails[0].User.Name,
 		LName: "",
