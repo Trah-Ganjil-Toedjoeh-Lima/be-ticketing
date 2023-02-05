@@ -1,9 +1,19 @@
-FROM golang:1.19-bullseye
+FROM golang:1.19-alpine AS builder
+
+ENV PATH="/go/bin:${PATH}"
+ENV GO111MODULE=on
+ENV CGO_ENABLED=1
+ENV GOOS=linux
+ENV GOARCH=amd64
+
+RUN apk -U add ca-certificates
+RUN apk update && apk upgrade && apk add pkgconf git bash build-base
 
 COPY go.mod go.sum /go/src/github.com/frchandra/ticketing-gmcgo/
 WORKDIR /go/src/github.com/frchandra/ticketing-gmcgo
-RUN apt-get update
-RUN apt-get install -y libvips-dev
+RUN apk update
+RUN apk add vips-dev
+RUN
 RUN go mod download -x
 #TODO modify qrcode library
 COPY . /go/scr/github.com/frchandra/ticketing-gmcgo
