@@ -3,38 +3,37 @@ package middleware
 import (
 	"github.com/frchandra/gmcgo/app/util"
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 	"net/http"
 )
 
 type UserMiddleware struct {
 	tokenUtil *util.TokenUtil
+	log       *logrus.Logger
 }
 
-func NewUserMiddleware(tokenUtil *util.TokenUtil) *UserMiddleware {
-	return &UserMiddleware{
-		tokenUtil: tokenUtil,
-	}
+func NewUserMiddleware(tokenUtil *util.TokenUtil, log *logrus.Logger) *UserMiddleware {
+	return &UserMiddleware{tokenUtil: tokenUtil, log: log}
 }
 
-func (um *UserMiddleware) HandleUserAccess(c *gin.Context) {
-
-	//get the user data from the token in the request header
-	accessDetails, err := um.tokenUtil.GetValidatedAccess(c)
+func (u *UserMiddleware) HandleUserAccess(c *gin.Context) {
+	accessDetails, err := u.tokenUtil.GetValidatedAccess(c) //get the user data from the token in the request header
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
+			"status": "fail",
+			"error":  "your credentials are invalid",
 		})
+		u.log.WithField("error", err.Error()).Info("cannot find token in the http request")
 		c.Abort()
 		return
 	}
-	//check if token exist in the token storage (Check if the token is expired)
-	err = um.tokenUtil.FetchAuthn(accessDetails.AccessUuid)
+	err = u.tokenUtil.FetchAuthn(accessDetails.AccessUuid) //check if token exist in the token storage (Check if the token is expired)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{
-			"status":      "fail",
-			"error":       err.Error(),
-			"description": "cannot found access token. Try to refresh then token",
+			"status": "fail",
+			"error":  "your credentials are invalid. try to refresh your credentials",
 		})
+		u.log.WithField("error", err.Error()).Info("cannot find access token in the storage")
 		c.Abort()
 		return
 	}
