@@ -17,8 +17,23 @@ WORKDIR /go/src
 COPY . .
 RUN go mod download -x
 
-RUN go build -o ./bin/app ./cmd/app
+RUN go build -o ./bin/app ./cmd/app/main.go
+RUN go build -o ./bin/migrator ./cmd/migrator/main.go
 
 FROM alpine:latest AS runner
-COPY --from=builder /go/src/bin/app /
-CMD ["./bin/app"]
+
+RUN apk update
+RUN apk add vips-dev
+
+WORKDIR /ticketing-gmcgo
+
+COPY --from=builder /go/src/bin /ticketing-gmcgo
+COPY .env /ticketing-gmcgo
+
+RUN mkdir "/ticketing-gmcgo/storage"
+RUN mkdir "/ticketing-gmcgo/storage/logs"
+RUN mkdir "/ticketing-gmcgo/storage/picture"
+
+
+EXPOSE 8080 8080
+CMD ["/ticketing-gmcgo/app"]

@@ -11,7 +11,7 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_USER: ${DB_USER}
     volumes:
-      - ./.docker/dbdata:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql/data
     networks:
       - gmcgo-network
 
@@ -24,27 +24,37 @@ services:
     networks:
       - gmcgo-network
 
-  api:
+  app:
     build:
       context: .
       dockerfile: ./app.Dockerfile
-    hostname: api
+    hostname: app
     env_file: .env
     ports:
       - "8080:8080"
+    networks:
+      - gmcgo-network
     depends_on:
       - db
 
-  elasticsearch:
-    image: 'docker.elastic.co/elasticsearch/elasticsearch:7.10.2'
-    environment:
-      - discovery.type=single-node
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-    ports:
-      - "9200:9200"
-    volumes:
-      - ./.docker/esdata:/usr/share/elasticsearch/data
+
+#  elasticsearch:
+#    image: 'docker.elastic.co/elasticsearch/elasticsearch:7.10.2'
+#    environment:
+#      - discovery.type=single-node
+#      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+#    ports:
+#      - "9200:9200"
+#    volumes:
+#      - esdata:/usr/share/elasticsearch/data
 
 networks:
   gmcgo-network:
     driver: bridge
+
+
+volumes:
+  pgdata:
+    driver: local
+  esdata:
+    driver: local
