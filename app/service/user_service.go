@@ -29,8 +29,7 @@ func (us *UserService) GetOrInsertOne(user *model.User) (int64, error) {
 }
 
 func (us *UserService) InsertOne(user *model.User) (int64, error) {
-	//hash the credential
-	hashedCred, err := bcrypt.GenerateFromPassword([]byte(user.Phone), bcrypt.DefaultCost)
+	hashedCred, err := bcrypt.GenerateFromPassword([]byte(user.Phone), bcrypt.DefaultCost) //hash the credential
 	if err != nil {
 		return 0, err
 	}

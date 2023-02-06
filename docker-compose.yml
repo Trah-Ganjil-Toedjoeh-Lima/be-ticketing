@@ -37,21 +37,31 @@ services:
     depends_on:
       - db
 
+  elasticsearch:
+    image: 'docker.elastic.co/elasticsearch/elasticsearch:7.10.2'
+    environment:
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    healthcheck:
+      test: [ "CMD", "curl", "-s", "-f", "http://localhost:9200/_cat/health" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "9200:9200"
+    volumes:
+      -  ./.docker/elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      - esdata:/usr/share/elasticsearch/data
 
-#  elasticsearch:
-#    image: 'docker.elastic.co/elasticsearch/elasticsearch:7.10.2'
-#    environment:
-#      - discovery.type=single-node
-#      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-#    ports:
-#      - "9200:9200"
-#    volumes:
-#      - esdata:/usr/share/elasticsearch/data
+  logstash:
+    image: docker.elastic.co/logstash/logstash:7.6.2
+    volumes:
+      - ./.docker/logstash/
+
 
 networks:
   gmcgo-network:
     driver: bridge
-
 
 volumes:
   pgdata:
