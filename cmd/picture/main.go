@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/frchandra/ticketing-gmcgo/config"
-	"github.com/h2non/bimg"
+	"github.com/kumparan/bimg"
 	"github.com/skip2/go-qrcode"
 )
 
