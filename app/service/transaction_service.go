@@ -24,8 +24,7 @@ func NewTransactionService(txRepo *repository.TransactionRepository, userRepo *r
 }
 
 func (s *TransactionService) CreateTx(userId uint64, seatIds []uint) error {
-	for _, seatId := range seatIds {
-		//create tx for each seat
+	for _, seatId := range seatIds { //create tx for each seat
 		newTx := model.Transaction{
 			OrderId:      "",
 			UserId:       userId,
@@ -33,21 +32,18 @@ func (s *TransactionService) CreateTx(userId uint64, seatIds []uint) error {
 			Vendor:       "no_vendor",
 			Confirmation: "reserved",
 		}
-		//delete previous failed reservation
-		s.txRepo.SoftDeleteBySeatUser(seatId, userId)
-		//save transaction
-		if result := s.txRepo.InsertOne(&newTx); result.Error != nil {
-			return result.Error
+		s.txRepo.SoftDeleteBySeatUser(seatId, userId)                  //delete the previous failed reservation
+		if result := s.txRepo.InsertOne(&newTx); result.Error != nil { //save the transaction
+			return errors.New("database operation error")
 		}
 	}
 	return nil
 }
 
 func (s *TransactionService) GetTxDetailsByUser(userId uint64) ([]model.Transaction, error) {
-	//get user's transaction
-	var transactions []model.Transaction
+	var transactions []model.Transaction //get user's transaction
 	if result := s.txRepo.GetByUser(&transactions, userId); result.Error != nil {
-		return transactions, result.Error
+		return transactions, errors.New("database operation error")
 	}
 	transactions = s.CleanUpDeadTransaction(transactions)
 	return transactions, nil
@@ -56,7 +52,7 @@ func (s *TransactionService) GetTxDetailsByUser(userId uint64) ([]model.Transact
 func (s *TransactionService) GetTxByOrder(orderId string) ([]model.Transaction, error) {
 	var transactions []model.Transaction
 	if result := s.txRepo.GetByOrder(&transactions, orderId); result.Error != nil {
-		return transactions, result.Error
+		return transactions, errors.New("database operation error")
 	}
 	return transactions, nil
 }
@@ -64,17 +60,15 @@ func (s *TransactionService) GetTxByOrder(orderId string) ([]model.Transaction, 
 func (s *TransactionService) GetTxDetailsByOrder(orderId string) ([]model.Transaction, error) {
 	var transactions []model.Transaction
 	if result := s.txRepo.GetDetailsByOrder(&transactions, orderId); result.Error != nil {
-		return transactions, result.Error
+		return transactions, errors.New("database operation error")
 	}
 	return transactions, nil
 }
 
 func (s *TransactionService) CleanUpDeadTransaction(transactions []model.Transaction) []model.Transaction {
-	var newTransaction []model.Transaction
-	//cek apakah ada transaksi ngambang, jika ada buang dari slice dan update db
+	var newTransaction []model.Transaction //cek apakah ada transaksi ngambang, jika ada buang dari slice dan update db
 	for _, tx := range transactions {
-		//if tx update_at + 15 < time now  => berarti transaction ngambang
-		if time.Now().After(tx.UpdatedAt.Add(s.config.TransactionMinute)) {
+		if time.Now().After(tx.UpdatedAt.Add(s.config.TransactionMinute)) { //if tx update_at + 15 < time now  => berarti transaction ngambang
 			//update database
 			s.txRepo.UpdateUserPaymentStatus(tx.UserId, "", "not_continued")
 			s.txRepo.SoftDeleteBySeatUser(tx.SeatId, tx.UserId)
@@ -88,10 +82,10 @@ func (s *TransactionService) CleanUpDeadTransaction(transactions []model.Transac
 
 func (s *TransactionService) SeatsBelongsToUser(userId uint64) ([]model.Seat, error) {
 	var seats []model.Seat
-	//get user's transaction
-	var transactions []model.Transaction
+
+	var transactions []model.Transaction //get user's transaction
 	if result := s.txRepo.GetDetailsByUser(&transactions, userId); result.Error != nil {
-		return seats, result.Error
+		return seats, errors.New("database operation error")
 	}
 	if transactions = s.CleanUpDeadTransaction(transactions); len(transactions) < 1 {
 		return seats, errors.New("this user doesen`t have any transaction")
@@ -148,7 +142,7 @@ func (s *TransactionService) PrepareTransactionData(userId uint64) (snap.Request
 
 func (s *TransactionService) UpdatePaymentStatus(orderId, vendor, confirmation string) error {
 	if result := s.txRepo.UpdatePaymentStatus(orderId, vendor, confirmation); result.Error != nil {
-		return result.Error
+		return errors.New("database operation error")
 	}
 	return nil
 }

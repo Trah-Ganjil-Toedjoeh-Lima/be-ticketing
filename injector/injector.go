@@ -24,7 +24,6 @@ var UserSet = wire.NewSet(
 )
 
 var ReservationSet = wire.NewSet(
-	repository.NewReservationRepository,
 	service.NewReservationService,
 	controller.NewReservationController,
 )

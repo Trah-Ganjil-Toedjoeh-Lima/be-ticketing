@@ -112,7 +112,7 @@ func (r *ReservationController) ReserveSeats(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusAccepted, gin.H{
-		"message": "information updated successfully ",
+		"message": "information updated successfully",
 	})
 	return
 }

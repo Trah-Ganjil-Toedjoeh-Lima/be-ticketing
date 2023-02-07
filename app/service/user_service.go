@@ -23,7 +23,7 @@ func NewUserService(userRepository *repository.UserRepository, tokenUtil *util.T
 func (us *UserService) GetOrInsertOne(user *model.User) (int64, error) {
 	result := us.userRepository.GetOrInsertOne(user)
 	if result.Error != nil {
-		return 0, nil
+		return 0, errors.New("database operation error")
 	}
 	return result.RowsAffected, nil
 }
@@ -32,7 +32,7 @@ func (us *UserService) GetById(userId uint64) (model.User, error) {
 	var userOut model.User
 	result := us.userRepository.GetById(userId, &userOut)
 	if result.Error != nil {
-		return userOut, result.Error
+		return userOut, errors.New("database operation error")
 	}
 	if result.RowsAffected < 1 {
 		return userOut, errors.New("cannot find this user")
@@ -43,14 +43,14 @@ func (us *UserService) GetById(userId uint64) (model.User, error) {
 func (us *UserService) InsertOne(user *model.User) (int64, error) {
 	hashedCred, err := bcrypt.GenerateFromPassword([]byte(user.Phone), bcrypt.DefaultCost) //hash the credential
 	if err != nil {
-		return 0, err
+		return 0, errors.New("credential preparation error")
 	}
 	//GMCO use case, use password otherwise
 	user.Phone = string(hashedCred)
 	//store user to db
 	result := us.userRepository.InsertOne(user)
 	if result.Error != nil {
-		return 0, err
+		return 0, errors.New("database operation error")
 	}
 	return result.RowsAffected, nil
 }
@@ -62,15 +62,15 @@ func (us *UserService) verifyCredentials(cred, hashedCred string) error {
 func (us *UserService) ValidateLogin(userInput *model.User) error {
 	var userOut model.User
 	var err error
-	//get the user credential pairs email/name & password
-	result := us.userRepository.GetByPairs(userInput, &userOut)
+
+	result := us.userRepository.GetByPairs(userInput, &userOut) //get the user credential pairs email/name & password
 	if result.Error != nil {
-		return result.Error
+		return errors.New("database operation error")
 	}
-	//verify the user credential
-	err = us.verifyCredentials(userInput.Phone, userOut.Phone)
+
+	err = us.verifyCredentials(userInput.Phone, userOut.Phone) //verify the user credential
 	if err != nil && err == bcrypt.ErrMismatchedHashAndPassword {
-		return err
+		return errors.New("credential authentication error")
 	}
 	*userInput = userOut
 	return nil
@@ -80,11 +80,11 @@ func (us *UserService) GenerateToken(userInput *model.User) (*util.TokenDetails,
 	//create token for us user
 	tokenDetails, err := us.tokenUtil.CreateToken(userInput.UserId)
 	if err != nil {
-		return tokenDetails, err
+		return tokenDetails, errors.New("credential authentication error")
 	}
 	//store the token to redis
 	if err = us.tokenUtil.StoreAuthn(userInput.UserId, tokenDetails); err != nil {
-		return tokenDetails, err
+		return tokenDetails, errors.New("credential preparation error")
 	}
 	//return the new created token
 	return tokenDetails, nil

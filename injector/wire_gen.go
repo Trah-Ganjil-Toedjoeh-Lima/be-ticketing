@@ -28,11 +28,11 @@ func InitializeServer() *gin.Engine {
 	logger := app.NewLogger(appConfig)
 	userMiddleware := middleware.NewUserMiddleware(tokenUtil, logger)
 	db := app.NewDatabase(appConfig, logger)
-	userRepository := repository.NewUserRepository(db)
+	logUtil := util.NewLogUtil(logger)
+	userRepository := repository.NewUserRepository(db, logUtil)
 	userService := service.NewUserService(userRepository, tokenUtil)
 	userController := controller.NewUserController(userService, tokenUtil)
-	logUtil := util.NewLogUtil(logger)
-	transactionRepository := repository.NewTransactionRepository(db)
+	transactionRepository := repository.NewTransactionRepository(db, logUtil)
 	seatRepository := repository.NewSeatRepository(db, logUtil)
 	transactionService := service.NewTransactionService(transactionRepository, userRepository, seatRepository, appConfig)
 	reservationService := service.NewReservationService(appConfig, transactionService)
@@ -66,7 +66,7 @@ func InitializeEmail() *util.EmailUtil {
 
 var UserSet = wire.NewSet(repository.NewUserRepository, service.NewUserService, controller.NewUserController, middleware.NewUserMiddleware)
 
-var ReservationSet = wire.NewSet(repository.NewReservationRepository, service.NewReservationService, controller.NewReservationController)
+var ReservationSet = wire.NewSet(service.NewReservationService, controller.NewReservationController)
 
 var SeatSet = wire.NewSet(repository.NewSeatRepository, service.NewSeatService)
 
