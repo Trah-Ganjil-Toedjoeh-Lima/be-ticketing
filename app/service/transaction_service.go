@@ -91,14 +91,13 @@ func (s *TransactionService) SeatsBelongsToUser(userId uint64) ([]model.Seat, er
 		return seats, errors.New("this user doesen`t have any transaction")
 	}
 	for _, tx := range transactions {
-		var seat model.Seat
 		if tx.Confirmation == "reserved" {
-			seat.Status = "reserved_by_me"
+			tx.Seat.Status = "reserved_by_me"
 		}
 		if tx.Confirmation == "settlement" {
-			seat.Status = "purchased_by_me"
+			tx.Seat.Status = "purchased_by_me"
 		}
-		seats = append(seats, seat)
+		seats = append(seats, tx.Seat)
 	}
 	return seats, nil
 }

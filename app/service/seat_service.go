@@ -5,6 +5,7 @@ import (
 	"github.com/frchandra/ticketing-gmcgo/app/model"
 	"github.com/frchandra/ticketing-gmcgo/app/repository"
 	"github.com/frchandra/ticketing-gmcgo/config"
+	"gorm.io/gorm"
 	"time"
 )
 
@@ -33,29 +34,36 @@ func (s *SeatService) UpdateStatus(seatId uint, status string) error {
 	return nil
 }
 
-func (s *SeatService) IsOwned(seatId uint, userId uint64) error {
+func (s *SeatService) UpdateStatusTxn(txn *gorm.DB, seatId uint, status string) error {
+	if result := s.seatRepo.UpdateStatusTxn(txn, seatId, status); result.Error != nil {
+		return errors.New("database operation error")
+	}
+	return nil
+}
+
+func (s *SeatService) IsOwnedTxn(txn *gorm.DB, seatId uint, userId uint64) error {
 	var seat model.Seat
-	if result := s.seatRepo.GetSeatById(&seat, seatId); result.Error != nil { //get requested seat
+	if result := s.seatRepo.GetSeatByIdTxn(txn, &seat, seatId); result.Error != nil { //get requested seat
 		return errors.New("database operation error")
 	}
 	//start validation logic
 	if seat.Status == "available" { //check from seat table
 		return nil
-	} else { //if seat table not convincing => check form tx table
-		var tx model.Transaction
-		if result := s.txRepo.GetBySeat(&tx, seatId).Last(&tx); result.Error != nil { //get the newest transaction data for this seat from tx table. Check if the query returns an error
+	} else { //if seat table is not convincing => check form tx table
+		var transaction model.Transaction
+		if result := s.txRepo.GetBySeatTxn(txn, &transaction, seatId).Last(&transaction); result.Error != nil { //get the newest transaction data for this seat from transaction table. Check if the query returns an error
 			return errors.New("database operation error")
 		} else if result.RowsAffected < 1 { //double-check the seat status, maybe the cause of  unavailableness is because of 'ghost' reservation
-			//if there are no seat data in the tx table, it means that it`s only booked by someone and then did not proceed to the transaction process
+			//if there are no seat data in the transaction table, it means that it`s only booked by someone and then did not proceed to the transaction process
 			//this case can be caused by irresponsible user that left their reservation but not complete the transaction
 			return nil
 		}
-		if time.Now().After(tx.UpdatedAt.Add(s.config.TransactionMinute)) { //kalo data kursi ada di tabel transaction => cek updated_at. If seat update_at + 15 < time => return nil
+		if time.Now().After(transaction.UpdatedAt.Add(s.config.TransactionMinute)) { //kalo data kursi ada di tabel transaction => cek updated_at. If seat update_at + 15 < time => return nil
 			//kalo transaksi sebelumnya "ngambang" maka boleh lanjut
 			//transaksi ngambang pada kasus ini disebabkan oleh user yang tidak menyelesaikan/kelamaan dalam proses transaksi
 			return nil
 		}
-		if tx.UserId == userId { // kalo tx sebelumnya gak "ngambang", asalkan yang pesen usernya sama, lanjut
+		if transaction.UserId == userId { // kalo tx sebelumnya gak "ngambang", asalkan yang pesen usernya sama, lanjut
 			return nil
 		}
 		return errors.New("kursi sudah ada yang nge-booking") //kalo gagal melewati constraint diatas, berarti sedang/sudah di cim orang lain

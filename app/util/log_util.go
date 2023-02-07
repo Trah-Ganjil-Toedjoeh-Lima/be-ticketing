@@ -19,5 +19,7 @@ func (u *LogUtil) BasicLog(err error, occurrence string) {
 func (u *LogUtil) ControllerResponseLog(err error, occurrence string, clientIp string, clientId uint64) {
 	u.log.
 		WithField("occurrence", occurrence).
+		WithField("client_ip", clientIp).
+		WithField("client_id", clientId).
 		Info(err.Error())
 }

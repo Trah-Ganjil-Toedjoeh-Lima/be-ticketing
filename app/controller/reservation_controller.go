@@ -2,6 +2,7 @@ package controller
 
 import (
 	"errors"
+	"fmt"
 	"github.com/frchandra/ticketing-gmcgo/app/service"
 	"github.com/frchandra/ticketing-gmcgo/app/util"
 	"github.com/frchandra/ticketing-gmcgo/app/validation"
@@ -82,11 +83,14 @@ func (r *ReservationController) ReserveSeats(c *gin.Context) {
 		return
 	}
 
-	r.txDb.Begin() //START DATABASE TRANSACTION
+	txn := r.txDb.Begin() //START DATABASE TRANSACTION
+	if txn.Error != nil {
+		fmt.Print(txn.Error)
+	}
 
 	for _, seatId := range inputData.SeatIds { //check eligibility for each chair in request
-		if err := r.seatService.IsOwned(seatId, accessDetails.UserId); err != nil {
-			r.txDb.Rollback() //ABORT DATABASE TRANSACTION
+		if err := r.seatService.IsOwnedTxn(txn, seatId, accessDetails.UserId); err != nil {
+			txn.Rollback() //ABORT DATABASE TRANSACTION
 			err = errors.New(err.Error() + " | conflict on this seat. seat_id: " + strconv.Itoa(int(seatId)))
 			r.log.ControllerResponseLog(err, "ReservationController@ReserveSeats", c.ClientIP(), contextData.(*util.AccessDetails).UserId)
 			util.GinResponseError(c, http.StatusConflict, "conflict when processing the request data", err.Error())
@@ -95,15 +99,18 @@ func (r *ReservationController) ReserveSeats(c *gin.Context) {
 	}
 
 	for _, seatId := range inputData.SeatIds { //update seat availability
-		if err := r.seatService.UpdateStatus(seatId, "reserved"); err != nil {
-			r.txDb.Rollback() //ABORT DATABASE TRANSACTION
+		if err := r.seatService.UpdateStatusTxn(txn, seatId, "reserved"); err != nil {
+			txn.Rollback() //ABORT DATABASE TRANSACTION
 			r.log.ControllerResponseLog(err, "ReservationController@ReserveSeats", c.ClientIP(), contextData.(*util.AccessDetails).UserId)
 			util.GinResponseError(c, http.StatusConflict, "error when processing the request data", err.Error())
 			return
 		}
 	}
 
-	r.txDb.Commit() //COMMIT DATABASE TRANSACTION
+	txcErr := txn.Commit().Error //COMMIT DATABASE TRANSACTION
+	if txcErr != nil {
+		fmt.Print(txcErr)
+	}
 
 	if err := r.txService.CreateTx(accessDetails.UserId, inputData.SeatIds); err != nil { //store reservation to txDb table
 		r.log.ControllerResponseLog(err, "ReservationController@ReserveSeats", c.ClientIP(), contextData.(*util.AccessDetails).UserId)

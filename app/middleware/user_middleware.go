@@ -25,7 +25,7 @@ func (u *UserMiddleware) HandleUserAccess(c *gin.Context) {
 		})
 		u.log.
 			WithField("occurrence", "UserMiddelware@HandleUserAcccess").
-			WithField("error_messages", err.Error()).
+			WithField("source_messages", err.Error()).
 			WithField("client_ip", c.ClientIP()).
 			WithField("endpoint", c.FullPath()).
 			Info("cannot find token in the http request")
@@ -42,7 +42,7 @@ func (u *UserMiddleware) HandleUserAccess(c *gin.Context) {
 			WithField("occurrence", "UserMiddleware@HandleUserAccess").
 			WithField("client_ip", c.ClientIP()).
 			WithField("endpoint", c.FullPath()).
-			WithField("error_messages", err.Error()).
+			WithField("source_messages", err.Error()).
 			Info("cannot find access token in the storage")
 		c.Abort()
 		return
