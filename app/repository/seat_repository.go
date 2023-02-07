@@ -2,27 +2,40 @@ package repository
 
 import (
 	"github.com/frchandra/ticketing-gmcgo/app/model"
-	"github.com/sirupsen/logrus"
+	"github.com/frchandra/ticketing-gmcgo/app/util"
 	"gorm.io/gorm"
 )
 
 type SeatRepository struct {
-	db     *gorm.DB
-	logger *logrus.Logger
+	db  *gorm.DB
+	log *util.LogUtil
 }
 
-func NewSeatRepository(db *gorm.DB, logger *logrus.Logger) *SeatRepository {
-	return &SeatRepository{db: db, logger: logger}
+func NewSeatRepository(db *gorm.DB, log *util.LogUtil) *SeatRepository {
+	return &SeatRepository{db: db, log: log}
 }
 
 func (r *SeatRepository) UpdateStatus(seatId uint, status string) *gorm.DB {
-	return r.db.Model(&model.Seat{}).Where("seat_id = ?", seatId).Update("status", status)
+	result := r.db.Model(&model.Seat{}).Where("seat_id = ?", seatId).Update("status", status)
+	if result.Error != nil {
+		r.log.BasicLog(result.Error, "SeatRepository@UpdateStatus")
+	}
+	return result
 }
 
 func (r *SeatRepository) GetAllSeats(seats *[]model.Seat) *gorm.DB {
-	return r.db.Find(seats)
+	result := r.db.Find(seats)
+	if result.Error != nil {
+		r.log.BasicLog(result.Error, "SeatRepository@GetAllSeats")
+	}
+	return result
 }
 
 func (r *SeatRepository) GetSeatById(seat *model.Seat, id uint) *gorm.DB {
-	return r.db.First(seat, id)
+	result := r.db.First(seat, id)
+	if result.Error != nil {
+		r.log.BasicLog(result.Error, "SeatRepository@GetSeatById")
+	}
+	return result
+
 }

@@ -14,27 +14,30 @@ import (
 )
 
 type ReservationController struct {
-	config             *config.AppConfig
-	txDb               *gorm.DB
+	config *config.AppConfig
+	txDb   *gorm.DB
+	log    *util.LogUtil
+
 	reservationService *service.ReservationService
-	userService        *service.UserService
 	txService          *service.TransactionService
 	seatService        *service.SeatService
 }
 
-func NewReservationController(config *config.AppConfig, txDb *gorm.DB, reservationService *service.ReservationService, userService *service.UserService, txService *service.TransactionService, seatService *service.SeatService) *ReservationController {
-	return &ReservationController{config: config, txDb: txDb, reservationService: reservationService, userService: userService, txService: txService, seatService: seatService}
+func NewReservationController(config *config.AppConfig, txDb *gorm.DB, log *util.LogUtil, reservationService *service.ReservationService, txService *service.TransactionService, seatService *service.SeatService) *ReservationController {
+	return &ReservationController{config: config, txDb: txDb, log: log, reservationService: reservationService, txService: txService, seatService: seatService}
 }
 
 func (r *ReservationController) GetSeatsInfo(c *gin.Context) {
+	contextData, _ := c.Get("accessDetails")              //get the details about the current user that make request from the context passed by user middleware
+	accessDetails, _ := contextData.(*util.AccessDetails) //type assertion
+
 	seats, err := r.seatService.GetAllSeats() //get all seats from db
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{
-			"status": "fail",
-			"error":  err.Error(),
-		})
+		r.log.ControllerResponseLog(err, "ReservationController@GetSeatsInfo", c.ClientIP(), contextData.(*util.AccessDetails).UserId)
+		util.GinResponseError(c, http.StatusNotFound, "something went wrong", "error when getting the data")
 		return
 	}
+
 	seatsResponse := make([]validation.SeatResponse, len(seats), len(seats)) //create response object
 	for _, seat := range seats {
 		seatsResponse[seat.SeatId-1].SeatId = seat.SeatId
@@ -42,93 +45,74 @@ func (r *ReservationController) GetSeatsInfo(c *gin.Context) {
 		seatsResponse[seat.SeatId-1].Status = seat.Status
 		seatsResponse[seat.SeatId-1].Price = seat.Price
 	}
-	contextData, _ := c.Get("accessDetails")                             //get the details about the current user that make request from the context passed by user middleware
-	accessDetails, _ := contextData.(*util.AccessDetails)                //type assertion
-	mySeats, _ := r.txService.IsSeatsBelongsToUser(accessDetails.UserId) //overwrite the response object for this user
-	for _, mySeat := range mySeats {                                     //populate the response object
+
+	mySeats, _ := r.txService.SeatsBelongsToUser(accessDetails.UserId) //overwrite the response object for this user
+	for _, mySeat := range mySeats {                                   //populate the response object
 		seatsResponse[mySeat.SeatId-1].Status = mySeat.Status
 	}
-	for _, seat := range seats { //overwrite with timestamp logic
+
+	for _, seat := range seats { //overwrite the response with timestamp logic
 		if time.Now().After(seat.UpdatedAt.Add(r.config.TransactionMinute)) {
 			seatsResponse[seat.SeatId-1].Status = "available"
 		}
 	}
+
 	c.JSON(http.StatusOK, gin.H{ //return success
-		"status": "success",
-		"data":   seatsResponse,
-		"count":  len(seatsResponse),
+		"message": "success",
+		"data":    seatsResponse,
+		"count":   len(seatsResponse),
 	})
 	return
 }
 
 func (r *ReservationController) ReserveSeats(c *gin.Context) {
-	contextData, isExist := c.Get("accessDetails") //get the details about the current user that make request from the context passed by user middleware
-	if isExist == false {
-		c.JSON(http.StatusNotFound, gin.H{
-			"status": "fail",
-			"error":  "cannot get access details",
-		})
-		return
-	}
-	accessDetails, _ := contextData.(*util.AccessDetails)                  //type assertion
-	if _, err := r.userService.GetById(accessDetails.UserId); err != nil { //verify that the user is exists in the db
-		c.JSON(http.StatusConflict, gin.H{
-			"status": "fail",
-			"error":  err.Error(),
-		})
-		return
-	}
+	contextData, _ := c.Get("accessDetails")              //get the details about the current user that make request from the context passed by user middleware
+	accessDetails, _ := contextData.(*util.AccessDetails) //type assertion
+
 	var inputData validation.SeatReservationRequest //get the seats data in request body
 	if err := c.ShouldBindJSON(&inputData); err != nil {
-		c.JSON(http.StatusConflict, gin.H{
-			"status": "fail",
-			"error":  err.Error(),
-		})
+		r.log.ControllerResponseLog(err, "ReservationController@ReserveSeats", c.ClientIP(), contextData.(*util.AccessDetails).UserId)
+		util.GinResponseError(c, http.StatusBadRequest, "error when processing the request data", err.Error())
 		return
 	}
+
 	if err := r.reservationService.CheckUserSeatCount(inputData.SeatIds, accessDetails.UserId); err != nil { //check user seat limit
-		c.JSON(http.StatusConflict, gin.H{
-			"status": "success",
-			"data":   err.Error(),
-		})
+		r.log.ControllerResponseLog(err, "ReservationController@ReserveSeats", c.ClientIP(), contextData.(*util.AccessDetails).UserId)
+		util.GinResponseError(c, http.StatusForbidden, "error when processing the request data", err.Error())
 		return
 	}
-	r.txDb.Begin()                             //START DATABASE TRANSACTION
+
+	r.txDb.Begin() //START DATABASE TRANSACTION
+
 	for _, seatId := range inputData.SeatIds { //check eligibility for each chair in request
 		if err := r.seatService.IsOwned(seatId, accessDetails.UserId); err != nil {
 			r.txDb.Rollback() //ABORT DATABASE TRANSACTION
 			err = errors.New(err.Error() + " | conflict on this seat. seat_id: " + strconv.Itoa(int(seatId)))
-			c.JSON(http.StatusConflict, gin.H{
-				"status": "success",
-				"data":   err.Error(),
-			})
+			r.log.ControllerResponseLog(err, "ReservationController@ReserveSeats", c.ClientIP(), contextData.(*util.AccessDetails).UserId)
+			util.GinResponseError(c, http.StatusConflict, "conflict when processing the request data", err.Error())
 			return
-
 		}
 	}
+
 	for _, seatId := range inputData.SeatIds { //update seat availability
 		if err := r.seatService.UpdateStatus(seatId, "reserved"); err != nil {
 			r.txDb.Rollback() //ABORT DATABASE TRANSACTION
-			c.JSON(http.StatusConflict, gin.H{
-				"status": "fail",
-				"data":   err.Error(),
-			})
+			r.log.ControllerResponseLog(err, "ReservationController@ReserveSeats", c.ClientIP(), contextData.(*util.AccessDetails).UserId)
+			util.GinResponseError(c, http.StatusConflict, "error when processing the request data", err.Error())
 			return
 		}
 	}
-	r.txDb.Commit()                                                                       //COMMIT DATABASE TRANSACTION
+
+	r.txDb.Commit() //COMMIT DATABASE TRANSACTION
+
 	if err := r.txService.CreateTx(accessDetails.UserId, inputData.SeatIds); err != nil { //store reservation to txDb table
-		c.JSON(http.StatusConflict, gin.H{
-			"status": "fail",
-			"error":  err.Error(),
-		})
+		r.log.ControllerResponseLog(err, "ReservationController@ReserveSeats", c.ClientIP(), contextData.(*util.AccessDetails).UserId)
+		util.GinResponseError(c, http.StatusConflict, "error when processing the request data", err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"status": "success",
-		"data":   inputData.SeatIds,
-		"ok":     "ok",
+	c.JSON(http.StatusAccepted, gin.H{
+		"message": "information updated successfully ",
 	})
 	return
 }

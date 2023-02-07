@@ -23,7 +23,12 @@ func (u *UserMiddleware) HandleUserAccess(c *gin.Context) {
 			"status": "fail",
 			"error":  "your credentials are invalid",
 		})
-		u.log.WithField("error", err.Error()).Info("cannot find token in the http request")
+		u.log.
+			WithField("occurrence", "UserMiddelware@HandleUserAcccess").
+			WithField("error_messages", err.Error()).
+			WithField("client_ip", c.ClientIP()).
+			WithField("endpoint", c.FullPath()).
+			Info("cannot find token in the http request")
 		c.Abort()
 		return
 	}
@@ -33,7 +38,12 @@ func (u *UserMiddleware) HandleUserAccess(c *gin.Context) {
 			"status": "fail",
 			"error":  "your credentials are invalid. try to refresh your credentials",
 		})
-		u.log.WithField("error", err.Error()).Info("cannot find access token in the storage")
+		u.log.
+			WithField("occurrence", "UserMiddleware@HandleUserAccess").
+			WithField("client_ip", c.ClientIP()).
+			WithField("endpoint", c.FullPath()).
+			WithField("error_messages", err.Error()).
+			Info("cannot find access token in the storage")
 		c.Abort()
 		return
 	}

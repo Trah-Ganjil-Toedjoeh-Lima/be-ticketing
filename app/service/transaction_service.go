@@ -86,7 +86,7 @@ func (s *TransactionService) CleanUpDeadTransaction(transactions []model.Transac
 	return newTransaction
 }
 
-func (s *TransactionService) IsSeatsBelongsToUser(userId uint64) ([]model.Seat, error) {
+func (s *TransactionService) SeatsBelongsToUser(userId uint64) ([]model.Seat, error) {
 	var seats []model.Seat
 	//get user's transaction
 	var transactions []model.Transaction

@@ -23,7 +23,7 @@ func NewDatabase(appConfig *config.AppConfig, log *logrus.Logger) *gorm.DB {
 	if err != nil {
 		log.Panic("failed on connecting to the database server")
 	} else {
-		log.Info("successfully connected to database " + db.Migrator().CurrentDatabase())
+		log.Info("application is successfully connected to the database " + db.Migrator().CurrentDatabase())
 	}
 
 	sqlDB, _ := db.DB()

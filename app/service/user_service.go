@@ -28,6 +28,18 @@ func (us *UserService) GetOrInsertOne(user *model.User) (int64, error) {
 	return result.RowsAffected, nil
 }
 
+func (us *UserService) GetById(userId uint64) (model.User, error) {
+	var userOut model.User
+	result := us.userRepository.GetById(userId, &userOut)
+	if result.Error != nil {
+		return userOut, result.Error
+	}
+	if result.RowsAffected < 1 {
+		return userOut, errors.New("cannot find this user")
+	}
+	return userOut, nil
+}
+
 func (us *UserService) InsertOne(user *model.User) (int64, error) {
 	hashedCred, err := bcrypt.GenerateFromPassword([]byte(user.Phone), bcrypt.DefaultCost) //hash the credential
 	if err != nil {
@@ -76,16 +88,4 @@ func (us *UserService) GenerateToken(userInput *model.User) (*util.TokenDetails,
 	}
 	//return the new created token
 	return tokenDetails, nil
-}
-
-func (us *UserService) GetById(userId uint64) (model.User, error) {
-	var userOut model.User
-	result := us.userRepository.GetById(userId, &userOut)
-	if result.Error != nil {
-		return userOut, result.Error
-	}
-	if result.RowsAffected < 1 {
-		return userOut, errors.New("cannot find this user")
-	}
-	return userOut, nil
 }

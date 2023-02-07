@@ -31,12 +31,13 @@ func InitializeServer() *gin.Engine {
 	userRepository := repository.NewUserRepository(db)
 	userService := service.NewUserService(userRepository, tokenUtil)
 	userController := controller.NewUserController(userService, tokenUtil)
+	logUtil := util.NewLogUtil(logger)
 	transactionRepository := repository.NewTransactionRepository(db)
-	seatRepository := repository.NewSeatRepository(db, logger)
+	seatRepository := repository.NewSeatRepository(db, logUtil)
 	transactionService := service.NewTransactionService(transactionRepository, userRepository, seatRepository, appConfig)
 	reservationService := service.NewReservationService(appConfig, transactionService)
 	seatService := service.NewSeatService(appConfig, seatRepository, transactionRepository)
-	reservationController := controller.NewReservationController(appConfig, db, reservationService, userService, transactionService, seatService)
+	reservationController := controller.NewReservationController(appConfig, db, logUtil, reservationService, transactionService, seatService)
 	snapUtil := util.NewSnapUtil(appConfig)
 	transactionController := controller.NewTransactionController(transactionService, userService, snapUtil)
 	emailUtil := util.NewEmailUtil(appConfig)
@@ -73,4 +74,4 @@ var TransactionSet = wire.NewSet(controller.NewTransactionController, repository
 
 var SnapSet = wire.NewSet(controller.NewSnapController, service.NewSnapService)
 
-var UtilSet = wire.NewSet(util.NewTokenUtil, util.NewSnapUtil, util.NewEmailUtil, util.NewETicketUtil)
+var UtilSet = wire.NewSet(util.NewTokenUtil, util.NewSnapUtil, util.NewEmailUtil, util.NewETicketUtil, util.NewLogUtil)

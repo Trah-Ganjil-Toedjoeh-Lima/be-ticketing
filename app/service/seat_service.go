@@ -21,14 +21,14 @@ func NewSeatService(config *config.AppConfig, seatRepo *repository.SeatRepositor
 func (s *SeatService) GetAllSeats() ([]model.Seat, error) {
 	var seats []model.Seat
 	if err := s.seatRepo.GetAllSeats(&seats).Error; err != nil {
-		return nil, err
+		return nil, errors.New("database operation error")
 	}
 	return seats, nil
 }
 
 func (s *SeatService) UpdateStatus(seatId uint, status string) error {
 	if result := s.seatRepo.UpdateStatus(seatId, status); result.Error != nil {
-		return result.Error
+		return errors.New("database operation error")
 	}
 	return nil
 }
@@ -36,7 +36,7 @@ func (s *SeatService) UpdateStatus(seatId uint, status string) error {
 func (s *SeatService) IsOwned(seatId uint, userId uint64) error {
 	var seat model.Seat
 	if result := s.seatRepo.GetSeatById(&seat, seatId); result.Error != nil { //get requested seat
-		return result.Error
+		return errors.New("database operation error")
 	}
 	//start validation logic
 	if seat.Status == "available" { //check from seat table
@@ -44,7 +44,7 @@ func (s *SeatService) IsOwned(seatId uint, userId uint64) error {
 	} else { //if seat table not convincing => check form tx table
 		var tx model.Transaction
 		if result := s.txRepo.GetBySeat(&tx, seatId).Last(&tx); result.Error != nil { //get the newest transaction data for this seat from tx table. Check if the query returns an error
-			return result.Error
+			return errors.New("database operation error")
 		} else if result.RowsAffected < 1 { //double-check the seat status, maybe the cause of  unavailableness is because of 'ghost' reservation
 			//if there are no seat data in the tx table, it means that it`s only booked by someone and then did not proceed to the transaction process
 			//this case can be caused by irresponsible user that left their reservation but not complete the transaction

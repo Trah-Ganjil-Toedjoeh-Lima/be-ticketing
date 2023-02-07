@@ -17,20 +17,18 @@ func NewReservationService(config *config.AppConfig, txService *TransactionServi
 }
 
 func (s *ReservationService) CheckUserSeatCount(seatIds []uint, userId uint64) error {
-	//ambil data transaksi user yang sudah tercatat
-	prevTransaction, err := s.txService.GetTxDetailsByUser(userId)
+	prevTransaction, err := s.txService.GetTxDetailsByUser(userId) //ambil data transaksi user yang sudah tercatat
 	if err != nil {
-		return err
+		return errors.New("database operation error")
 	}
-	//ambil data seatId nya saja
-	var prevTxSeatIds []uint
+
+	var prevTxSeatIds []uint //ambil data seatId nya saja
 	for _, tx := range prevTransaction {
 		prevTxSeatIds = append(prevTxSeatIds, tx.SeatId)
 	}
-	//ambil perbedaan seatId sesudah dan sebelum
-	diff := util.ElementDifference(seatIds, prevTxSeatIds)
-	//jika jumlah kursi sebelumnya + jumlah kursi pesanan yang belum ada di transaksi sebelumnya > 5 return error
-	if totalSeat := len(diff) + len(prevTransaction); totalSeat > 5 {
+
+	diff := util.ElementDifference(seatIds, prevTxSeatIds)            //ambil perbedaan seatId sesudah dan sebelum
+	if totalSeat := len(diff) + len(prevTransaction); totalSeat > 5 { //jika jumlah kursi sebelumnya + jumlah kursi pesanan yang belum ada di transaksi sebelumnya > 5 return error
 		return errors.New("user telah memesan " + strconv.Itoa(len(prevTransaction)) + " kursi, tidak bisa memesan " + strconv.Itoa(len(seatIds)) + " kursi lagi")
 	}
 	return nil
