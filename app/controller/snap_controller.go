@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"fmt"
 	"github.com/frchandra/ticketing-gmcgo/app/service"
 	"github.com/frchandra/ticketing-gmcgo/app/util"
 	"github.com/gin-gonic/gin"
@@ -12,10 +11,11 @@ type SnapController struct {
 	snapService *service.SnapService
 	snapUtil    *util.SnapUtil
 	txService   *service.TransactionService
+	log         *util.LogUtil
 }
 
-func NewSnapController(snapService *service.SnapService, snapUtil *util.SnapUtil, txService *service.TransactionService) *SnapController {
-	return &SnapController{snapService: snapService, snapUtil: snapUtil, txService: txService}
+func NewSnapController(snapService *service.SnapService, snapUtil *util.SnapUtil, txService *service.TransactionService, log *util.LogUtil) *SnapController {
+	return &SnapController{snapService: snapService, snapUtil: snapUtil, txService: txService, log: log}
 }
 
 func (s *SnapController) HandleCallback(c *gin.Context) {
@@ -32,26 +32,28 @@ func (s *SnapController) HandleCallback(c *gin.Context) {
 	if txStatus == "pending" {
 		if err := s.snapService.HandlePending(message); err != nil {
 			c.Status(http.StatusNotFound)
+			s.log.BasicLog(err, "SnapController@HandleCallback@HandlePending")
 			return
 		}
 		go func() {
 			if err := s.snapService.SendInfoEmail(s.snapService.PrepareTxDetailsByMsg(message)); err != nil {
-				fmt.Println(err.Error())
+				s.log.BasicLog(err, "SnapController@HandleCallback@HandlePending@SendInfoEmail")
 			}
 		}()
 	} else if txStatus == "settlement" {
 		if err := s.snapService.HandleSettlement(message); err != nil {
 			c.Status(http.StatusNotFound)
+			s.log.BasicLog(err, "SnapController@HandleCallback@HandleSettlement")
 			return
 		}
 		go func() {
 			if err := s.snapService.SendTicketEmail(s.snapService.PrepareTxDetailsByMsg(message)); err != nil {
-				fmt.Println(err.Error())
+				s.log.BasicLog(err, "SnapController@HandleCallback@HandlePending@SendInfoEmail")
 			}
 		}()
 	} else if txStatus == "expire" || txStatus == "cancel" || txStatus == "deny" {
 		if err := s.snapService.HandleFailure(message); err != nil {
-			c.Status(http.StatusNotFound)
+			s.log.BasicLog(err, "SnapController@HandleFailure@HandleSettlement")
 			return
 		}
 	}

@@ -1,38 +1,30 @@
 package factory
 
 import (
-	"github.com/bxcodec/faker/v4"
 	"github.com/frchandra/ticketing-gmcgo/app/model"
+	"github.com/frchandra/ticketing-gmcgo/config"
 	"gorm.io/gorm"
-	"time"
 )
 
 type UserFactory struct {
-	db *gorm.DB
+	db     *gorm.DB
+	config *config.AppConfig
 }
 
-func NewUserFactory(db *gorm.DB) UserFactory {
-	return UserFactory{db: db}
+func NewUserFactory(db *gorm.DB, config *config.AppConfig) *UserFactory {
+	return &UserFactory{db: db, config: config}
 }
 
-func (this UserFactory) GetData() interface{} {
-	return &model.User{
-		Name:      faker.Name(),
-		Email:     faker.Email(),
-		Phone:     faker.E164PhoneNumber(),
-		CreatedAt: time.Time{},
-		UpdatedAt: time.Time{},
-		DeletedAt: gorm.DeletedAt{},
+func (this *UserFactory) RunFactory() error {
+	adminUser := model.User{
+		Name:  this.config.AdminName,
+		Email: this.config.AdminEmail,
+		Phone: this.config.AdminPhone,
 	}
-}
 
-func (this UserFactory) RunFactory() error {
-	count := 3
-	for i := 0; i < count; i++ {
-		err := this.db.Debug().Create(this.GetData()).Error
-		if err != nil {
-			return err
-		}
+	err := this.db.Debug().Create(&adminUser).Error
+	if err != nil {
+		return err
 	}
 	return nil
 }

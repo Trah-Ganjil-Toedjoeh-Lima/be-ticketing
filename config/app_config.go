@@ -52,6 +52,12 @@ type AppConfig struct {
 	MailFromName    string
 
 	TransactionMinute time.Duration
+
+	AdminName  string
+	AdminEmail string
+	AdminPhone string
+
+	IsOpenGate bool
 }
 
 func NewAppConfig() *AppConfig {
@@ -104,6 +110,12 @@ func NewAppConfig() *AppConfig {
 		MailFromName:    getEnv("MAIL_FROM_NAME", "golang"),
 
 		TransactionMinute: transactionMinute,
+
+		AdminName:  getEnv("ADMIN_NAME", ""),
+		AdminEmail: getEnv("ADMIN_EMAIL", ""),
+		AdminPhone: getEnv("ADMIN_PHONE", ""),
+
+		IsOpenGate: true,
 	}
 	return &appConfig
 

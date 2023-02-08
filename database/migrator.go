@@ -3,6 +3,7 @@ package database
 import (
 	"fmt"
 	"github.com/frchandra/ticketing-gmcgo/app/model"
+	"github.com/frchandra/ticketing-gmcgo/config"
 	"github.com/frchandra/ticketing-gmcgo/database/factory"
 	"gorm.io/gorm"
 )
@@ -32,7 +33,7 @@ func (mi *Migrator) RunMigration(option string) {
 
 func (mi *Migrator) GetFactory() []factory.Factory {
 	return []factory.Factory{
-		factory.NewUserFactory(mi.db),
+		factory.NewUserFactory(mi.db, config.NewAppConfig()),
 		factory.NewSeatFactory(mi.db),
 	}
 }

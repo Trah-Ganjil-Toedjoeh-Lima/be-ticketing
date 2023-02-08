@@ -5,6 +5,7 @@ import (
 	"github.com/frchandra/ticketing-gmcgo/app/service"
 	"github.com/frchandra/ticketing-gmcgo/app/util"
 	"github.com/frchandra/ticketing-gmcgo/app/validation"
+	"github.com/frchandra/ticketing-gmcgo/config"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -12,13 +13,11 @@ import (
 type UserController struct {
 	userService *service.UserService
 	tokenUtil   *util.TokenUtil
+	config      *config.AppConfig
 }
 
-func NewUserController(userService *service.UserService, tokenUtil *util.TokenUtil) *UserController {
-	return &UserController{
-		userService: userService,
-		tokenUtil:   tokenUtil,
-	}
+func NewUserController(userService *service.UserService, tokenUtil *util.TokenUtil, config *config.AppConfig) *UserController {
+	return &UserController{userService: userService, tokenUtil: tokenUtil, config: config}
 }
 
 func (uc *UserController) Register(c *gin.Context) {
@@ -100,16 +99,16 @@ func (uc *UserController) SignIn(c *gin.Context) {
 func (uc *UserController) Login(c *gin.Context) {
 	var inputData validation.LoginValidation
 	var userInput model.User
-	//validate the input data
-	if err := c.ShouldBindJSON(&inputData); err != nil {
+
+	if err := c.ShouldBindJSON(&inputData); err != nil { //validate the input data
 		c.JSON(http.StatusBadRequest, gin.H{
 			"status": "fail",
 			"error":  err.Error(),
 		})
 		return
 	}
-	//choose between the given credential. Can be user's name or email
-	if inputData.Name == "" {
+
+	if inputData.Name == "" { //choose between the given credential. Can be user's name or email
 		userInput = model.User{
 			Email: inputData.Email,
 			Phone: inputData.Phone,
@@ -120,8 +119,8 @@ func (uc *UserController) Login(c *gin.Context) {
 			Phone: inputData.Phone,
 		}
 	}
-	//validate if user exist and credential is correct
-	err := uc.userService.ValidateLogin(&userInput)
+
+	err := uc.userService.ValidateLogin(&userInput) //validate if user exist and credential is correct
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"status": "fail",
@@ -129,8 +128,8 @@ func (uc *UserController) Login(c *gin.Context) {
 		})
 		return
 	}
-	//generate token for this user
-	token, err := uc.userService.GenerateToken(&userInput)
+
+	token, err := uc.userService.GenerateToken(&userInput) //generate token for this user
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"status": "fail",
@@ -138,8 +137,8 @@ func (uc *UserController) Login(c *gin.Context) {
 		})
 		return
 	}
-	//return success
-	c.SetSameSite(http.SameSiteNoneMode)
+
+	c.SetSameSite(http.SameSiteNoneMode) //return success
 	c.JSON(http.StatusOK, gin.H{
 		"status": "success",
 		"token":  token,
