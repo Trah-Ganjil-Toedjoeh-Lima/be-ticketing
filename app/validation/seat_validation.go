@@ -1,10 +1,15 @@
 package validation
 
-type SeatResponse struct {
+type SeatDetailsResponse struct {
 	SeatId uint   `json:"seat_id"`
 	Name   string `json:"name"`
 	Price  uint   `json:"price"`
 	Status string `json:"status"`
+}
+
+type SeatResponse struct {
+	Name  string `json:"name"`
+	Price uint   `json:"price"`
 }
 
 type SeatReservationRequest struct {

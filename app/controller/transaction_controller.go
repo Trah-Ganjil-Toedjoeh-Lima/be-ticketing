@@ -3,6 +3,7 @@ package controller
 import (
 	"github.com/frchandra/ticketing-gmcgo/app/service"
 	"github.com/frchandra/ticketing-gmcgo/app/util"
+	"github.com/frchandra/ticketing-gmcgo/app/validation"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -27,9 +28,21 @@ func (t *TransactionController) GetTransactionDetails(c *gin.Context) {
 		util.GinResponseError(c, http.StatusNotFound, "something went wrong", "error when getting the data")
 		return
 	}
+
+	var seatResponses []validation.SeatResponse //transform data
+	for _, tx := range txDetails {
+		seatResponse := validation.SeatResponse{Name: tx.Seat.Name, Price: tx.Seat.Price}
+		seatResponses = append(seatResponses, seatResponse)
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"message": "success",
-		"data":    txDetails,
+		"data": gin.H{
+			"seats":      seatResponses,
+			"user_name":  txDetails[0].User.Name,
+			"user_email": txDetails[0].User.Email,
+			"user_phone": txDetails[0].User.Phone,
+		},
 	})
 	return
 }

@@ -39,7 +39,7 @@ func (r *ReservationController) GetSeatsInfo(c *gin.Context) {
 		return
 	}
 
-	seatsResponse := make([]validation.SeatResponse, len(seats), len(seats)) //create response object
+	seatsResponse := make([]validation.SeatDetailsResponse, len(seats), len(seats)) //create response object
 	for _, seat := range seats {
 		seatsResponse[seat.SeatId-1].SeatId = seat.SeatId
 		seatsResponse[seat.SeatId-1].Name = seat.Name
