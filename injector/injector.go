@@ -34,6 +34,7 @@ var ReservationSet = wire.NewSet(
 )
 
 var SeatSet = wire.NewSet(
+	controller.NewSeatController,
 	repository.NewSeatRepository,
 	service.NewSeatService,
 )

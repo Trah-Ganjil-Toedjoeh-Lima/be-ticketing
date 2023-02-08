@@ -31,19 +31,18 @@ func (r *SeatRepository) UpdateStatusTxn(txn *gorm.DB, seatId uint, status strin
 	return result
 }
 
-func (r *SeatRepository) GetAllSeats(seats *[]model.Seat) *gorm.DB {
+func (r *SeatRepository) GetAll(seats *[]model.Seat) *gorm.DB {
 	result := r.db.Find(seats)
 	if result.Error != nil {
-		r.log.BasicLog(result.Error, "SeatRepository@GetAllSeats")
+		r.log.BasicLog(result.Error, "SeatRepository@GetAll")
 	}
 	return result
 }
 
-func (r *SeatRepository) GetSeatByIdTxn(txn *gorm.DB, seat *model.Seat, id uint) *gorm.DB {
+func (r *SeatRepository) GetByIdTxn(txn *gorm.DB, seat *model.Seat, id uint) *gorm.DB {
 	result := txn.First(seat, id)
 	if result.Error != nil {
-		r.log.BasicLog(result.Error, "SeatRepository@GetSeatByIdTxn")
+		r.log.BasicLog(result.Error, "SeatRepository@GetByIdTxn")
 	}
 	return result
-
 }

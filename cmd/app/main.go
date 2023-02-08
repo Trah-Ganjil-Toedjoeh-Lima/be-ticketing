@@ -15,4 +15,5 @@ func main() {
 	//TODO: minimizing open too many connection to database by improving query with eager loading
 	//TODO: create delete seat transaction feature
 	//TODO: move picture ticket to docker container
+	//TODO: pretify transaction details data for FE
 }

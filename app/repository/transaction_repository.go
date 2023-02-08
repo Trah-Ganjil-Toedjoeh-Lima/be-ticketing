@@ -23,18 +23,10 @@ func (t *TransactionRepository) GetBySeatTxn(txn *gorm.DB, transaction *model.Tr
 	return result
 }
 
-func (t *TransactionRepository) GetBySeatUser(transaction *model.Transaction, seatId uint, userId uint64) *gorm.DB {
-	result := t.db.Where("seat_id = ? AND user_id = ?", seatId, userId).Find(transaction)
+func (t *TransactionRepository) GetDetailsByLink(transaction *model.Transaction, link string) *gorm.DB {
+	result := t.db.Joins("User").Joins("Seat", t.db.Where(&model.Seat{Link: link})).First(transaction)
 	if result.Error != nil {
-		t.log.BasicLog(result.Error, "TransactionRepotisoty@GetBySeatUser")
-	}
-	return result
-}
-
-func (t *TransactionRepository) GetByUser(transactions *[]model.Transaction, userId uint64) *gorm.DB {
-	result := t.db.Where("user_id = ?", userId).Find(transactions)
-	if result.Error != nil {
-		t.log.BasicLog(result.Error, "TransactionRepotisoty@GetByUser")
+		t.log.BasicLog(result.Error, "TransactionRepotisoty@GetDetailsByLink")
 	}
 	return result
 }

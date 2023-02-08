@@ -21,7 +21,7 @@ func NewSeatService(config *config.AppConfig, seatRepo *repository.SeatRepositor
 
 func (s *SeatService) GetAllSeats() ([]model.Seat, error) {
 	var seats []model.Seat
-	if err := s.seatRepo.GetAllSeats(&seats).Error; err != nil {
+	if err := s.seatRepo.GetAll(&seats).Error; err != nil {
 		return nil, errors.New("database operation error")
 	}
 	return seats, nil
@@ -43,7 +43,7 @@ func (s *SeatService) UpdateStatusTxn(txn *gorm.DB, seatId uint, status string) 
 
 func (s *SeatService) IsOwnedTxn(txn *gorm.DB, seatId uint, userId uint64) error {
 	var seat model.Seat
-	if result := s.seatRepo.GetSeatByIdTxn(txn, &seat, seatId); result.Error != nil { //get requested seat
+	if result := s.seatRepo.GetByIdTxn(txn, &seat, seatId); result.Error != nil { //get requested seat
 		return errors.New("database operation error")
 	}
 	//start validation logic

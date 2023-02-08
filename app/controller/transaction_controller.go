@@ -21,7 +21,7 @@ func NewTransactionController(txService *service.TransactionService, userService
 func (t *TransactionController) GetTransactionDetails(c *gin.Context) {
 	contextData, _ := c.Get("accessDetails")              //get the details about the current user that make request from the context passed by user middleware
 	accessDetails, _ := contextData.(*util.AccessDetails) //type assertion
-	txDetails, err := t.txService.GetTxDetailsByUser(accessDetails.UserId)
+	txDetails, err := t.txService.GetDetailsByUser(accessDetails.UserId)
 	if err != nil {
 		t.log.ControllerResponseLog(err, "TransactionController@GetTransactionDetails", c.ClientIP(), contextData.(*util.AccessDetails).UserId)
 		util.GinResponseError(c, http.StatusNotFound, "something went wrong", "error when getting the data")

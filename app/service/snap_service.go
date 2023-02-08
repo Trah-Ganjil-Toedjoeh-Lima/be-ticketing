@@ -22,7 +22,7 @@ func NewSnapService(txService *TransactionService, seatService *SeatService, txR
 }
 
 func (s *SnapService) HandleSettlement(message map[string]any) error {
-	transactions, _ := s.txService.GetTxByOrder(message["order_id"].(string))
+	transactions, _ := s.txService.GetByOrder(message["order_id"].(string))
 
 	for _, tx := range transactions { //update seats availability
 		if err := s.seatService.UpdateStatus(tx.SeatId, "sold"); err != nil {
@@ -37,7 +37,7 @@ func (s *SnapService) HandleSettlement(message map[string]any) error {
 }
 
 func (s *SnapService) HandleFailure(message map[string]any) error {
-	transactions, _ := s.txService.GetTxByOrder(message["order_id"].(string))
+	transactions, _ := s.txService.GetByOrder(message["order_id"].(string))
 	for _, tx := range transactions {
 		if err := s.seatService.UpdateStatus(tx.SeatId, "#"); err != nil {
 			return err
@@ -65,7 +65,7 @@ func (s *SnapService) PrepareTxDetailsByMsg(message map[string]any) ([]model.Sea
 	var seats []model.Seat
 	var userName string
 	var userEmail string
-	transactions, _ := s.txService.GetTxDetailsByOrder(message["order_id"].(string))
+	transactions, _ := s.txService.GetDetailsByOrder(message["order_id"].(string))
 	for _, tx := range transactions {
 		seats = append(seats, tx.Seat)
 	}

@@ -17,7 +17,7 @@ func NewReservationService(config *config.AppConfig, txService *TransactionServi
 }
 
 func (s *ReservationService) CheckUserSeatCount(seatIds []uint, userId uint64) error {
-	prevTransaction, err := s.txService.GetTxDetailsByUser(userId) //ambil data transaksi user yang sudah tercatat
+	prevTransaction, err := s.txService.GetDetailsByUser(userId) //ambil data transaksi user yang sudah tercatat
 	if err != nil {
 		return errors.New("database operation error")
 	}

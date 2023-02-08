@@ -40,16 +40,24 @@ func (s *TransactionService) CreateTx(userId uint64, seatIds []uint) error {
 	return nil
 }
 
-func (s *TransactionService) GetTxDetailsByUser(userId uint64) ([]model.Transaction, error) {
+func (s *TransactionService) GetDetailsByLink(link string) (model.Transaction, error) {
+	var transaction model.Transaction
+	if result := s.txRepo.GetDetailsByLink(&transaction, link); result.Error != nil {
+		return transaction, errors.New("database operation error")
+	}
+	return transaction, nil
+}
+
+func (s *TransactionService) GetDetailsByUser(userId uint64) ([]model.Transaction, error) {
 	var transactions []model.Transaction //get user's transaction
-	if result := s.txRepo.GetByUser(&transactions, userId); result.Error != nil {
+	if result := s.txRepo.GetDetailsByUser(&transactions, userId); result.Error != nil {
 		return transactions, errors.New("database operation error")
 	}
 	transactions = s.CleanUpGhostTransaction(transactions)
 	return transactions, nil
 }
 
-func (s *TransactionService) GetTxByOrder(orderId string) ([]model.Transaction, error) {
+func (s *TransactionService) GetByOrder(orderId string) ([]model.Transaction, error) {
 	var transactions []model.Transaction
 	if result := s.txRepo.GetByOrder(&transactions, orderId); result.Error != nil {
 		return transactions, errors.New("database operation error")
@@ -57,7 +65,7 @@ func (s *TransactionService) GetTxByOrder(orderId string) ([]model.Transaction, 
 	return transactions, nil
 }
 
-func (s *TransactionService) GetTxDetailsByOrder(orderId string) ([]model.Transaction, error) {
+func (s *TransactionService) GetDetailsByOrder(orderId string) ([]model.Transaction, error) {
 	var transactions []model.Transaction
 	if result := s.txRepo.GetDetailsByOrder(&transactions, orderId); result.Error != nil {
 		return transactions, errors.New("database operation error")
