@@ -59,7 +59,7 @@ func (u *AdminMiddleware) HandleAdminAccess(c *gin.Context) {
 		return
 	}
 	c.Abort()
-	c.JSON(http.StatusBadRequest, gin.H{
+	c.JSON(http.StatusUnauthorized, gin.H{
 		"status": "fail",
 		"error":  "you are not authorized",
 	})

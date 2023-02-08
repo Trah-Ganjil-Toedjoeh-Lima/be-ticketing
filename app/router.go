@@ -10,6 +10,7 @@ import (
 func NewRouter(
 	userMiddleware *middleware.UserMiddleware,
 	adminMiddleware *middleware.AdminMiddleware,
+	gateMiddleware *middleware.GateMiddleware,
 
 	userController *controller.UserController,
 	reservationController *controller.ReservationController,
@@ -19,7 +20,7 @@ func NewRouter(
 ) *gin.Engine {
 	router := gin.Default()
 
-	public := router.Group("/api/v1")
+	public := router.Group("/api/v1").Use(gateMiddleware.HandleAccess)
 	public.POST("/user/register", userController.Register)
 	public.POST("/user/sign_in", userController.SignIn)
 	public.POST("/user/login", userController.Login)
@@ -33,11 +34,11 @@ func NewRouter(
 	webhook := router.Group("api/v1")
 	webhook.POST("/snap/payment/callback", snapController.HandleCallback)
 
-	user := router.Group("/api/v1").Use(userMiddleware.HandleUserAccess)
+	user := router.Group("/api/v1").Use(gateMiddleware.HandleAccess).Use(userMiddleware.HandleUserAccess)
 	user.POST("/user/logout", userController.Logout)
 	user.GET("/user", userController.CurrentUser)
-	user.GET("/seat_map", reservationController.GetSeatsInfo)
-	user.POST("/seat_map", reservationController.ReserveSeats)
+	user.Use(gateMiddleware.HandleAccess).GET("/seat_map", reservationController.GetSeatsInfo)
+	user.Use(gateMiddleware.HandleAccess).POST("/seat_map", reservationController.ReserveSeats)
 	user.GET("/checkout", txController.GetTransactionDetails)
 	user.POST("/checkout", txController.InitiateTransaction)
 

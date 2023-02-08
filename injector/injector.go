@@ -19,6 +19,7 @@ import (
 var MiddlewareSet = wire.NewSet(
 	middleware.NewUserMiddleware,
 	middleware.NewAdminMiddleware,
+	middleware.NewGateMiddleware,
 )
 
 var UserSet = wire.NewSet(
