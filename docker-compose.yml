@@ -31,7 +31,8 @@ services:
     hostname: app
     env_file: .env
     volumes:
-      - ./storage/logs/:/ticketing-gmcgo/storage/logs/
+      - ./storage/:/ticketing-gmcgo/storage/
+      - ./resource/:/ticketing-gmcgo/resource/
     ports:
       - "8080:8080"
     networks:

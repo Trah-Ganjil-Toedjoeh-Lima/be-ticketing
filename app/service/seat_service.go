@@ -50,6 +50,10 @@ func (s *SeatService) IsOwnedTxn(txn *gorm.DB, seatId uint, userId uint64) error
 	if seat.Status == "available" { //check from seat table
 		return nil
 	} else { //if seat table is not convincing => check form tx table
+		if seat.Status == "not_for_sale" {
+			return errors.New("this seat is not for sale (nice try wkwkwk)")
+		}
+
 		var transaction model.Transaction
 		if result := s.txRepo.GetBySeatTxn(txn, &transaction, seatId).Last(&transaction); result.Error != nil { //get the newest transaction data for this seat from transaction table. Check if the query returns an error
 			return errors.New("database operation error")
@@ -58,14 +62,19 @@ func (s *SeatService) IsOwnedTxn(txn *gorm.DB, seatId uint, userId uint64) error
 			//this case can be caused by irresponsible user that left their reservation but not complete the transaction
 			return nil
 		}
-		if time.Now().After(transaction.UpdatedAt.Add(s.config.TransactionMinute)) { //kalo data kursi ada di tabel transaction => cek updated_at. If seat update_at + 15 < time => return nil
+
+		if transaction.Confirmation == "settlement" { //if this transaction is already settled it mean that this seat is unavailable
+			return errors.New("this seat is not available")
+		} else if time.Now().After(transaction.UpdatedAt.Add(s.config.TransactionMinute)) { //if seat not settled continue to check. Cek data kursi ada di tabel transaction => cek updated_at. If seat update_at + 15 < time => return nil
 			//kalo transaksi sebelumnya "ngambang" maka boleh lanjut
 			//transaksi ngambang pada kasus ini disebabkan oleh user yang tidak menyelesaikan/kelamaan dalam proses transaksi
 			return nil
 		}
+
 		if transaction.UserId == userId { // kalo tx sebelumnya gak "ngambang", asalkan yang pesen usernya sama, lanjut
 			return nil
 		}
-		return errors.New("kursi sudah ada yang nge-booking") //kalo gagal melewati constraint diatas, berarti sedang/sudah di cim orang lain
+
+		return errors.New("this seat is already booked") //kalo gagal melewati constraint diatas, berarti sedang/sudah di cim orang lain
 	}
 }

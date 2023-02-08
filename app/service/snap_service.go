@@ -14,22 +14,23 @@ type SnapService struct {
 	snapUtil    *util.SnapUtil
 	emailUtil   *util.EmailUtil
 	eticketUtil *util.ETicketUtil
+	log         *util.LogUtil
 }
 
-func NewSnapService(txService *TransactionService, seatService *SeatService, txrepo *repository.TransactionRepository, snapUtil *util.SnapUtil, emailUtil *util.EmailUtil, eticketUtil *util.ETicketUtil) *SnapService {
-	return &SnapService{txService: txService, seatService: seatService, txRepo: txrepo, snapUtil: snapUtil, emailUtil: emailUtil, eticketUtil: eticketUtil}
+func NewSnapService(txService *TransactionService, seatService *SeatService, txRepo *repository.TransactionRepository, snapUtil *util.SnapUtil, emailUtil *util.EmailUtil, eticketUtil *util.ETicketUtil, log *util.LogUtil) *SnapService {
+	return &SnapService{txService: txService, seatService: seatService, txRepo: txRepo, snapUtil: snapUtil, emailUtil: emailUtil, eticketUtil: eticketUtil, log: log}
 }
 
 func (s *SnapService) HandleSettlement(message map[string]any) error {
 	transactions, _ := s.txService.GetTxByOrder(message["order_id"].(string))
-	//update seats availability
-	for _, tx := range transactions {
+
+	for _, tx := range transactions { //update seats availability
 		if err := s.seatService.UpdateStatus(tx.SeatId, "sold"); err != nil {
 			return err
 		}
 	}
-	//update tx status
-	if err := s.txService.UpdatePaymentStatus(message["order_id"].(string), message["payment_type"].(string), message["transaction_status"].(string)); err != nil {
+
+	if err := s.txService.UpdatePaymentStatus(message["order_id"].(string), message["payment_type"].(string), message["transaction_status"].(string)); err != nil { //update tx status
 		return err
 	}
 	return nil
@@ -42,19 +43,19 @@ func (s *SnapService) HandleFailure(message map[string]any) error {
 			return err
 		}
 	}
-	//update tx status
-	if err := s.txService.UpdatePaymentStatus(message["order_id"].(string), message["payment_type"].(string), message["transaction_status"].(string)); err != nil {
+
+	if err := s.txService.UpdatePaymentStatus(message["order_id"].(string), message["payment_type"].(string), message["transaction_status"].(string)); err != nil { //update tx status
 		return err
 	}
-	//soft delete tx status
-	s.txRepo.SoftDeleteByOrder(message["order_id"].(string))
+
+	s.txRepo.SoftDeleteByOrder(message["order_id"].(string)) //soft delete tx status
 	return nil
 
 }
 
 func (s *SnapService) HandlePending(message map[string]any) error {
-	//update tx status
-	if err := s.txService.UpdatePaymentStatus(message["order_id"].(string), message["payment_type"].(string), message["transaction_status"].(string)); err != nil {
+
+	if err := s.txService.UpdatePaymentStatus(message["order_id"].(string), message["payment_type"].(string), message["transaction_status"].(string)); err != nil { //update tx status
 		return err
 	}
 	return nil
@@ -86,6 +87,7 @@ func (s *SnapService) SendInfoEmail(seats []model.Seat, receiverName, receiverEm
 	if err := s.emailUtil.SendEmail("./resource/template/info.gohtml", data, receiverEmail, "INFO EMAIL", []string{}); err != nil {
 		return err
 	}
+	s.log.Log.Info("successfully sent pending email to " + receiverEmail)
 	return nil
 }
 
@@ -109,5 +111,6 @@ func (s *SnapService) SendTicketEmail(seats []model.Seat, receiverName, receiver
 	if err := s.emailUtil.SendEmail("./resource/template/ticket.gohtml", data, receiverEmail, "TICKET EMAIL", attachmentPath); err != nil {
 		return err
 	}
+	s.log.Log.Info("successfully sent ticket email to " + receiverEmail)
 	return nil
 }

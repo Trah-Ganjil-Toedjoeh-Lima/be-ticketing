@@ -44,7 +44,7 @@ func InitializeServer() *gin.Engine {
 	transactionController := controller.NewTransactionController(transactionService, userService, snapUtil, logUtil)
 	emailUtil := util.NewEmailUtil(appConfig)
 	eTicketUtil := util.NewETicketUtil(appConfig)
-	snapService := service.NewSnapService(transactionService, seatService, transactionRepository, snapUtil, emailUtil, eTicketUtil)
+	snapService := service.NewSnapService(transactionService, seatService, transactionRepository, snapUtil, emailUtil, eTicketUtil, logUtil)
 	snapController := controller.NewSnapController(snapService, snapUtil, transactionService, logUtil)
 	gateController := controller.NewGateController(appConfig)
 	engine := app.NewRouter(userMiddleware, adminMiddleware, gateMiddleware, userController, reservationController, transactionController, snapController, gateController)

@@ -31,8 +31,7 @@ COPY --from=builder /go/src/bin /ticketing-gmcgo
 COPY .env /ticketing-gmcgo
 
 RUN mkdir "/ticketing-gmcgo/storage"
-RUN mkdir "/ticketing-gmcgo/storage/logs"
-RUN mkdir "/ticketing-gmcgo/storage/picture"
+RUN mkdir "/ticketing-gmcgo/resource"
 
 
 EXPOSE 8080 8080

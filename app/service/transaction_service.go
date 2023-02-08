@@ -45,7 +45,7 @@ func (s *TransactionService) GetTxDetailsByUser(userId uint64) ([]model.Transact
 	if result := s.txRepo.GetByUser(&transactions, userId); result.Error != nil {
 		return transactions, errors.New("database operation error")
 	}
-	transactions = s.CleanUpDeadTransaction(transactions)
+	transactions = s.CleanUpGhostTransaction(transactions)
 	return transactions, nil
 }
 
@@ -65,7 +65,7 @@ func (s *TransactionService) GetTxDetailsByOrder(orderId string) ([]model.Transa
 	return transactions, nil
 }
 
-func (s *TransactionService) CleanUpDeadTransaction(transactions []model.Transaction) []model.Transaction {
+func (s *TransactionService) CleanUpGhostTransaction(transactions []model.Transaction) []model.Transaction {
 	var newTransaction []model.Transaction //cek apakah ada transaksi ngambang, jika ada buang dari slice dan update db
 	for _, tx := range transactions {
 		if time.Now().After(tx.UpdatedAt.Add(s.config.TransactionMinute)) { //if tx update_at + 15 < time now  => berarti transaction ngambang
@@ -87,7 +87,7 @@ func (s *TransactionService) SeatsBelongsToUser(userId uint64) ([]model.Seat, er
 	if result := s.txRepo.GetDetailsByUser(&transactions, userId); result.Error != nil {
 		return seats, errors.New("database operation error")
 	}
-	if transactions = s.CleanUpDeadTransaction(transactions); len(transactions) < 1 {
+	if transactions = s.CleanUpGhostTransaction(transactions); len(transactions) < 1 {
 		return seats, errors.New("this user doesen`t have any transaction")
 	}
 	for _, tx := range transactions {
@@ -104,8 +104,8 @@ func (s *TransactionService) SeatsBelongsToUser(userId uint64) ([]model.Seat, er
 
 func (s *TransactionService) PrepareTransactionData(userId uint64) (snap.Request, error) {
 	var txDetails []model.Transaction
-	s.txRepo.GetDetailsByUser(&txDetails, userId)                            //get user's transaction
-	if txDetails = s.CleanUpDeadTransaction(txDetails); len(txDetails) < 1 { //clean up 'ghost' transaction that may be created by this user
+	s.txRepo.GetDetailsByUser(&txDetails, userId)                             //get user's transaction
+	if txDetails = s.CleanUpGhostTransaction(txDetails); len(txDetails) < 1 { //clean up 'ghost' transaction that may be created by this user
 		return snap.Request{}, errors.New("cannot find any transaction for this user")
 	}
 	orderId := uuid.New().String()               //create order_id for the new midtrans transaction
