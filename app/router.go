@@ -9,11 +9,13 @@ import (
 
 func NewRouter(
 	userMiddleware *middleware.UserMiddleware,
+	adminMiddleware *middleware.AdminMiddleware,
 
 	userController *controller.UserController,
 	reservationController *controller.ReservationController,
 	txController *controller.TransactionController,
 	snapController *controller.SnapController,
+	gateController *controller.GateController,
 ) *gin.Engine {
 	router := gin.Default()
 
@@ -38,6 +40,11 @@ func NewRouter(
 	user.POST("/seat_map", reservationController.ReserveSeats)
 	user.GET("/checkout", txController.GetTransactionDetails)
 	user.POST("/checkout", txController.InitiateTransaction)
+
+	admin := router.Group("/api/v1").Use(adminMiddleware.HandleAdminAccess)
+	admin.POST("/admin/open_the_gate", gateController.OpenGate)
+	admin.POST("/admin/close_the_gate", gateController.CloseGate)
+	admin.GET("/admin/get_app_config", gateController.GetAppConfig)
 
 	return router
 }

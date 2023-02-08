@@ -16,11 +16,15 @@ import (
 	"github.com/google/wire"
 )
 
+var MiddlewareSet = wire.NewSet(
+	middleware.NewUserMiddleware,
+	middleware.NewAdminMiddleware,
+)
+
 var UserSet = wire.NewSet(
 	repository.NewUserRepository,
 	service.NewUserService,
 	controller.NewUserController,
-	middleware.NewUserMiddleware,
 )
 
 var ReservationSet = wire.NewSet(
@@ -44,6 +48,10 @@ var SnapSet = wire.NewSet(
 	service.NewSnapService,
 )
 
+var GateSet = wire.NewSet(
+	controller.NewGateController,
+)
+
 var UtilSet = wire.NewSet(
 	util.NewTokenUtil,
 	util.NewSnapUtil,
@@ -58,12 +66,14 @@ func InitializeServer() *gin.Engine {
 		app.NewDatabase,
 		app.NewCache,
 		app.NewLogger,
+		MiddlewareSet,
 		UtilSet,
 		UserSet,
 		SeatSet,
 		ReservationSet,
 		TransactionSet,
 		SnapSet,
+		GateSet,
 		app.NewRouter,
 	)
 	return nil

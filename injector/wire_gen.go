@@ -31,6 +31,7 @@ func InitializeServer() *gin.Engine {
 	logUtil := util.NewLogUtil(logger)
 	userRepository := repository.NewUserRepository(db, logUtil)
 	userService := service.NewUserService(userRepository, tokenUtil)
+	adminMiddleware := middleware.NewAdminMiddleware(tokenUtil, logger, appConfig, userService)
 	userController := controller.NewUserController(userService, tokenUtil, appConfig)
 	transactionRepository := repository.NewTransactionRepository(db, logUtil)
 	seatRepository := repository.NewSeatRepository(db, logUtil)
@@ -44,7 +45,8 @@ func InitializeServer() *gin.Engine {
 	eTicketUtil := util.NewETicketUtil(appConfig)
 	snapService := service.NewSnapService(transactionService, seatService, transactionRepository, snapUtil, emailUtil, eTicketUtil)
 	snapController := controller.NewSnapController(snapService, snapUtil, transactionService, logUtil)
-	engine := app.NewRouter(userMiddleware, userController, reservationController, transactionController, snapController)
+	gateController := controller.NewGateController(appConfig)
+	engine := app.NewRouter(userMiddleware, adminMiddleware, userController, reservationController, transactionController, snapController, gateController)
 	return engine
 }
 
@@ -64,7 +66,9 @@ func InitializeEmail() *util.EmailUtil {
 
 // injector.go:
 
-var UserSet = wire.NewSet(repository.NewUserRepository, service.NewUserService, controller.NewUserController, middleware.NewUserMiddleware)
+var MiddlewareSet = wire.NewSet(middleware.NewUserMiddleware, middleware.NewAdminMiddleware)
+
+var UserSet = wire.NewSet(repository.NewUserRepository, service.NewUserService, controller.NewUserController)
 
 var ReservationSet = wire.NewSet(service.NewReservationService, controller.NewReservationController)
 
@@ -73,5 +77,7 @@ var SeatSet = wire.NewSet(repository.NewSeatRepository, service.NewSeatService)
 var TransactionSet = wire.NewSet(controller.NewTransactionController, repository.NewTransactionRepository, service.NewTransactionService)
 
 var SnapSet = wire.NewSet(controller.NewSnapController, service.NewSnapService)
+
+var GateSet = wire.NewSet(controller.NewGateController)
 
 var UtilSet = wire.NewSet(util.NewTokenUtil, util.NewSnapUtil, util.NewEmailUtil, util.NewETicketUtil, util.NewLogUtil)
