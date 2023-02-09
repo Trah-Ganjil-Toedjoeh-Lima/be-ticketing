@@ -21,11 +21,11 @@ func (s *SeatController) AllDetails(c *gin.Context) {
 
 }
 
-func (s *SeatController) DetailsByLink(c *gin.Context) {
+func (s *SeatController) InfoByLink(c *gin.Context) {
 	link := c.Param("link")
 	seatDetails, err := s.txService.GetDetailsByLink(link)
 	if err != nil {
-		s.log.Log.WithField("occurrence", "SeatsController@DetailsByLink").Error(err)
+		s.log.Log.WithField("occurrence", "SeatsController@InfoByLink").Error(err)
 		util.GinResponseError(c, http.StatusNotFound, "request fail", "error when processing the request data")
 		return
 	}
@@ -39,9 +39,39 @@ func (s *SeatController) DetailsByLink(c *gin.Context) {
 		},
 	})
 	return
+}
 
+func (s *SeatController) DetailsByLink(c *gin.Context) {
+	link := c.Param("link")
+	seatDetails, err := s.txService.GetDetailsByLink(link)
+	if err != nil {
+		s.log.Log.WithField("occurrence", "SeatsController@InfoByLink").Error(err)
+		util.GinResponseError(c, http.StatusNotFound, "request fail", "error when processing the request data")
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"message": "success",
+		"data":    seatDetails,
+	})
+	return
 }
 
 func (s *SeatController) UpdateByLink(c *gin.Context) {
-
+	link := c.Param("link")
+	var inputData map[string]string //get the seats data in request body
+	if err := c.ShouldBindJSON(&inputData); err != nil {
+		s.log.BasicLog(err, "SeatController@UpdateByLink")
+		util.GinResponseError(c, http.StatusBadRequest, "error when processing the request data", err.Error())
+		return
+	}
+	postSaleStatus := inputData["post_sale_status"]
+	if err := s.seatService.UpdatePostSaleStatus(link, postSaleStatus); err != nil {
+		s.log.BasicLog(err, "SeatController@UpdateByLink")
+		util.GinResponseError(c, http.StatusBadRequest, "error when processing the request data", err.Error())
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"message": "success",
+		"data":    postSaleStatus,
+	})
 }

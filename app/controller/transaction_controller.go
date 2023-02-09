@@ -29,9 +29,9 @@ func (t *TransactionController) GetTransactionDetails(c *gin.Context) {
 		return
 	}
 
-	var seatResponses []validation.SeatResponse //transform data
+	var seatResponses []validation.BasicResponse //transform data
 	for _, tx := range txDetails {
-		seatResponse := validation.SeatResponse{Name: tx.Seat.Name, Price: tx.Seat.Price}
+		seatResponse := validation.BasicResponse{Name: tx.Seat.Name, Price: tx.Seat.Price}
 		seatResponses = append(seatResponses, seatResponse)
 	}
 

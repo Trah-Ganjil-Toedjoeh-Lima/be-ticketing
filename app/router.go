@@ -26,7 +26,8 @@ func NewRouter(
 	public.POST("/user/login", userController.Login)
 	public.POST("/user/refresh", userController.RefreshToken)
 
-	public.GET("/seat/:link", seatController.DetailsByLink)
+	public.GET("/seat/:link", seatController.InfoByLink)
+	public.PUT("/seat/:link", seatController.UpdateByLink)
 
 	webhook := router.Group("api/v1")
 	webhook.POST("/snap/payment/callback", snapController.HandleCallback)

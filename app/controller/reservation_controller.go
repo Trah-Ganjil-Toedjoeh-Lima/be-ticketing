@@ -39,7 +39,7 @@ func (r *ReservationController) GetSeatsInfo(c *gin.Context) {
 		return
 	}
 
-	seatsResponse := make([]validation.SeatDetailsResponse, len(seats), len(seats)) //create response object
+	seatsResponse := make([]validation.ReservationResponse, len(seats), len(seats)) //create response object
 	for _, seat := range seats {
 		seatsResponse[seat.SeatId-1].SeatId = seat.SeatId
 		seatsResponse[seat.SeatId-1].Name = seat.Name
@@ -70,7 +70,7 @@ func (r *ReservationController) ReserveSeats(c *gin.Context) {
 	contextData, _ := c.Get("accessDetails")              //get the details about the current user that make request from the context passed by user middleware
 	accessDetails, _ := contextData.(*util.AccessDetails) //type assertion
 
-	var inputData validation.SeatReservationRequest //get the seats data in request body
+	var inputData validation.ReservationRequest //get the seats data in request body
 	if err := c.ShouldBindJSON(&inputData); err != nil {
 		r.log.ControllerResponseLog(err, "ReservationController@ReserveSeats", c.ClientIP(), contextData.(*util.AccessDetails).UserId)
 		util.GinResponseError(c, http.StatusBadRequest, "error when processing the request data", err.Error())

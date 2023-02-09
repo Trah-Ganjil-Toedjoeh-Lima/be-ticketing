@@ -15,6 +15,14 @@ func NewSeatRepository(db *gorm.DB, log *util.LogUtil) *SeatRepository {
 	return &SeatRepository{db: db, log: log}
 }
 
+func (r *SeatRepository) UpdatePostSaleStatus(link, status string) *gorm.DB {
+	result := r.db.Model(&model.Seat{}).Where("link = ?", link).Update("post_sale_status", status)
+	if result.Error != nil {
+		r.log.BasicLog(result.Error, "SeatRepository@UpdatePostSaleStatus")
+	}
+	return result
+}
+
 func (r *SeatRepository) UpdateStatus(seatId uint, status string) *gorm.DB {
 	result := r.db.Model(&model.Seat{}).Where("seat_id = ?", seatId).Update("status", status)
 	if result.Error != nil {

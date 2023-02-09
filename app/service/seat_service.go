@@ -27,6 +27,13 @@ func (s *SeatService) GetAllSeats() ([]model.Seat, error) {
 	return seats, nil
 }
 
+func (s *SeatService) UpdatePostSaleStatus(link, status string) error {
+	if result := s.seatRepo.UpdatePostSaleStatus(link, status); result.Error != nil {
+		return errors.New("database operation error")
+	}
+	return nil
+}
+
 func (s *SeatService) UpdateStatus(seatId uint, status string) error {
 	if result := s.seatRepo.UpdateStatus(seatId, status); result.Error != nil {
 		return errors.New("database operation error")
