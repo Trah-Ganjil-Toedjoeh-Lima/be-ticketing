@@ -15,6 +15,14 @@ func NewTransactionRepository(db *gorm.DB, log *util.LogUtil) *TransactionReposi
 	return &TransactionRepository{db: db, log: log}
 }
 
+func (t *TransactionRepository) GetAllWithDetails(transactions *[]model.Transaction) *gorm.DB {
+	result := t.db.Joins("User").Joins("Seat").Find(transactions)
+	if result.Error != nil {
+		t.log.BasicLog(result.Error, "TransactionRepotisoty@GetAllWithDetails")
+	}
+	return result
+}
+
 func (t *TransactionRepository) GetBySeatTxn(txn *gorm.DB, transaction *model.Transaction, seatId uint) *gorm.DB {
 	result := txn.Where("seat_id = ?", seatId).Find(transaction)
 	if result.Error != nil {

@@ -40,6 +40,14 @@ func (s *TransactionService) CreateTx(userId uint64, seatIds []uint) error {
 	return nil
 }
 
+func (s *TransactionService) GetAllWithDetails() ([]model.Transaction, error) {
+	var transactions []model.Transaction
+	if result := s.txRepo.GetAllWithDetails(&transactions); result.Error != nil {
+		return transactions, errors.New("database operation error")
+	}
+	return transactions, nil
+}
+
 func (s *TransactionService) GetDetailsByLink(link string) (model.Transaction, error) {
 	var transaction model.Transaction
 	if result := s.txRepo.GetDetailsByLink(&transaction, link); result.Error != nil {

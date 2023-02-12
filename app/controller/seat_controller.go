@@ -18,7 +18,15 @@ func NewSeatController(seatService *service.SeatService, txService *service.Tran
 }
 
 func (s *SeatController) AllDetails(c *gin.Context) {
-
+	transactions, err := s.txService.GetAllWithDetails()
+	if err != nil {
+		s.log.Log.WithField("occurrence", "SeatsController@InfoByLink").Error(err)
+		util.GinResponseError(c, http.StatusNotFound, "request fail", "error when processing the request data")
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"message": "success",
+	})
 }
 
 func (s *SeatController) InfoByLink(c *gin.Context) {
