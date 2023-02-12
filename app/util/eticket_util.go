@@ -38,14 +38,14 @@ func (e *ETicketUtil) GenerateETicket(seatName, seatLink string) error {
 	}
 
 	seat := bimg.Watermark{
-		Top:         13,
+		Top:         12,
 		Left:        90,
 		Text:        "SEAT - " + seatName,
 		Opacity:     1,
 		Width:       200,
 		DPI:         100,
 		Margin:      0,
-		Font:        "sans bold 12",
+		Font:        "sans bold 11",
 		Background:  bimg.Color{0, 0, 0},
 		NoReplicate: true,
 	}
