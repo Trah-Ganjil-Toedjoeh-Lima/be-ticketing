@@ -33,6 +33,7 @@ func InitializeServer() *gin.Engine {
 	userService := service.NewUserService(userRepository, tokenUtil)
 	adminMiddleware := middleware.NewAdminMiddleware(tokenUtil, logger, appConfig, userService)
 	gateMiddleware := middleware.NewGateMiddleware(appConfig)
+	scanQrMiddleware := middleware.NewScanQrMiddleware(tokenUtil, logger, appConfig, userService)
 	userController := controller.NewUserController(userService, tokenUtil, appConfig)
 	transactionRepository := repository.NewTransactionRepository(db, logUtil)
 	seatRepository := repository.NewSeatRepository(db, logUtil)
@@ -48,7 +49,7 @@ func InitializeServer() *gin.Engine {
 	snapController := controller.NewSnapController(snapService, snapUtil, transactionService, logUtil)
 	gateController := controller.NewGateController(appConfig)
 	seatController := controller.NewSeatController(seatService, transactionService, logUtil)
-	engine := app.NewRouter(userMiddleware, adminMiddleware, gateMiddleware, userController, reservationController, transactionController, snapController, gateController, seatController)
+	engine := app.NewRouter(userMiddleware, adminMiddleware, gateMiddleware, scanQrMiddleware, userController, reservationController, transactionController, snapController, gateController, seatController)
 	return engine
 }
 
@@ -68,7 +69,7 @@ func InitializeEmail() *util.EmailUtil {
 
 // injector.go:
 
-var MiddlewareSet = wire.NewSet(middleware.NewUserMiddleware, middleware.NewAdminMiddleware, middleware.NewGateMiddleware)
+var MiddlewareSet = wire.NewSet(middleware.NewUserMiddleware, middleware.NewAdminMiddleware, middleware.NewGateMiddleware, middleware.NewScanQrMiddleware)
 
 var UserSet = wire.NewSet(repository.NewUserRepository, service.NewUserService, controller.NewUserController)
 

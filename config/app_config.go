@@ -63,7 +63,7 @@ type AppConfig struct {
 func NewAppConfig() *AppConfig {
 	midtransIsProduction, _ := strconv.ParseBool(getEnv("MIDTRANS_IS_PRODUCTION", "0"))
 	accessMinute, _ := time.ParseDuration(getEnv("ACCESS_MINUTE", "15m"))
-	refreshMinute, _ := time.ParseDuration(getEnv("ACCESS_MINUTE", "60m"))
+	refreshMinute, _ := time.ParseDuration(getEnv("ACCESS_MINUTE", "120m"))
 	transactionMinute, _ := time.ParseDuration(getEnv("TRANSACTION_MINUTE", "15m"))
 	dbMaxIdleConnection, _ := strconv.Atoi(getEnv("DB_MAX_IDLE_CONNECTION", "10"))
 	dbMaxOpenConnection, _ := strconv.Atoi(getEnv("DB_MAX_OPEN_CONNECTION", "10"))
@@ -88,8 +88,8 @@ func NewAppConfig() *AppConfig {
 		RedisHost:     getEnv("REDIS_HOST", "127.0.0.1"),
 		RedisPort:     getEnv("REDIS_PORT", "6379"),
 
-		AccessSecret:  getEnv("ACCESS_MINUTE", "15"),
-		RefreshSecret: getEnv("SECRET_MINUTE", "240"),
+		AccessSecret:  getEnv("ACCESS_SECRET", ""),
+		RefreshSecret: getEnv("REFRESH_SECRET", ""),
 		AccessMinute:  accessMinute,
 		RefreshMinute: refreshMinute,
 
@@ -107,7 +107,7 @@ func NewAppConfig() *AppConfig {
 		MailPassword:    getEnv("MAIL_PASSWORD", ""),
 		MailEncryption:  getEnv("MAIL_ENCRYPTION", "ssl"),
 		MailFromAddress: getEnv("MAIL_FROM_ADDRESS", ""),
-		MailFromName:    getEnv("MAIL_FROM_NAME", "golang"),
+		MailFromName:    getEnv("MAIL_FROM_NAME", "gmco"),
 
 		TransactionMinute: transactionMinute,
 

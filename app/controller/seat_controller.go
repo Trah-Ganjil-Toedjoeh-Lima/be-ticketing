@@ -26,7 +26,9 @@ func (s *SeatController) AllDetails(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{
 		"message": "success",
+		"data":    transactions,
 	})
+	return
 }
 
 func (s *SeatController) InfoByLink(c *gin.Context) {

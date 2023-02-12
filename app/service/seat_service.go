@@ -72,7 +72,7 @@ func (s *SeatService) IsOwnedTxn(txn *gorm.DB, seatId uint, userId uint64) error
 
 		if transaction.Confirmation == "settlement" { //if this transaction is already settled it mean that this seat is unavailable
 			return errors.New("this seat is not available")
-		} else if time.Now().After(transaction.UpdatedAt.Add(s.config.TransactionMinute)) { //if seat not settled continue to check. Cek data kursi ada di tabel transaction => cek updated_at. If seat update_at + 15 < time => return nil
+		} else if time.Now().After(transaction.UpdatedAt.Add(s.config.TransactionMinute)) { //if seat not settled, then continue to check. Cek data kursi ada di tabel transaction => cek updated_at. If seat update_at + 15 < time => return nil
 			//kalo transaksi sebelumnya "ngambang" maka boleh lanjut
 			//transaksi ngambang pada kasus ini disebabkan oleh user yang tidak menyelesaikan/kelamaan dalam proses transaksi
 			return nil

@@ -20,6 +20,7 @@ var MiddlewareSet = wire.NewSet(
 	middleware.NewUserMiddleware,
 	middleware.NewAdminMiddleware,
 	middleware.NewGateMiddleware,
+	middleware.NewScanQrMiddleware,
 )
 
 var UserSet = wire.NewSet(
