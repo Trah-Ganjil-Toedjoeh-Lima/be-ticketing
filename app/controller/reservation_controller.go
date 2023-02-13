@@ -53,7 +53,7 @@ func (r *ReservationController) GetSeatsInfo(c *gin.Context) {
 	}
 
 	for _, seat := range seats { //overwrite the response with timestamp logic
-		if time.Now().After(seat.UpdatedAt.Add(r.config.TransactionMinute)) {
+		if time.Now().After(seat.CreatedAt.Add(r.config.TransactionMinute)) {
 			seatsResponse[seat.SeatId-1].Status = "available"
 		}
 	}

@@ -62,17 +62,17 @@ func (s *SeatService) IsOwnedTxn(txn *gorm.DB, seatId uint, userId uint64) error
 		}
 
 		var transaction model.Transaction
-		if result := s.txRepo.GetBySeatTxn(txn, &transaction, seatId).Last(&transaction); result.Error != nil { //get the newest transaction data for this seat from transaction table. Check if the query returns an error
-			return errors.New("database operation error")
-		} else if result.RowsAffected < 1 { //double-check the seat status, maybe the cause of  unavailableness is because of 'ghost' reservation
+		if result := s.txRepo.GetBySeatTxn(txn, &transaction, seatId).Last(&transaction); result.RowsAffected < 1 { //double-check the seat status, maybe the cause of  unavailableness is because of 'ghost' reservation
 			//if there are no seat data in the transaction table, it means that it`s only booked by someone and then did not proceed to the transaction process
 			//this case can be caused by irresponsible user that left their reservation but not complete the transaction
 			return nil
+		} else if result.Error != nil { //get the newest transaction data for this seat from transaction table. Check if the query returns an error
+			return errors.New("database operation error")
 		}
 
 		if transaction.Confirmation == "settlement" { //if this transaction is already settled it mean that this seat is unavailable
 			return errors.New("this seat is not available")
-		} else if time.Now().After(transaction.UpdatedAt.Add(s.config.TransactionMinute)) { //if seat not settled, then continue to check. Cek data kursi ada di tabel transaction => cek updated_at. If seat update_at + 15 < time => return nil
+		} else if time.Now().After(transaction.CreatedAt.Add(s.config.TransactionMinute)) { //if seat not settled, then continue to check. Cek data kursi ada di tabel transaction => cek updated_at. If seat update_at + 15 < time => return nil
 			//kalo transaksi sebelumnya "ngambang" maka boleh lanjut
 			//transaksi ngambang pada kasus ini disebabkan oleh user yang tidak menyelesaikan/kelamaan dalam proses transaksi
 			return nil

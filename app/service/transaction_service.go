@@ -84,7 +84,7 @@ func (s *TransactionService) GetDetailsByOrder(orderId string) ([]model.Transact
 func (s *TransactionService) CleanUpGhostTransaction(transactions []model.Transaction) []model.Transaction {
 	var newTransaction []model.Transaction //cek apakah ada transaksi ngambang, jika ada buang dari slice dan update db
 	for _, tx := range transactions {
-		if time.Now().After(tx.UpdatedAt.Add(s.config.TransactionMinute)) { //if tx update_at + 15 < time now  => berarti transaction ngambang
+		if time.Now().After(tx.CreatedAt.Add(s.config.TransactionMinute)) { //if tx update_at + 15 < time now  => berarti transaction ngambang
 			//update database
 			s.txRepo.UpdateUserPaymentStatus(tx.UserId, "", "not_continued")
 			s.txRepo.SoftDeleteBySeatUser(tx.SeatId, tx.UserId)

@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"errors"
 	"github.com/frchandra/ticketing-gmcgo/app/service"
 	"github.com/frchandra/ticketing-gmcgo/app/util"
 	"github.com/frchandra/ticketing-gmcgo/app/validation"
@@ -26,6 +27,12 @@ func (t *TransactionController) GetTransactionDetails(c *gin.Context) {
 	if err != nil {
 		t.log.ControllerResponseLog(err, "TransactionController@GetTransactionDetails", c.ClientIP(), contextData.(*util.AccessDetails).UserId)
 		util.GinResponseError(c, http.StatusNotFound, "something went wrong", "error when getting the data")
+		return
+	}
+
+	if len(txDetails) < 1 {
+		t.log.ControllerResponseLog(errors.New("cannot find transaction data for this user"), "TransactionController@GetTransactionDetails", c.ClientIP(), contextData.(*util.AccessDetails).UserId)
+		util.GinResponseError(c, http.StatusNotFound, "cannot find data", "cannot find transaction data for this user")
 		return
 	}
 
