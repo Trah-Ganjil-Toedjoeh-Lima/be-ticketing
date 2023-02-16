@@ -46,7 +46,14 @@ func (m *ScanQrMiddleware) HandleScanQr(c *gin.Context) {
 	adminUser, _ := m.userService.GetById(accessDetails.UserId)
 	if adminUser.Name == m.config.AdminName && adminUser.Email == m.config.AdminEmail && adminUser.Phone == m.config.AdminPhone { //check if this user is admin
 		//redirect as admin
-		c.Redirect(http.StatusFound, "/api/v1/admin/seat/"+c.Param("link"))
+		if m.config.QrScanBehaviour == "open_gate" {
+			c.Redirect(http.StatusFound, "/api/v1/admin/seat/attended/"+c.Param("link"))
+
+		} else if m.config.QrScanBehaviour == "ticket_exchanging" {
+			c.Redirect(http.StatusFound, "/api/v1/admin/seat/exchanged/"+c.Param("link"))
+		} else {
+			c.Redirect(http.StatusFound, "/api/v1/admin/seat/"+c.Param("link"))
+		}
 		return
 	}
 	//redirect as user

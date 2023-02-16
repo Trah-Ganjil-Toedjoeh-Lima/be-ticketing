@@ -117,7 +117,7 @@ func NewAppConfig() *AppConfig {
 		AdminPhone: getEnv("ADMIN_PHONE", ""),
 
 		IsOpenGate:      true,
-		QrScanBehaviour: "open_gate", //open_gate, ticket_exchanging
+		QrScanBehaviour: "open_gate", //open_gate, ticket_exchanging, default
 	}
 	return &appConfig
 

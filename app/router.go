@@ -50,6 +50,8 @@ func NewRouter(
 	admin := router.Group("/api/v1").Use(adminMiddleware.HandleAdminAccess)
 	admin.GET("/admin/seat/:link", seatController.DetailsByLink)
 	admin.PUT("/admin/seat/:link", seatController.UpdateByLink)
+	admin.GET("/admin/seat/attended/:link", seatController.UpdateToAttended)
+	admin.GET("/admin/seat/exchanged/:link", seatController.UpdateToExchanged)
 	admin.POST("/admin/open_the_gate", gateController.OpenGate)
 	admin.POST("/admin/close_the_gate", gateController.CloseGate)
 	admin.PATCH("/admin/qr_scan_behaviour", gateController.UpdateQrScanBehaviour)
