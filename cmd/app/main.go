@@ -14,5 +14,6 @@ func main() {
 	//TODO: cari cara lain untuk menormalkan transaksi ngambang dari user tak bertanggungjawab menggunakan queue spt redis, kafka, dll? (sekarang pakai timestamp)
 	//TODO: minimizing open too many connection to database by improving query with eager loading
 	//TODO: create delete seat transaction feature
+	//TODO: index database column to increase speed, learn how db index works and pros/cons (not necessary yet)
 
 }

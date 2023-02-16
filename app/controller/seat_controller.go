@@ -85,3 +85,29 @@ func (s *SeatController) UpdateByLink(c *gin.Context) {
 		"data":    postSaleStatus,
 	})
 }
+
+func (s *SeatController) UpdateToAttended(c *gin.Context) {
+	link := c.Param("link")
+	if err := s.seatService.UpdatePostSaleStatus(link, "attended"); err != nil {
+		s.log.BasicLog(err, "SeatController@UpdateByLink")
+		util.GinResponseError(c, http.StatusBadRequest, "error when processing the request data", err.Error())
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"message": "success",
+		"data":    "attended",
+	})
+}
+
+func (s *SeatController) UpdateToExchanged(c *gin.Context) {
+	link := c.Param("link")
+	if err := s.seatService.UpdatePostSaleStatus(link, "exchanged"); err != nil {
+		s.log.BasicLog(err, "SeatController@UpdateByLink")
+		util.GinResponseError(c, http.StatusBadRequest, "error when processing the request data", err.Error())
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"message": "success",
+		"data":    "exchanged",
+	})
+}

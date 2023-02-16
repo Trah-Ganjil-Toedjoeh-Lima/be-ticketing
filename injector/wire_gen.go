@@ -36,9 +36,9 @@ func InitializeServer() *gin.Engine {
 	scanQrMiddleware := middleware.NewScanQrMiddleware(tokenUtil, logger, appConfig, userService)
 	userController := controller.NewUserController(userService, tokenUtil, appConfig)
 	transactionRepository := repository.NewTransactionRepository(db, logUtil)
-	seatRepository := repository.NewSeatRepository(db, logUtil)
-	transactionService := service.NewTransactionService(transactionRepository, userRepository, seatRepository, appConfig)
+	transactionService := service.NewTransactionService(transactionRepository, appConfig)
 	reservationService := service.NewReservationService(appConfig, transactionService)
+	seatRepository := repository.NewSeatRepository(db, logUtil)
 	seatService := service.NewSeatService(appConfig, seatRepository, transactionRepository)
 	reservationController := controller.NewReservationController(appConfig, db, logUtil, reservationService, transactionService, seatService)
 	snapUtil := util.NewSnapUtil(appConfig)
@@ -47,9 +47,9 @@ func InitializeServer() *gin.Engine {
 	eTicketUtil := util.NewETicketUtil(appConfig)
 	snapService := service.NewSnapService(transactionService, seatService, transactionRepository, snapUtil, emailUtil, eTicketUtil, logUtil)
 	snapController := controller.NewSnapController(snapService, snapUtil, transactionService, logUtil)
-	gateController := controller.NewGateController(appConfig)
+	configController := controller.NewConfigController(appConfig, logUtil)
 	seatController := controller.NewSeatController(seatService, transactionService, logUtil)
-	engine := app.NewRouter(userMiddleware, adminMiddleware, gateMiddleware, scanQrMiddleware, userController, reservationController, transactionController, snapController, gateController, seatController)
+	engine := app.NewRouter(userMiddleware, adminMiddleware, gateMiddleware, scanQrMiddleware, userController, reservationController, transactionController, snapController, configController, seatController)
 	return engine
 }
 
@@ -81,6 +81,6 @@ var TransactionSet = wire.NewSet(controller.NewTransactionController, repository
 
 var SnapSet = wire.NewSet(controller.NewSnapController, service.NewSnapService)
 
-var GateSet = wire.NewSet(controller.NewGateController)
+var GateSet = wire.NewSet(controller.NewConfigController)
 
 var UtilSet = wire.NewSet(util.NewTokenUtil, util.NewSnapUtil, util.NewEmailUtil, util.NewETicketUtil, util.NewLogUtil)

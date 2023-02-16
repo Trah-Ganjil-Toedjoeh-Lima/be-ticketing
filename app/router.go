@@ -16,7 +16,7 @@ func NewRouter(
 	reservationController *controller.ReservationController,
 	txController *controller.TransactionController,
 	snapController *controller.SnapController,
-	gateController *controller.GateController,
+	gateController *controller.ConfigController,
 	seatController *controller.SeatController,
 ) *gin.Engine {
 	router := gin.Default()
@@ -52,6 +52,7 @@ func NewRouter(
 	admin.PUT("/admin/seat/:link", seatController.UpdateByLink)
 	admin.POST("/admin/open_the_gate", gateController.OpenGate)
 	admin.POST("/admin/close_the_gate", gateController.CloseGate)
+	admin.PATCH("/admin/qr_scan_behaviour", gateController.UpdateQrScanBehaviour)
 	admin.GET("/admin/get_app_config", gateController.GetAppConfig)
 
 	return router

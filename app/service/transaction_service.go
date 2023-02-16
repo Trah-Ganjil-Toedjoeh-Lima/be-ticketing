@@ -13,14 +13,12 @@ import (
 )
 
 type TransactionService struct {
-	txRepo   *repository.TransactionRepository
-	userRepo *repository.UserRepository
-	seatRepo *repository.SeatRepository
-	config   *config.AppConfig
+	txRepo *repository.TransactionRepository
+	config *config.AppConfig
 }
 
-func NewTransactionService(txRepo *repository.TransactionRepository, userRepo *repository.UserRepository, seatRepo *repository.SeatRepository, config *config.AppConfig) *TransactionService {
-	return &TransactionService{txRepo: txRepo, userRepo: userRepo, seatRepo: seatRepo, config: config}
+func NewTransactionService(txRepo *repository.TransactionRepository, config *config.AppConfig) *TransactionService {
+	return &TransactionService{txRepo: txRepo, config: config}
 }
 
 func (s *TransactionService) CreateTx(userId uint64, seatIds []uint) error {

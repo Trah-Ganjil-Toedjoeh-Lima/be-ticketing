@@ -52,7 +52,7 @@ var SnapSet = wire.NewSet(
 )
 
 var GateSet = wire.NewSet(
-	controller.NewGateController,
+	controller.NewConfigController,
 )
 
 var UtilSet = wire.NewSet(

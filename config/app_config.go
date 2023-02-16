@@ -57,7 +57,8 @@ type AppConfig struct {
 	AdminEmail string
 	AdminPhone string
 
-	IsOpenGate bool
+	IsOpenGate      bool
+	QrScanBehaviour string
 }
 
 func NewAppConfig() *AppConfig {
@@ -115,7 +116,8 @@ func NewAppConfig() *AppConfig {
 		AdminEmail: getEnv("ADMIN_EMAIL", ""),
 		AdminPhone: getEnv("ADMIN_PHONE", ""),
 
-		IsOpenGate: true,
+		IsOpenGate:      true,
+		QrScanBehaviour: "open_gate", //open_gate, ticket_exchanging
 	}
 	return &appConfig
 
