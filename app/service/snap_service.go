@@ -25,7 +25,7 @@ func (s *SnapService) HandleSettlement(message map[string]any) error {
 	transactions, _ := s.txService.GetByOrder(message["order_id"].(string))
 
 	for _, tx := range transactions { //update seats availability
-		if err := s.seatService.UpdateStatus(tx.SeatId, "sold"); err != nil {
+		if err := s.seatService.UpdateStatus(tx.SeatId, "purchased"); err != nil {
 			return err
 		}
 	}

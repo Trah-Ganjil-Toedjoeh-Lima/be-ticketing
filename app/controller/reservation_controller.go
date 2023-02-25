@@ -43,19 +43,19 @@ func (r *ReservationController) GetSeatsInfo(c *gin.Context) {
 	for _, seat := range seats {
 		seatsResponse[seat.SeatId-1].SeatId = seat.SeatId
 		seatsResponse[seat.SeatId-1].Name = seat.Name
+		if seat.Status != "purchased" && time.Now().After(seat.CreatedAt.Add(r.config.TransactionMinute)) { //overwrite the response with timestamp logic
+			seat.Status = "available"
+		}
 		seatsResponse[seat.SeatId-1].Status = seat.Status
 		seatsResponse[seat.SeatId-1].Price = seat.Price
 	}
 
 	mySeats, _ := r.txService.SeatsBelongsToUser(accessDetails.UserId) //overwrite the response object for this user
 	for _, mySeat := range mySeats {                                   //populate the response object
-		seatsResponse[mySeat.SeatId-1].Status = mySeat.Status
-	}
-
-	for _, seat := range seats { //overwrite the response with timestamp logic
-		if seat.Status != "sold" && time.Now().After(seat.CreatedAt.Add(r.config.TransactionMinute)) {
-			seatsResponse[seat.SeatId-1].Status = "available"
+		if seatsResponse[mySeat.SeatId-1].Status != "available" { //only overwrite the seat status if it was not overwritten previously by timestamp logic
+			seatsResponse[mySeat.SeatId-1].Status = mySeat.Status
 		}
+
 	}
 
 	c.JSON(http.StatusOK, gin.H{ //return success
