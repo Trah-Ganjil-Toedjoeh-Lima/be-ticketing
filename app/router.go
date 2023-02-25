@@ -43,7 +43,7 @@ func NewRouter(
 	//Ticketing Routes
 	user.Use(gateMiddleware.HandleAccess).GET("/seat_map", reservationController.GetSeatsInfo)
 	user.Use(gateMiddleware.HandleAccess).POST("/seat_map", reservationController.ReserveSeats)
-	user.GET("/checkout", txController.GetTransactionDetails)
+	user.GET("/checkout", txController.GetNewTransactionDetails)
 	user.POST("/checkout", txController.InitiateTransaction)
 
 	//Admin Routes

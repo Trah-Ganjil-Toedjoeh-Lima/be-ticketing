@@ -47,6 +47,14 @@ func (t *TransactionRepository) GetDetailsByUser(transactions *[]model.Transacti
 	return result
 }
 
+func (t *TransactionRepository) GetDetailsByUserConfirmation(transactions *[]model.Transaction, userId uint64, confirmation string) *gorm.DB {
+	result := t.db.Joins("User").Joins("Seat").Where("transactions.user_id = ?", userId).Where("confirmation = ?", confirmation).Find(transactions)
+	if result.Error != nil {
+		t.log.BasicLog(result.Error, "TransactionRepotisoty@GetDetailsByUser")
+	}
+	return result
+}
+
 func (t *TransactionRepository) GetByOrder(transactions *[]model.Transaction, orderId string) *gorm.DB {
 	result := t.db.Where("order_id = ?", orderId).Find(transactions)
 	if result.Error != nil {

@@ -63,6 +63,15 @@ func (s *TransactionService) GetDetailsByUser(userId uint64) ([]model.Transactio
 	return transactions, nil
 }
 
+func (s *TransactionService) GetDetailsByUserWhereNew(userId uint64) ([]model.Transaction, error) {
+	var transactions []model.Transaction //get user's transaction
+	if result := s.txRepo.GetDetailsByUserConfirmation(&transactions, userId, "reserved"); result.Error != nil {
+		return transactions, errors.New("database operation error")
+	}
+	transactions = s.CleanUpGhostTransaction(transactions)
+	return transactions, nil
+}
+
 func (s *TransactionService) GetByOrder(orderId string) ([]model.Transaction, error) {
 	var transactions []model.Transaction
 	if result := s.txRepo.GetByOrder(&transactions, orderId); result.Error != nil {
@@ -118,7 +127,7 @@ func (s *TransactionService) SeatsBelongsToUser(userId uint64) ([]model.Seat, er
 
 func (s *TransactionService) PrepareTransactionData(userId uint64) (snap.Request, error) {
 	var txDetails []model.Transaction
-	s.txRepo.GetDetailsByUser(&txDetails, userId)                             //get user's transaction
+	s.txRepo.GetDetailsByUserConfirmation(&txDetails, userId, "reserved")     //get user's transaction
 	if txDetails = s.CleanUpGhostTransaction(txDetails); len(txDetails) < 1 { //clean up 'ghost' transaction that may be created by this user
 		return snap.Request{}, errors.New("cannot find any transaction for this user")
 	}
