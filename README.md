@@ -3,4 +3,10 @@ This repository is used to developing the ticketing website for Gadjah Mada Cham
 <br>
 <br>
 <br>
+Credit:
+ - ELK stack : https://github.com/deviantony/docker-elk
+
+<br>
+<br>
+<br>
 Chandra Herdiputra, January 2023

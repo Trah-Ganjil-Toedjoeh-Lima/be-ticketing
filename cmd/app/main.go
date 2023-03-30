@@ -16,5 +16,6 @@ func main() {
 	//TODO: create delete seat transaction feature
 	//TODO: index database column to increase speed, learn how db index works and pros/cons (not necessary yet)
 	//TODO: add minio service
+	//TODO: add migration entrypoint
 
 }

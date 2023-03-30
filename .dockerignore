@@ -1,0 +1,4 @@
+# Ignore Docker build files
+app.Dockerfile
+/storage/ticket/*
+/storage/logs/*

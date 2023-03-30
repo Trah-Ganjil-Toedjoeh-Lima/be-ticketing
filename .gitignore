@@ -1,7 +1,7 @@
 .env
 /.idea
-/.docker/dbdata
-/.docker/esdata
+/.infra/dbdata
+/.infra/esdata
 /resource/static/snap.html
 /storage/picture/*
 /storage/ticket/*
