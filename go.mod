@@ -16,14 +16,13 @@ go 1.19
 //go get -u github.com/sirupsen/logrus
 
 require (
-	github.com/bxcodec/faker/v4 v4.0.0-beta.3
 	github.com/gin-gonic/gin v1.8.2
 	github.com/go-redis/redis/v9 v9.0.0-rc.2
 	github.com/golang-jwt/jwt/v4 v4.4.3
 	github.com/google/uuid v1.3.0
 	github.com/google/wire v0.5.0
-	github.com/h2non/bimg v1.1.9
 	github.com/joho/godotenv v1.4.0
+	github.com/kumparan/bimg v1.0.19-0.20211025073642-47a38529c8af
 	github.com/midtrans/midtrans-go v1.3.6
 	github.com/sirupsen/logrus v1.9.0
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
@@ -47,7 +46,6 @@ require (
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/kumparan/bimg v1.0.19-0.20211025073642-47a38529c8af // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/mattn/go-isatty v0.0.17 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect

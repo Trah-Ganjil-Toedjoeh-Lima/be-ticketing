@@ -15,5 +15,6 @@ func main() {
 	//TODO: minimizing open too many connection to database by improving query with eager loading
 	//TODO: create delete seat transaction feature
 	//TODO: index database column to increase speed, learn how db index works and pros/cons (not necessary yet)
+	//TODO: add minio service
 
 }
