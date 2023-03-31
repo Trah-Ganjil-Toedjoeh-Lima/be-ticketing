@@ -42,11 +42,28 @@ services:
       - cache
       - elasticsearch
     restart: unless-stopped
-#    logging:
+#    logging:  #use this if you want sent the container logs (from the stdout) to the logstash service directly
 #      driver: gelf
 #      options:
 #        gelf-address: "udp://localhost:12201"
 #        tag: "application"
+
+  minio:
+    container_name: gmcgo-minio
+    image: minio/minio
+    ports:
+      - "9000:9000"
+      - "9090:9090"
+    volumes:
+      - minio:/data
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    command: server --console-address ":9090" /data
+    networks:
+      - gmcgo-network
+
+
 
   # The 'setup' service runs a one-off script which initializes users inside
   # Elasticsearch — such as 'logstash_internal' and 'kibana_system' — with the
@@ -164,3 +181,4 @@ volumes:
     driver: local
   setup:
   elasticsearch:
+  minio:

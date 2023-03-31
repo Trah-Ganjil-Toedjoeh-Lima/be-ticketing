@@ -68,6 +68,7 @@ func InitializeServer() *gin.Engine {
 		config.NewAppConfig,
 		app.NewDatabase,
 		app.NewCache,
+		app.NewMinio,
 		app.NewLogger,
 		MiddlewareSet,
 		UtilSet,

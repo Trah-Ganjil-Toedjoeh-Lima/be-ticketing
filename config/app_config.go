@@ -27,8 +27,12 @@ type AppConfig struct {
 	RedisHost     string
 	RedisPort     string
 
-	APISecret     string
-	TokenDuration string
+	MinioHost          string
+	MinioPort          string
+	MinioLocation      string
+	MinioRootUser      string
+	MinioRootPassword  string
+	MinioTicketsBucket string
 
 	AccessSecret  string
 	RefreshSecret string
@@ -63,9 +67,11 @@ type AppConfig struct {
 
 func NewAppConfig() *AppConfig {
 	midtransIsProduction, _ := strconv.ParseBool(getEnv("MIDTRANS_IS_PRODUCTION", "0"))
+
 	accessMinute, _ := time.ParseDuration(getEnv("ACCESS_MINUTE", "15m"))
 	refreshMinute, _ := time.ParseDuration(getEnv("ACCESS_MINUTE", "120m"))
 	transactionMinute, _ := time.ParseDuration(getEnv("TRANSACTION_MINUTE", "15m"))
+
 	dbMaxIdleConnection, _ := strconv.Atoi(getEnv("DB_MAX_IDLE_CONNECTION", "10"))
 	dbMaxOpenConnection, _ := strconv.Atoi(getEnv("DB_MAX_OPEN_CONNECTION", "10"))
 	dbConnectionMaxLifeMinute, _ := time.ParseDuration(getEnv("DB_CONNECTION_MAX_LIFE_MINUTE", "60m"))
@@ -88,6 +94,13 @@ func NewAppConfig() *AppConfig {
 		RedisPassword: getEnv("REDIS_PASSWORD", ""),
 		RedisHost:     getEnv("REDIS_HOST", "127.0.0.1"),
 		RedisPort:     getEnv("REDIS_PORT", "6379"),
+
+		MinioHost:          getEnv("MINIO_HOST", ""),
+		MinioPort:          getEnv("MINIO_PORT", ""),
+		MinioLocation:      getEnv("MINIO_LOCATION", ""),
+		MinioRootUser:      getEnv("MINIO_ROOT_USER", ""),
+		MinioRootPassword:  getEnv("MINIO_ROOT_PASSWORD", ""),
+		MinioTicketsBucket: getEnv("MINIO_TICKETS_BUCKET", ""),
 
 		AccessSecret:  getEnv("ACCESS_SECRET", ""),
 		RefreshSecret: getEnv("REFRESH_SECRET", ""),
@@ -120,7 +133,6 @@ func NewAppConfig() *AppConfig {
 		QrScanBehaviour: "open_gate", //open_gate, ticket_exchanging, default
 	}
 	return &appConfig
-
 }
 
 func getEnv(key, fallback string) string {
