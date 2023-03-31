@@ -6,6 +6,7 @@ import (
 	"github.com/frchandra/ticketing-gmcgo/config"
 	"gopkg.in/gomail.v2"
 	"html/template"
+	"io"
 	"strconv"
 )
 
@@ -17,7 +18,7 @@ func NewEmailUtil(config *config.AppConfig) *EmailUtil {
 	return &EmailUtil{config: config}
 }
 
-func (u *EmailUtil) SendEmail(templatePath string, data map[string]any, receiver string, subject string, attachementPath []string) error {
+func (u *EmailUtil) SendEmail(templatePath string, data map[string]any, receiver string, subject string, attachements map[string][]byte) error {
 	//prepare template
 	var body bytes.Buffer
 	t, err := template.ParseFiles(templatePath)
@@ -36,12 +37,16 @@ func (u *EmailUtil) SendEmail(templatePath string, data map[string]any, receiver
 	m.SetHeader("Subject", subject)
 	m.SetBody("text/html", body.String())
 
-	fmt.Println(len(attachementPath))
-	if len(attachementPath) > 0 {
-
-		for _, path := range attachementPath {
-			fmt.Println("ATTACHED " + path)
-			m.Attach(path)
+	fmt.Println(len(attachements))
+	if len(attachements) > 0 {
+		for name, attachment := range attachements {
+			m.Attach(
+				fmt.Sprintf(name),
+				gomail.SetCopyFunc(func(writer io.Writer) error {
+					_, err = writer.Write(attachment)
+					return err
+				}),
+			)
 		}
 	}
 

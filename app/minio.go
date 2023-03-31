@@ -8,7 +8,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func NewMinio(appConfig *config.AppConfig, log *logrus.Logger) (*minio.Client, error) {
+func NewMinio(appConfig *config.AppConfig, log *logrus.Logger) *minio.Client {
 	ctx := context.Background()
 
 	minioClient, errInit := minio.New(appConfig.MinioHost+":"+appConfig.MinioPort, &minio.Options{ // Initialize minio client object.
@@ -30,5 +30,5 @@ func NewMinio(appConfig *config.AppConfig, log *logrus.Logger) (*minio.Client, e
 	} else {
 		log.Printf("Successfully created %s\n", appConfig.MinioTicketsBucket)
 	}
-	return minioClient, errInit
+	return minioClient
 }

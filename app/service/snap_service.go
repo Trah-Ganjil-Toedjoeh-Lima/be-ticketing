@@ -79,14 +79,14 @@ func (s *SnapService) SendInfoEmail(seats []model.Seat, receiverName, receiverEm
 	for _, seat := range seats {
 		seatsName = append(seatsName, seat.Name)
 	}
-	data := map[string]any{
+	/*	data := map[string]any{
 		"Name":  receiverName,
 		"Seats": seatsName,
-	}
+	}*/
 	fmt.Println("SENDING PENDING EMAIL")
-	if err := s.emailUtil.SendEmail("./resource/template/info.gohtml", data, receiverEmail, "INFO EMAIL", []string{}); err != nil {
+	/*	if err := s.emailUtil.SendEmail("./resource/template/info.gohtml", data, receiverEmail, "INFO EMAIL", []string{}); err != nil {
 		return err
-	}
+	}*/
 	s.log.Log.Info("successfully sent pending email to " + receiverEmail)
 	return nil
 }
@@ -95,22 +95,20 @@ func (s *SnapService) SendTicketEmail(seats []model.Seat, receiverName, receiver
 	var attachmentPath []string
 	var seatsName []string
 	for _, seat := range seats {
-		if err := s.eticketUtil.GenerateETicket(seat.Name, seat.Link); err != nil {
-			return err
-		}
+		/*		if err := s.eticketUtil.GenerateETicket(seat.Name, seat.Link); err != nil {
+				return err
+			}*/
 		attachmentPath = append(attachmentPath, "./storage/ticket/"+seat.Name+".png")
 		seatsName = append(seatsName, seat.Name)
 	}
 
-	data := map[string]any{
+	/*	data := map[string]any{
 		"Name":  receiverName,
 		"Seats": seatsName,
-	}
-	fmt.Println(data)
-	fmt.Println("SENDING OK EMAIL")
-	if err := s.emailUtil.SendEmail("./resource/template/ticket.gohtml", data, receiverEmail, "TICKET EMAIL", attachmentPath); err != nil {
+	}*/
+	/*	if err := s.emailUtil.SendEmail("./resource/template/ticket.gohtml", data, receiverEmail, "TICKET EMAIL", attachmentPath); err != nil {
 		return err
-	}
+	}*/
 	s.log.Log.Info("successfully sent ticket email to " + receiverEmail)
 	return nil
 }
