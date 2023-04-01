@@ -19,11 +19,13 @@ RUN go mod download -x
 
 RUN go build -o ./bin/app ./cmd/app/main.go
 RUN go build -o ./bin/migrator ./cmd/migrator/main.go
+RUN go build -o ./bin/email ./cmd/email/main.go
 
 FROM alpine:latest AS runner
 
 RUN apk update
 RUN apk add vips-dev
+RUN apk add terminus-font font-inconsolata font-dejavu font-noto font-noto-cjk font-awesome font-noto-extra
 
 WORKDIR /ticketing-gmcgo
 

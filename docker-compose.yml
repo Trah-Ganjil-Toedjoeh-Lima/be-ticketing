@@ -25,6 +25,7 @@ services:
       - gmcgo-network
 
   app:
+    container_name: gmcgo-app
     build:
       context: .
       dockerfile: ./app.Dockerfile
@@ -42,11 +43,11 @@ services:
       - cache
       - elasticsearch
     restart: unless-stopped
-#    logging:  #use this if you want sent the container logs (from the stdout) to the logstash service directly
-#      driver: gelf
-#      options:
-#        gelf-address: "udp://localhost:12201"
-#        tag: "application"
+    logging:  #use this if you want sent the container logs (from the stdout) to the logstash service directly
+      driver: gelf
+      options:
+        gelf-address: "udp://localhost:12201"
+        tag: "application"
 
   minio:
     container_name: gmcgo-minio
