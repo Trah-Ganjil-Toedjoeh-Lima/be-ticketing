@@ -43,9 +43,9 @@ func InitializeServer() *gin.Engine {
 	reservationController := controller.NewReservationController(appConfig, db, logUtil, reservationService, transactionService, seatService)
 	snapUtil := util.NewSnapUtil(appConfig)
 	transactionController := controller.NewTransactionController(transactionService, userService, snapUtil, logUtil)
-	emailUtil := util.NewEmailUtil(appConfig)
+	emailUtil := util.NewEmailUtil(appConfig, logUtil)
 	minioClient := app.NewMinio(appConfig, logger)
-	eTicketUtil := util.NewETicketUtil(appConfig, minioClient)
+	eTicketUtil := util.NewETicketUtil(appConfig, minioClient, logUtil)
 	snapService := service.NewSnapService(transactionService, seatService, transactionRepository, snapUtil, emailUtil, eTicketUtil, logUtil)
 	snapController := controller.NewSnapController(snapService, snapUtil, transactionService, logUtil)
 	configController := controller.NewConfigController(appConfig, logUtil)
@@ -64,7 +64,9 @@ func InitializeMigrator() *database.Migrator {
 
 func InitializeEmail() *util.EmailUtil {
 	appConfig := config.NewAppConfig()
-	emailUtil := util.NewEmailUtil(appConfig)
+	logger := app.NewLogger(appConfig)
+	logUtil := util.NewLogUtil(logger)
+	emailUtil := util.NewEmailUtil(appConfig, logUtil)
 	return emailUtil
 }
 

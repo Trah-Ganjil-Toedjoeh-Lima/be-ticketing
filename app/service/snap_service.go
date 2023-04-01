@@ -1,7 +1,6 @@
 package service
 
 import (
-	"fmt"
 	"github.com/frchandra/ticketing-gmcgo/app/model"
 	"github.com/frchandra/ticketing-gmcgo/app/repository"
 	"github.com/frchandra/ticketing-gmcgo/app/util"
@@ -79,36 +78,36 @@ func (s *SnapService) SendInfoEmail(seats []model.Seat, receiverName, receiverEm
 	for _, seat := range seats {
 		seatsName = append(seatsName, seat.Name)
 	}
-	/*	data := map[string]any{
-		"Name":  receiverName,
-		"Seats": seatsName,
-	}*/
-	fmt.Println("SENDING PENDING EMAIL")
-	/*	if err := s.emailUtil.SendEmail("./resource/template/info.gohtml", data, receiverEmail, "INFO EMAIL", []string{}); err != nil {
-		return err
-	}*/
-	s.log.Log.Info("successfully sent pending email to " + receiverEmail)
+	//data := map[string]any{
+	//	"Name":  receiverName,
+	//	"Seats": seatsName,
+	//}
+	//if err := s.emailUtil.SendEmail("./resource/template/info.gohtml", data, receiverEmail, "INFO EMAIL", map[string][]byte{}); err != nil {
+	//	return err
+	//}
 	return nil
 }
 
 func (s *SnapService) SendTicketEmail(seats []model.Seat, receiverName, receiverEmail string) error {
-	var attachmentPath []string
+	var attachments = make(map[string][]byte)
 	var seatsName []string
+
 	for _, seat := range seats {
-		/*		if err := s.eticketUtil.GenerateETicket(seat.Name, seat.Link); err != nil {
-				return err
-			}*/
-		attachmentPath = append(attachmentPath, "./storage/ticket/"+seat.Name+".png")
+		ticket, err := s.eticketUtil.GenerateETicket(seat.Name, seat.Link)
+		if err != nil {
+			return err
+		}
+		attachments[seat.Name+".png"] = ticket
 		seatsName = append(seatsName, seat.Name)
 	}
 
-	/*	data := map[string]any{
-		"Name":  receiverName,
-		"Seats": seatsName,
-	}*/
-	/*	if err := s.emailUtil.SendEmail("./resource/template/ticket.gohtml", data, receiverEmail, "TICKET EMAIL", attachmentPath); err != nil {
-		return err
-	}*/
-	s.log.Log.Info("successfully sent ticket email to " + receiverEmail)
+	//data := map[string]any{
+	//	"Name":  receiverName,
+	//	"Seats": seatsName,
+	//}
+	//if err := s.emailUtil.SendEmail("./resource/template/ticket.gohtml", data, receiverEmail, "TICKET EMAIL", attachments); err != nil { //send the e-ticket email
+	//	return err
+	//}
+
 	return nil
 }

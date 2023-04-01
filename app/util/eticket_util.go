@@ -3,29 +3,28 @@ package util
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"github.com/frchandra/ticketing-gmcgo/config"
 	"github.com/kumparan/bimg"
 	"github.com/minio/minio-go/v7"
 	"github.com/skip2/go-qrcode"
-	"log"
 )
 
 type ETicketUtil struct {
 	config *config.AppConfig
 	minio  *minio.Client
+	log    *LogUtil
 }
 
-func NewETicketUtil(config *config.AppConfig, minio *minio.Client) *ETicketUtil {
-	return &ETicketUtil{config: config, minio: minio}
+func NewETicketUtil(config *config.AppConfig, minio *minio.Client, log *LogUtil) *ETicketUtil {
+	return &ETicketUtil{config: config, minio: minio, log: log}
 }
 
 func (e *ETicketUtil) GenerateETicket(seatName, seatLink string) ([]byte, error) {
 
-	url := e.config.AppUrl + ":" + e.config.AppPort + "/api/v1/seat/" + seatLink
+	url := e.config.AppUrl + ":" + e.config.AppPort + "/api/v1/seat/" + seatLink //creating basic qr code
 	qr, err := qrcode.Encode(url, qrcode.Medium, 256)
 	if err != nil {
-		fmt.Println(err.Error())
+		e.log.BasicLog(err, "when generating e-ticket qr code")
 		return nil, err
 	}
 
@@ -55,7 +54,7 @@ func (e *ETicketUtil) GenerateETicket(seatName, seatLink string) ([]byte, error)
 		NoReplicate: true,
 	}
 
-	newQrCode, err := bimg.NewImage(qr).Watermark(title)
+	newQrCode, err := bimg.NewImage(qr).Watermark(title) //pasting additional information to the qrcode as a watermark
 	newQrCode, err = bimg.NewImage(newQrCode).Watermark(seat)
 
 	content := bimg.WatermarkImage{
@@ -65,30 +64,25 @@ func (e *ETicketUtil) GenerateETicket(seatName, seatLink string) ([]byte, error)
 		Opacity: 1,
 	}
 
-	frame, err := bimg.Read("./storage/picture/polite_cat.png")
-	if err != nil {
-		fmt.Println(err.Error())
-		return nil, err
-	}
+	frame, _ := bimg.Read("./storage/picture/polite_cat.png")
 
 	ticket, err := bimg.NewImage(frame).WatermarkImage(content)
 	if err != nil {
-		fmt.Println(err.Error())
+		e.log.BasicLog(err, "when generating e-ticket")
 		return nil, err
 	}
 
-	// Upload the file with to minio
-	bucketName := e.config.MinioTicketsBucket
+	bucketName := e.config.MinioTicketsBucket // Upload the file with to minio
 	objectName := seatName + ".png"
 	fileBuffer := bytes.NewReader(ticket)
 	fileSize := fileBuffer.Size()
-	contentType := "picture"
+	contentType := "png"
 
 	_, err = e.minio.PutObject(context.Background(), bucketName, objectName, fileBuffer, fileSize, minio.PutObjectOptions{ContentType: contentType})
 	if err != nil {
-		fmt.Println(err.Error())
+		e.log.BasicLog(err, "when storing e-ticket to minio")
+		return nil, err
 	}
-	log.Printf("Successfully uploaded %s\n", objectName)
 
 	return ticket, nil
 }

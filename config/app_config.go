@@ -10,7 +10,7 @@ import (
 
 type AppConfig struct {
 	AppName      string
-	IsProduction string
+	IsProduction bool
 	AppUrl       string
 	AppPort      string
 
@@ -67,6 +67,7 @@ type AppConfig struct {
 
 func NewAppConfig() *AppConfig {
 	midtransIsProduction, _ := strconv.ParseBool(getEnv("MIDTRANS_IS_PRODUCTION", "0"))
+	isProduction, _ := strconv.ParseBool(getEnv("IS_PRODUCTION", "0"))
 
 	accessMinute, _ := time.ParseDuration(getEnv("ACCESS_MINUTE", "15m"))
 	refreshMinute, _ := time.ParseDuration(getEnv("ACCESS_MINUTE", "120m"))
@@ -78,7 +79,7 @@ func NewAppConfig() *AppConfig {
 
 	var appConfig = AppConfig{
 		AppName:      getEnv("APP_NAME", "gmcgo"),
-		IsProduction: getEnv("IS_PRODUCTION", "false"),
+		IsProduction: isProduction,
 		AppUrl:       getEnv("APP_URL", "127.0.0.1"),
 		AppPort:      getEnv("APP_PORT", "8080"),
 

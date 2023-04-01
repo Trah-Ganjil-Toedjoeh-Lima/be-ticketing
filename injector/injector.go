@@ -96,6 +96,8 @@ func InitializeMigrator() *database.Migrator {
 func InitializeEmail() *util.EmailUtil {
 	wire.Build(
 		config.NewAppConfig,
+		app.NewLogger,
+		util.NewLogUtil,
 		util.NewEmailUtil,
 	)
 	return nil

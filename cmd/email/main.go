@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/frchandra/ticketing-gmcgo/app"
 	"github.com/frchandra/ticketing-gmcgo/app/util"
 	"github.com/frchandra/ticketing-gmcgo/config"
 	"github.com/frchandra/ticketing-gmcgo/injector"
@@ -15,7 +16,10 @@ import (
 func main() {
 	fmt.Println("sending email")
 	mailer := injector.InitializeEmail()
-	ticketUtil := util.NewETicketUtil(config.NewAppConfig(), newMinio())
+	logger := app.NewLogger(config.NewAppConfig())
+	logutil := util.NewLogUtil(logger)
+
+	ticketUtil := util.NewETicketUtil(config.NewAppConfig(), newMinio(), logutil)
 
 	reciever := "nismara.chandra@gmail.com"
 	data := map[string]any{
@@ -23,14 +27,15 @@ func main() {
 		"Seats": []string{"H31", "H32", "H33"},
 	}
 
+	var seatsName = []string{"H31", "H32", "H33"}
 	var attachments map[string][]byte = make(map[string][]byte)
 
 	for i := 31; i <= 33; i++ {
-		ticket, _ := ticketUtil.GenerateETicket(strconv.Itoa(i), strconv.Itoa(i))
-		attachments[strconv.Itoa(i)+".png"] = ticket
+		ticket, _ := ticketUtil.GenerateETicket("H"+strconv.Itoa(i), "H"+strconv.Itoa(i))
+		attachments["H"+strconv.Itoa(i)+".png"] = ticket
 	}
 
-	err := mailer.SendEmail("./resource/template/info.gohtml", data, reciever, "TEST EMAIL", attachments)
+	err := mailer.SendEmail("./resource/template/info.gohtml", data, reciever, "TEST EMAIL", attachments, seatsName)
 	if err != nil {
 		panic(err)
 	}

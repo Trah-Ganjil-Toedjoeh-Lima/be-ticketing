@@ -13,7 +13,7 @@ func NewDatabase(appConfig *config.AppConfig, log *logrus.Logger) *gorm.DB {
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Jakarta", appConfig.DBHost, appConfig.DBUser, appConfig.DBPassword, appConfig.DBName, appConfig.DBPort)
 
 	var gormConfig *gorm.Config
-	if appConfig.IsProduction == "false" {
+	if appConfig.IsProduction == false {
 		gormConfig = &gorm.Config{Logger: logger.Default.LogMode(logger.Info)}
 	} else {
 		gormConfig = &gorm.Config{Logger: logger.Default.LogMode(logger.Error)}
