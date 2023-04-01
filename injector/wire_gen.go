@@ -23,9 +23,9 @@ import (
 
 func InitializeServer() *gin.Engine {
 	appConfig := config.NewAppConfig()
-	client := app.NewCache(appConfig)
-	tokenUtil := util.NewTokenUtil(client, appConfig)
 	logger := app.NewLogger(appConfig)
+	client := app.NewCache(appConfig, logger)
+	tokenUtil := util.NewTokenUtil(client, appConfig)
 	userMiddleware := middleware.NewUserMiddleware(tokenUtil, logger)
 	db := app.NewDatabase(appConfig, logger)
 	logUtil := util.NewLogUtil(logger)

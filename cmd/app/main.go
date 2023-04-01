@@ -3,10 +3,18 @@ package main
 import (
 	"github.com/frchandra/ticketing-gmcgo/config"
 	"github.com/frchandra/ticketing-gmcgo/injector"
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
 	appConfig := config.NewAppConfig()
+
+	if appConfig.IsProduction == true {
+		gin.SetMode(gin.ReleaseMode)
+	} else {
+		gin.SetMode(gin.DebugMode)
+	}
+
 	router := injector.InitializeServer()
 	router.Run(":" + appConfig.AppPort)
 

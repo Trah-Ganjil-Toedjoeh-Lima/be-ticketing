@@ -2,12 +2,12 @@ package app
 
 import (
 	"context"
-	"fmt"
 	"github.com/frchandra/ticketing-gmcgo/config"
 	"github.com/go-redis/redis/v9"
+	"github.com/sirupsen/logrus"
 )
 
-func NewCache(appConfig *config.AppConfig) *redis.Client {
+func NewCache(appConfig *config.AppConfig, log *logrus.Logger) *redis.Client {
 	cache := redis.NewClient(&redis.Options{
 		Password: appConfig.RedisPassword,
 		Addr:     appConfig.RedisHost + ":" + appConfig.RedisPort,
@@ -19,7 +19,7 @@ func NewCache(appConfig *config.AppConfig) *redis.Client {
 	}
 	//uncomment this during development phase
 	cache.FlushAll(ctx)
-	fmt.Println("redis connected")
+	log.Info("redis connected successfully " + cache.String())
 	return cache
 
 }
