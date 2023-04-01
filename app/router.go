@@ -3,10 +3,13 @@ package app
 import (
 	"github.com/frchandra/ticketing-gmcgo/app/controller"
 	"github.com/frchandra/ticketing-gmcgo/app/middleware"
+	"github.com/frchandra/ticketing-gmcgo/config"
 	"github.com/gin-gonic/gin"
 )
 
 func NewRouter(
+	config *config.AppConfig,
+
 	userMiddleware *middleware.UserMiddleware,
 	adminMiddleware *middleware.AdminMiddleware,
 	gateMiddleware *middleware.GateMiddleware,
@@ -19,7 +22,12 @@ func NewRouter(
 	gateController *controller.ConfigController,
 	seatController *controller.SeatController,
 ) *gin.Engine {
-	router := gin.Default()
+	var router *gin.Engine
+	if config.IsProduction == true {
+		router = gin.New()
+	} else {
+		router = gin.Default()
+	}
 
 	//Public User Standard Auth Routes
 	public := router.Group("/api/v1").Use(gateMiddleware.HandleAccess)

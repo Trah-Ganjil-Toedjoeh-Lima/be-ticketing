@@ -41,7 +41,8 @@ services:
     depends_on:
       - db
       - cache
-      - elasticsearch
+      - logstash
+      - minio
     restart: unless-stopped
     logging:  #use this if you want sent the container logs (from the stdout) to the logstash service directly
       driver: gelf
@@ -162,15 +163,15 @@ services:
       - elasticsearch
     restart: unless-stopped
 
-  filebeat:
-    image: docker.elastic.co/beats/filebeat:8.7.0
-    volumes:
-      - ./.infra/filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml
-      - ./storage/logs/:/logs/
-    networks:
-      - gmcgo-network
-    depends_on:
-      - logstash
+#  filebeat:
+#    image: docker.elastic.co/beats/filebeat:8.7.0
+#    volumes:
+#      - ./.infra/filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml
+#      - ./storage/logs/:/logs/
+#    networks:
+#      - gmcgo-network
+#    depends_on:
+#      - logstash
 
 
 networks:
