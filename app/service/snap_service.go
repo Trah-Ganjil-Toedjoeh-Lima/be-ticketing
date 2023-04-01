@@ -78,13 +78,13 @@ func (s *SnapService) SendInfoEmail(seats []model.Seat, receiverName, receiverEm
 	for _, seat := range seats {
 		seatsName = append(seatsName, seat.Name)
 	}
-	//data := map[string]any{
-	//	"Name":  receiverName,
-	//	"Seats": seatsName,
-	//}
-	//if err := s.emailUtil.SendEmail("./resource/template/info.gohtml", data, receiverEmail, "INFO EMAIL", map[string][]byte{}); err != nil {
-	//	return err
-	//}
+	data := map[string]any{
+		"Name":  receiverName,
+		"Seats": seatsName,
+	}
+	if err := s.emailUtil.SendEmail("./resource/template/info.gohtml", data, receiverEmail, "INFO EMAIL", map[string][]byte{}, seatsName); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -101,13 +101,13 @@ func (s *SnapService) SendTicketEmail(seats []model.Seat, receiverName, receiver
 		seatsName = append(seatsName, seat.Name)
 	}
 
-	//data := map[string]any{
-	//	"Name":  receiverName,
-	//	"Seats": seatsName,
-	//}
-	//if err := s.emailUtil.SendEmail("./resource/template/ticket.gohtml", data, receiverEmail, "TICKET EMAIL", attachments); err != nil { //send the e-ticket email
-	//	return err
-	//}
+	data := map[string]any{
+		"Name":  receiverName,
+		"Seats": seatsName,
+	}
+	if err := s.emailUtil.SendEmail("./resource/template/ticket.gohtml", data, receiverEmail, "TICKET EMAIL", attachments, seatsName); err != nil { //send the e-ticket email
+		return err
+	}
 
 	return nil
 }

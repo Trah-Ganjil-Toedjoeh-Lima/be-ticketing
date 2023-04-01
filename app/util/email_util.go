@@ -2,7 +2,6 @@ package util
 
 import (
 	"bytes"
-	"fmt"
 	"github.com/frchandra/ticketing-gmcgo/config"
 	"gopkg.in/gomail.v2"
 	"html/template"
@@ -38,58 +37,18 @@ func (u *EmailUtil) SendEmail(templatePath string, data map[string]any, receiver
 	m.SetHeader("Subject", subject)
 	m.SetBody("text/html", body.String())
 
-	if len(attachments) > 0 { //attaching e-ticket attachment if there is any
-		/*		//for filename, _ := range attachments {
-				fmt.Println(len(attachments["31.png"]))
-				m.Attach(
-					"31.png",
-					gomail.SetCopyFunc(func(writer io.Writer) error {
-						_, err = writer.Write(attachments["31.png"])
-
-						fmt.Println(len(attachments["31.png"]))
-						return err
-					}),
-				)
-				fmt.Println(len(attachments["32.png"]))
-				m.Attach(
-					"32.png",
-					gomail.SetCopyFunc(func(writer io.Writer) error {
-						_, err = writer.Write(attachments["32.png"])
-
-						fmt.Println(len(attachments["32.png"]))
-						return err
-					}),
-				)
-				fmt.Println(len(attachments["33.png"]))
-				m.Attach(
-					"33.png",
-					gomail.SetCopyFunc(func(writer io.Writer) error {
-						_, err = writer.Write(attachments["33.png"])
-
-						fmt.Println(len(attachments["33.png"]))
-						return err
-					}),
-				)
-
-				//}
-				fmt.Println(">>>>>>>>")*/
-
+	if len(attachments) > 0 {
 		seatsCount := len(seatsName)
-
-		for i := 0; i < seatsCount; i++ {
-			filename := seatsName[i] + ".png"
-			fmt.Println(len(attachments[filename]))
-			m.Attach(
-				filename,
+		for i := 0; i < seatsCount; i++ { //This is you from the past: Do not touch this code. Somehow if I use for-range loop for
+			filename := seatsName[i] + ".png" //attaching the attachment map ( map["filename"] consist of filename as a key and []byte of e-ticket image as a value)
+			m.Attach( // this leads to random behaviour that makes the loop won't iterate the attachment variable inside m.Attach()
+				filename, //So, I use regular for loop instead, but I need to pass the seatsName slice as an iterator
 				gomail.SetCopyFunc(func(writer io.Writer) error {
 					_, err = writer.Write(attachments[filename])
-
-					fmt.Println(len(attachments[filename]))
 					return err
 				}),
 			)
 		}
-
 	}
 
 	port, _ := strconv.Atoi(u.config.MailPort) //send the mail
