@@ -26,6 +26,8 @@ services:
 
   app:
     container_name: gmcgo-app
+    labels:
+      - "traefik.http.routers.gmcgo-app.rule=(Host(`gmcgo.localhost`) && PathPrefix(`/api`))"
     build:
       context: .
       dockerfile: ./app.Dockerfile
@@ -43,6 +45,7 @@ services:
       - cache
       - logstash
       - minio
+      - proxy
     restart: unless-stopped
     logging:  #use this if you want sent the container logs (from the stdout) to the logstash service directly
       driver: gelf
@@ -65,7 +68,18 @@ services:
     networks:
       - gmcgo-network
 
-
+  proxy:
+    image: traefik:v2.9
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker"
+    ports:
+      - "80:80"
+      - "8000:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - gmcgo-network
 
   # The 'setup' service runs a one-off script which initializes users inside
   # Elasticsearch — such as 'logstash_internal' and 'kibana_system' — with the
@@ -147,6 +161,9 @@ services:
     restart: unless-stopped
 
   kibana:
+    container_name: gmcgo-kibana
+    labels:
+      - "traefik.http.routers.gmcgo-kibana.rule=Host(`kibana.gmcgo.localhost`)"
     build:
       context: .infra/kibana/
       args:
@@ -161,6 +178,7 @@ services:
       - gmcgo-network
     depends_on:
       - elasticsearch
+      - proxy
     restart: unless-stopped
 
 #  filebeat:
