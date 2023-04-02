@@ -3,8 +3,14 @@ This repository is used to developing the ticketing website for Gadjah Mada Cham
 <br>
 <br>
 <br>
-Credit:
+Tech Stack:
+ - Docker version 20.10.22 and docker compose version 2.14.1 
+ - Golang version 1.19 (with Gin framework and Gorm ORM)
+ - PostgreSQL version 15
+ - Redis version 7
+ - MinIO
  - ELK stack : https://github.com/deviantony/docker-elk
+ - Traefik version 2.9.9
 
 <br>
 <br>
