@@ -181,17 +181,6 @@ services:
       - proxy
     restart: unless-stopped
 
-#  filebeat:
-#    image: docker.elastic.co/beats/filebeat:8.7.0
-#    volumes:
-#      - ./.infra/filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml
-#      - ./storage/logs/:/logs/
-#    networks:
-#      - gmcgo-network
-#    depends_on:
-#      - logstash
-
-
 networks:
   gmcgo-network:
     driver: bridge
