@@ -35,7 +35,8 @@ func NewRouter(
 	public.POST("/user/sign_in", userController.SignIn)
 	public.POST("/user/login", userController.Login)
 	public.POST("/user/refresh", userController.RefreshToken)
-	public.POST("user/register_email", userController.RegisterEmail)
+	public.POST("user/register_email", userController.RegisterByEmail)
+	public.POST("user/otp", userController.VerifyOtp)
 
 	//Public Post Ticketing
 	public.Use(qrMiddleware.HandleScanQr).GET("/seat/:link", seatController.InfoByLink)
