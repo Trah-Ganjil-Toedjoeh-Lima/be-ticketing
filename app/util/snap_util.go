@@ -17,10 +17,16 @@ type SnapUtil struct {
 func NewSnapUtil(app *config.AppConfig) *SnapUtil {
 	var snapClient snap.Client
 	if app.MidtransIsProduction == false {
-		snapClient.New(app.ServerKeySandbox, midtrans.Sandbox)
+		if app.IsProduction == true { //TODO: create your own logger
+			midtrans.DefaultLoggerLevel = &midtrans.LoggerImplementation{LogLevel: midtrans.LogError}
+		} else {
+			snapClient.New(app.ServerKeySandbox, midtrans.Sandbox)
+			midtrans.DefaultLoggerLevel = &midtrans.LoggerImplementation{LogLevel: midtrans.LogDebug}
+		}
 	} else {
 		snapClient.New(app.ServerKeySandbox, midtrans.Production)
 	}
+
 	return &SnapUtil{
 		app:        app,
 		snapClient: snapClient,

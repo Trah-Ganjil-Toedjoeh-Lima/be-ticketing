@@ -25,6 +25,7 @@ require (
 	github.com/kumparan/bimg v1.0.19-0.20211025073642-47a38529c8af
 	github.com/midtrans/midtrans-go v1.3.6
 	github.com/minio/minio-go/v7 v7.0.50
+	github.com/pquerna/otp v1.4.0
 	github.com/sirupsen/logrus v1.9.0
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 	golang.org/x/crypto v0.6.0
@@ -34,6 +35,7 @@ require (
 )
 
 require (
+	github.com/boombuler/barcode v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect

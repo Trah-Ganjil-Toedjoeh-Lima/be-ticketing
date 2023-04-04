@@ -6,10 +6,11 @@ import (
 )
 
 type User struct {
-	UserId      uint64         `gorm:"primaryKey"`
-	Name        string         `gorm:"not null"`
-	Email       string         `gorm:"not null"`
-	Phone       string         `gorm:"not null"`
+	UserId      uint64 `gorm:"primaryKey"`
+	Name        string
+	Email       string `gorm:"not null"`
+	Phone       string
+	Otp         string
 	Transaction []Transaction  `gorm:"foreignKey:UserId;references:UserId"json:"-"`
 	CreatedAt   time.Time      `json:"-"`
 	UpdatedAt   time.Time      `json:"-"`

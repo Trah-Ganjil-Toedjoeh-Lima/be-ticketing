@@ -62,7 +62,7 @@ func newMinio() *minio.Client {
 			log.Fatalln(err)
 		}
 	} else {
-		log.Printf("Successfully created %s\n", appConfig.MinioTicketsBucket)
+		log.Printf("Successfully created bucket: %s\n", appConfig.MinioTicketsBucket)
 	}
 	return minioClient
 }
