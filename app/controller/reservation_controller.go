@@ -29,12 +29,9 @@ func NewReservationController(config *config.AppConfig, txDb *gorm.DB, log *util
 }
 
 func (r *ReservationController) GetSeatsInfo(c *gin.Context) {
-	contextData, _ := c.Get("accessDetails")              //get the details about the current user that make request from the context passed by user middleware
-	accessDetails, _ := contextData.(*util.AccessDetails) //type assertion
-
 	seats, err := r.seatService.GetAllSeats() //get all seats from db
 	if err != nil {
-		r.log.ControllerResponseLog(err, "ReservationController@GetSeatsInfo", c.ClientIP(), contextData.(*util.AccessDetails).UserId)
+		r.log.ControllerResponseLog(err, "ReservationController@GetSeatsInfo", c.ClientIP(), 0)
 		util.GinResponseError(c, http.StatusNotFound, "something went wrong", "error when getting the data")
 		return
 	}
@@ -49,6 +46,17 @@ func (r *ReservationController) GetSeatsInfo(c *gin.Context) {
 		seatsResponse[seat.SeatId-1].Status = seat.Status
 		seatsResponse[seat.SeatId-1].Price = seat.Price
 	}
+
+	contextData, ok := c.Get("accessDetails") //get the details about the current user that make request from the context passed by user middleware
+	if !ok {                                  //if user's access details is not exist it means that this user is not logged in
+		c.JSON(http.StatusOK, gin.H{ //return success
+			"message": "success",
+			"data":    seatsResponse,
+			"count":   len(seatsResponse),
+		})
+		return
+	}
+	accessDetails, _ := contextData.(*util.AccessDetails) //type assertion
 
 	mySeats, _ := r.txService.SeatsBelongsToUser(accessDetails.UserId) //overwrite the response object for this user
 	for _, mySeat := range mySeats {                                   //populate the response object

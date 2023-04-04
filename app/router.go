@@ -37,6 +37,7 @@ func NewRouter(
 	public.POST("/user/refresh", userController.RefreshToken)
 	public.POST("user/register_email", userController.RegisterByEmail)
 	public.POST("user/otp", userController.VerifyOtp)
+	public.Use(gateMiddleware.HandleAccess).GET("/seat_map", reservationController.GetSeatsInfo)
 
 	//Public Post Ticketing
 	public.Use(qrMiddleware.HandleScanQr).GET("/seat/:link", seatController.InfoByLink)
@@ -51,7 +52,7 @@ func NewRouter(
 	user.GET("/user", userController.CurrentUser)
 
 	//Ticketing Routes
-	user.Use(gateMiddleware.HandleAccess).GET("/seat_map", reservationController.GetSeatsInfo)
+
 	user.Use(gateMiddleware.HandleAccess).POST("/seat_map", reservationController.ReserveSeats)
 	user.GET("/checkout", txController.GetNewTransactionDetails)
 	user.POST("/checkout", txController.InitiateTransaction)
