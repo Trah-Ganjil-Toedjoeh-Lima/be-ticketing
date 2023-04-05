@@ -16,6 +16,7 @@ func NewRouter(
 	qrMiddleware *middleware.ScanQrMiddleware,
 
 	userController *controller.UserController,
+	authController *controller.AuthController,
 	reservationController *controller.ReservationController,
 	txController *controller.TransactionController,
 	snapController *controller.SnapController,
@@ -31,13 +32,14 @@ func NewRouter(
 
 	//Public User Standard Auth Routes
 	public := router.Group("/api/v1").Use(gateMiddleware.HandleAccess)
-	public.POST("/user/register", userController.Register)
-	public.POST("/user/sign_in", userController.SignIn)
-	public.POST("/user/login", userController.Login)
-	public.POST("/user/refresh", userController.RefreshToken)
-	public.POST("user/register_email", userController.RegisterByEmail)
-	public.POST("user/otp", userController.VerifyOtp)
+	public.POST("/user/refresh", authController.RefreshToken)
+	public.POST("user/register_email", authController.RegisterByEmail)
+	public.POST("user/otp", authController.VerifyOtp)
 	public.Use(gateMiddleware.HandleAccess).GET("/seat_map", reservationController.GetSeatsInfo)
+
+	//public.POST("/user/register", authController.Register) //This route is no longer needed for current GMCO's ticketing case,
+	//public.POST("/user/sign_in", authController.SignIn) //but the code implementation in the controller is still remain
+	//public.POST("/user/login", authController.Login) //in case of future use
 
 	//Public Post Ticketing
 	public.Use(qrMiddleware.HandleScanQr).GET("/seat/:link", seatController.InfoByLink)
@@ -48,11 +50,11 @@ func NewRouter(
 
 	//Logged-In User Routes
 	user := router.Group("/api/v1").Use(gateMiddleware.HandleAccess).Use(userMiddleware.HandleUserAccess)
-	user.POST("/user/logout", userController.Logout)
-	user.GET("/user", userController.CurrentUser)
+	user.POST("/user/logout", authController.Logout)
+	user.GET("/user", authController.CurrentUser)
 
 	//Ticketing Routes
-
+	user.Use(gateMiddleware.HandleAccess).PATCH("/user", userController.UpdateInfo)
 	user.Use(gateMiddleware.HandleAccess).POST("/seat_map", reservationController.ReserveSeats)
 	user.GET("/checkout", txController.GetNewTransactionDetails)
 	user.POST("/checkout", txController.InitiateTransaction)

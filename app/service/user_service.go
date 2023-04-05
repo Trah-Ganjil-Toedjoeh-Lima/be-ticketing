@@ -50,16 +50,17 @@ func (u *UserService) GetById(userId uint64) (model.User, error) {
 }
 
 func (u *UserService) InsertOne(user *model.User) (int64, error) {
-	hashedCred, err := bcrypt.GenerateFromPassword([]byte(user.Phone), bcrypt.DefaultCost) //hash the credential
-	if err != nil {
-		return 0, errors.New("credential preparation error")
-	}
-	//GMCO use case, use password otherwise
-	user.Phone = string(hashedCred)
-	//store user to db
-	result := u.userRepository.InsertOne(user)
+	result := u.userRepository.InsertOne(user) //store user to db
 	if result.Error != nil {
 		return 0, errors.New("database operation error")
+	}
+	return result.RowsAffected, nil
+}
+
+func (u *UserService) UpdateById(userId uint64, user *model.User) (int64, error) {
+	result := u.userRepository.UpdateById(userId, user)
+	if result.Error != nil {
+		return 0, result.Error
 	}
 	return result.RowsAffected, nil
 }
@@ -86,15 +87,15 @@ func (u *UserService) ValidateLogin(userInput *model.User) error {
 }
 
 func (u *UserService) GenerateToken(userInput *model.User) (*util.TokenDetails, error) {
-	//create token for u user
-	tokenDetails, err := u.tokenUtil.CreateToken(userInput.UserId)
+
+	tokenDetails, err := u.tokenUtil.CreateToken(userInput.UserId) //create token for the user
 	if err != nil {
 		return tokenDetails, errors.New("credential authentication error")
 	}
-	//store the token to redis
-	if err = u.tokenUtil.StoreAuthn(userInput.UserId, tokenDetails); err != nil {
+
+	if err = u.tokenUtil.StoreAuthn(userInput.UserId, tokenDetails); err != nil { //store the token to redis
 		return tokenDetails, errors.New("credential preparation error")
 	}
-	//return the new created token
-	return tokenDetails, nil
+
+	return tokenDetails, nil //return the new created token
 }

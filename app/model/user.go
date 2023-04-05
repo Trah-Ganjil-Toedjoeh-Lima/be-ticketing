@@ -10,7 +10,7 @@ type User struct {
 	Name        string
 	Email       string `gorm:"not null"`
 	Phone       string
-	TotpSecret  string
+	TotpSecret  string         `json:"-"`
 	Transaction []Transaction  `gorm:"foreignKey:UserId;references:UserId"json:"-"`
 	CreatedAt   time.Time      `json:"-"`
 	UpdatedAt   time.Time      `json:"-"`

@@ -67,5 +67,12 @@ func (u *UserRepository) GetById(userId uint64, userResult *model.User) *gorm.DB
 		u.log.BasicLog(result.Error, "UserRepository@GetById")
 	}
 	return result
+}
 
+func (u *UserRepository) UpdateById(userId uint64, userInput *model.User) *gorm.DB {
+	result := u.db.Model(model.User{}).Where("user_id = ?", userId).Updates(userInput)
+	if result.Error != nil {
+		u.log.BasicLog(result.Error, "-")
+	}
+	return result
 }

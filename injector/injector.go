@@ -26,6 +26,7 @@ var MiddlewareSet = wire.NewSet(
 var UserSet = wire.NewSet(
 	repository.NewUserRepository,
 	service.NewUserService,
+	controller.NewAuthController,
 	controller.NewUserController,
 )
 
