@@ -11,4 +11,4 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Build the Docker image
-      run: docker build . --file app.Dockerfile --tag trahganjil/gmco-ticketing-be:$(date +%s)
+      run: docker build . --file Dockerfile --tag trahganjil/gmco-ticketing-be:$(date +%s)

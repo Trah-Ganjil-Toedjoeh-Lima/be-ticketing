@@ -180,14 +180,3 @@ services:
       - elasticsearch
       - proxy
     restart: unless-stopped
-
-networks:
-  gmcgo-network:
-    driver: bridge
-
-volumes:
-  pgdata:
-    driver: local
-  setup:
-  elasticsearch:
-  minio:
