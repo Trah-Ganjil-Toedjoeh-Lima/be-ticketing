@@ -58,5 +58,30 @@ func (u *UserController) UpdateInfo(c *gin.Context) {
 		"message":          "users info updated successfully",
 		"affected_records": affectedRows,
 	})
+}
 
+func (u *UserController) CurrentUser(c *gin.Context) {
+	contextData, isExist := c.Get("accessDetails") //get the details about the current user that make request from the context passed by user middleware
+	if isExist == false {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "fail",
+			"error":   "cannot get access details",
+		})
+		return
+	}
+	accessDetails, _ := contextData.(*util.AccessDetails)
+
+	user, err := u.userService.GetById(accessDetails.UserId) //get the user data given the user id from the token
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "fail",
+			"error":   err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"message": "success",
+		"data":    user,
+	})
+	return
 }

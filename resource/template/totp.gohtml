@@ -8,13 +8,9 @@
     <title>Document</title>
 </head>
 <body>
-    <h1>Hello {{ .Name }}</h1>
-    <p>Pesanan Berhasil!!. ini pesanan anda</p>
-    <ul>
-        {{range $index, $element := .Seats}}
-            <li>{{$element}}</li>
-        {{end}}
-    </ul>
+<h1>Hello {{ .Name }}</h1>
+<p>Ini totp anda</p>
+<p>{{ .Totp }}</p>
 
 </body>
 </html>

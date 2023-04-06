@@ -17,11 +17,13 @@ import (
 type AuthController struct {
 	userService *service.UserService
 	tokenUtil   *util.TokenUtil
+	log         *util.LogUtil
+	emailUtil   *util.EmailUtil
 	config      *config.AppConfig
 }
 
-func NewAuthController(userService *service.UserService, tokenUtil *util.TokenUtil, config *config.AppConfig) *AuthController {
-	return &AuthController{userService: userService, tokenUtil: tokenUtil, config: config}
+func NewAuthController(userService *service.UserService, tokenUtil *util.TokenUtil, log *util.LogUtil, emailUtil *util.EmailUtil, config *config.AppConfig) *AuthController {
+	return &AuthController{userService: userService, tokenUtil: tokenUtil, log: log, emailUtil: emailUtil, config: config}
 }
 
 func (u *AuthController) VerifyOtp(c *gin.Context) {
@@ -115,7 +117,15 @@ func (u *AuthController) RegisterByEmail(c *gin.Context) {
 			return
 		}
 
-		c.JSON(http.StatusOK, gin.H{ //TODO: sent the otp token from email
+		go func() { //send the totp to the registered email
+			data := map[string]any{"Totp": totpToken}
+			if err = u.emailUtil.SentTotpEmail(data, inputData.Email); err != nil {
+				u.log.BasicLog(err, "When sending totp")
+				return
+			}
+		}()
+
+		c.JSON(http.StatusOK, gin.H{
 			"message":             "success",
 			"totp_token":          totpToken,
 			"totp_secret":         totpSecret.Secret(),
@@ -133,7 +143,15 @@ func (u *AuthController) RegisterByEmail(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{ //TODO: sent the otp token from email
+	go func() { //send the totp to the registered email
+		data := map[string]any{"Totp": totpToken}
+		if err = u.emailUtil.SentTotpEmail(data, inputData.Email); err != nil {
+			u.log.BasicLog(err, "When sending totp")
+			return
+		}
+	}()
+
+	c.JSON(http.StatusOK, gin.H{
 		"message":             "success",
 		"totp_token":          totpToken,
 		"totp_secret":         user.TotpSecret,
@@ -259,32 +277,6 @@ func (u *AuthController) Login(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "success",
 		"token":   token,
-	})
-	return
-}
-
-func (u *AuthController) CurrentUser(c *gin.Context) {
-	contextData, isExist := c.Get("accessDetails") //get the details about the current user that make request from the context passed by user middleware
-	if isExist == false {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "fail",
-			"error":   "cannot get access details",
-		})
-		return
-	}
-	accessDetails, _ := contextData.(*util.AccessDetails)
-
-	user, err := u.userService.GetById(accessDetails.UserId) //get the user data given the user id from the token
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{
-			"message": "fail",
-			"error":   err.Error(),
-		})
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{
-		"message": "success",
-		"data":    user,
 	})
 	return
 }

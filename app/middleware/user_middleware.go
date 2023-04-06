@@ -16,7 +16,7 @@ func NewUserMiddleware(tokenUtil *util.TokenUtil, log *logrus.Logger) *UserMiddl
 	return &UserMiddleware{tokenUtil: tokenUtil, log: log}
 }
 
-func (u *UserMiddleware) EarlyUserAccess(c *gin.Context) {
+func (u *UserMiddleware) UserAccess(c *gin.Context) {
 	accessDetails, err := u.tokenUtil.GetValidatedAccess(c) //get the user data from the token in the request header
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -39,7 +39,7 @@ func (u *UserMiddleware) EarlyUserAccess(c *gin.Context) {
 			"error":   "your credentials are invalid. try to refresh your credentials",
 		})
 		u.log.
-			WithField("occurrence", "UserMiddleware@EarlyUserAccess").
+			WithField("occurrence", "UserMiddleware@UserAccess").
 			WithField("client_ip", c.ClientIP()).
 			WithField("endpoint", c.FullPath()).
 			WithField("source_messages", err.Error()).
@@ -49,8 +49,4 @@ func (u *UserMiddleware) EarlyUserAccess(c *gin.Context) {
 	}
 	c.Set("accessDetails", accessDetails)
 	c.Next()
-}
-
-func (u *UserMiddleware) FullUserAccess(c *gin.Context) {
-
 }

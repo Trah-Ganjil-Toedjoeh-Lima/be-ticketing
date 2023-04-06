@@ -35,7 +35,7 @@ func main() {
 		attachments["H"+strconv.Itoa(i)+".png"] = ticket
 	}
 
-	err := mailer.SendEmail("./resource/template/info.gohtml", data, reciever, "TEST EMAIL", attachments, seatsName)
+	err := mailer.SendTicketEmail(data, reciever, attachments, seatsName)
 	if err != nil {
 		panic(err)
 	}

@@ -82,7 +82,7 @@ func (s *SnapService) SendInfoEmail(seats []model.Seat, receiverName, receiverEm
 		"Name":  receiverName,
 		"Seats": seatsName,
 	}
-	if err := s.emailUtil.SendEmail("./resource/template/info.gohtml", data, receiverEmail, "INFO EMAIL", map[string][]byte{}, seatsName); err != nil {
+	if err := s.emailUtil.SendInfoEmail(data, receiverEmail); err != nil {
 		return err
 	}
 	return nil
@@ -105,7 +105,7 @@ func (s *SnapService) SendTicketEmail(seats []model.Seat, receiverName, receiver
 		"Name":  receiverName,
 		"Seats": seatsName,
 	}
-	if err := s.emailUtil.SendEmail("./resource/template/ticket.gohtml", data, receiverEmail, "TICKET EMAIL", attachments, seatsName); err != nil { //send the e-ticket email
+	if err := s.emailUtil.SendTicketEmail(data, receiverEmail, attachments, seatsName); err != nil { //send the e-ticket email
 		return err
 	}
 

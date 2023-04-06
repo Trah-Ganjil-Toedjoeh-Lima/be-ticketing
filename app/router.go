@@ -49,9 +49,9 @@ func NewRouter(
 	webhook.POST("/snap/payment/callback", snapController.HandleCallback)
 
 	//Logged-In User Routes
-	user := router.Group("/api/v1").Use(gateMiddleware.HandleAccess).Use(userMiddleware.EarlyUserAccess)
+	user := router.Group("/api/v1").Use(gateMiddleware.HandleAccess).Use(userMiddleware.UserAccess)
 	user.POST("/user/logout", authController.Logout)
-	user.GET("/user", authController.CurrentUser)
+	user.GET("/user", userController.CurrentUser)
 
 	//Logged-In User Ticketing Routes
 	user.Use(gateMiddleware.HandleAccess).PATCH("/user", userController.UpdateInfo)
