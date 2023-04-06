@@ -1,5 +1,5 @@
 # Step 1
-FROM golang:latest-alpine AS builder
+FROM golang:alpine AS builder
 
 ENV PATH="/go/bin:${PATH}"
 ENV GO111MODULE=on
