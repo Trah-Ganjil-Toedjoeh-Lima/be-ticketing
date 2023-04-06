@@ -11,4 +11,6 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag trahganjil/gmco-ticketing-be:$(date +%s)
+      run: docker build . --file Dockerfile --tag trahganjil/gmco-ticketing-be:$(git rev-parse --short HEAD)
+    - name: Push to DockerHub
+      run: docker login -u $DH_USER -p $DH_PASS && docker push trahganjil/gmco-ticketing-be:$(git rev-parse --short HEAD)
