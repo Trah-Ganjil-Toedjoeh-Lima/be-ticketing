@@ -71,7 +71,7 @@ func (u *EmailUtil) SendTicketEmail(data map[string]any, receiver string, attach
 		for i := 0; i < seatsCount; i++ { //This is you from the past: Do not touch this code. Somehow if I use for-range loop for
 			filename := seatsName[i] + ".png" //attaching the attachment map ( map["filename"] consist of filename as a key and []byte of e-ticket image as a value)
 			m.Attach(                         // this leads to random behaviour that makes the loop won't iterate the attachment variable inside m.Attach()
-				filename, //So, I use regular for loop instead, but I need to pass the seatsName slice as an iterator
+				filename, //So, I use regular for loop instead. As a result I need to pass a slice of seatsName as an iterator
 				gomail.SetCopyFunc(func(writer io.Writer) error {
 					_, err = writer.Write(attachments[filename])
 					return err
