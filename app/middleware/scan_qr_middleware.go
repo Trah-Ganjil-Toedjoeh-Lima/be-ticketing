@@ -30,8 +30,8 @@ func (m *ScanQrMiddleware) HandleScanQr(c *gin.Context) {
 	err = m.tokenUtil.FetchAuthn(accessDetails.AccessUuid) //check if token exist in the token storage (Check if the token is expired)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{
-			"status": "fail",
-			"error":  "your credentials are invalid. try to refresh your credentials",
+			"message": "fail",
+			"error":   "your credentials are invalid. try to refresh your credentials",
 		})
 		m.log.
 			WithField("occurrence", "AdminMiddelware@HandleAdminAcccess").

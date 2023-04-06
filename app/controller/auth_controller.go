@@ -52,15 +52,15 @@ func (u *AuthController) VerifyOtp(c *gin.Context) {
 	token, err := u.userService.GenerateToken(&user) //generate access token for this user
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"status": "fail",
-			"error":  err.Error(),
+			"message": "fail",
+			"error":   err.Error(),
 		})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{ //return success
-		"status": "success",
-		"token":  token,
+		"message": "success",
+		"token":   token,
 	})
 	return
 
@@ -87,8 +87,8 @@ func (u *AuthController) RegisterByEmail(c *gin.Context) {
 		})
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
-				"status": "fail",
-				"error":  err.Error(),
+				"message": "fail",
+				"error":   err.Error(),
 			})
 			return
 		}
@@ -145,8 +145,8 @@ func (u *AuthController) Register(c *gin.Context) {
 	var inputData validation.RegisterValidation //validate the input data
 	if err := c.ShouldBindJSON(&inputData); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"status": "fail",
-			"error":  err.Error(),
+			"message": "fail",
+			"error":   err.Error(),
 		})
 		return
 	}
@@ -159,8 +159,8 @@ func (u *AuthController) Register(c *gin.Context) {
 	_, err := u.userService.GetOrInsertOne(&newUser)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"status": "fail",
-			"error":  err.Error(),
+			"message": "fail",
+			"error":   err.Error(),
 		})
 		return
 	}
@@ -168,15 +168,15 @@ func (u *AuthController) Register(c *gin.Context) {
 	token, err := u.userService.GenerateToken(&newUser) //generate token for this user
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"status": "fail",
-			"error":  err.Error(),
+			"message": "fail",
+			"error":   err.Error(),
 		})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{ //return success
-		"status": "success",
-		"token":  token,
+		"message": "success",
+		"token":   token,
 	})
 	return
 }
@@ -186,8 +186,8 @@ func (u *AuthController) SignIn(c *gin.Context) {
 	var inputData validation.RegisterValidation
 	if err := c.ShouldBindJSON(&inputData); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"status": "fail",
-			"error":  err.Error(),
+			"message": "fail",
+			"error":   err.Error(),
 		})
 		return
 	}
@@ -200,14 +200,14 @@ func (u *AuthController) SignIn(c *gin.Context) {
 	rowsAffected, err := u.userService.InsertOne(&newUser)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"status": "fail",
-			"error":  err.Error(),
+			"message": "fail",
+			"error":   err.Error(),
 		})
 		return
 	}
 	//return success
 	c.JSON(http.StatusOK, gin.H{
-		"status":        "success",
+		"message":       "success",
 		"rows_affected": rowsAffected,
 	})
 	return
@@ -219,8 +219,8 @@ func (u *AuthController) Login(c *gin.Context) {
 
 	if err := c.ShouldBindJSON(&inputData); err != nil { //validate the input data
 		c.JSON(http.StatusBadRequest, gin.H{
-			"status": "fail",
-			"error":  err.Error(),
+			"message": "fail",
+			"error":   err.Error(),
 		})
 		return
 	}
@@ -240,8 +240,8 @@ func (u *AuthController) Login(c *gin.Context) {
 	err := u.userService.ValidateLogin(&userInput) //validate if user exist and credential is correct
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"status": "fail",
-			"error":  err.Error(),
+			"message": "fail",
+			"error":   err.Error(),
 		})
 		return
 	}
@@ -249,16 +249,16 @@ func (u *AuthController) Login(c *gin.Context) {
 	token, err := u.userService.GenerateToken(&userInput) //generate token for this user
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"status": "fail",
-			"error":  err.Error(),
+			"message": "fail",
+			"error":   err.Error(),
 		})
 		return
 	}
 
 	c.SetSameSite(http.SameSiteNoneMode) //return success
 	c.JSON(http.StatusOK, gin.H{
-		"status": "success",
-		"token":  token,
+		"message": "success",
+		"token":   token,
 	})
 	return
 }
@@ -301,7 +301,7 @@ func (u *AuthController) Logout(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
-		"status": "success",
+		"message": "success",
 	})
 	return
 }
@@ -310,14 +310,14 @@ func (u *AuthController) RefreshToken(c *gin.Context) {
 	token, err := u.tokenUtil.Refresh(c)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
-			"status": "fail",
-			"error":  err.Error(),
+			"message": "fail",
+			"error":   err.Error(),
 		})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
-		"status": "success",
-		"token":  token,
+		"message": "success",
+		"token":   token,
 	})
 	return
 

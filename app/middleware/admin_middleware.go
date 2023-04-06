@@ -20,12 +20,12 @@ func NewAdminMiddleware(tokenUtil *util.TokenUtil, log *logrus.Logger, config *c
 	return &AdminMiddleware{tokenUtil: tokenUtil, log: log, config: config, userService: userService}
 }
 
-func (u *AdminMiddleware) HandleAdminAccess(c *gin.Context) {
+func (u *AdminMiddleware) AdminAccess(c *gin.Context) {
 	accessDetails, err := u.tokenUtil.GetValidatedAccess(c) //get the user data from the token in the request header
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"status": "fail",
-			"error":  "your credentials are invalid",
+			"message": "fail",
+			"error":   "your credentials are invalid",
 		})
 		u.log.WithField("occurrence", "AdminMiddelware@HandleAdminAcccess").
 			WithField("source_messages", err.Error()).
@@ -39,8 +39,8 @@ func (u *AdminMiddleware) HandleAdminAccess(c *gin.Context) {
 	err = u.tokenUtil.FetchAuthn(accessDetails.AccessUuid) //check if token exist in the token storage (Check if the token is expired)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{
-			"status": "fail",
-			"error":  "your credentials are invalid. try to refresh your credentials",
+			"message": "fail",
+			"error":   "your credentials are invalid. try to refresh your credentials",
 		})
 		u.log.
 			WithField("occurrence", "AdminMiddelware@HandleAdminAcccess").
@@ -60,8 +60,8 @@ func (u *AdminMiddleware) HandleAdminAccess(c *gin.Context) {
 	}
 	c.Abort()
 	c.JSON(http.StatusUnauthorized, gin.H{
-		"status": "fail",
-		"error":  "you are not authorized",
+		"message": "fail",
+		"error":   "you are not authorized",
 	})
 	return
 

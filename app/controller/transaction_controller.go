@@ -74,7 +74,7 @@ func (t *TransactionController) InitiateTransaction(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
-		"status":        "success",
+		"message":       "success",
 		"snap_request":  snapRequest,
 		"snap_response": response,
 	})

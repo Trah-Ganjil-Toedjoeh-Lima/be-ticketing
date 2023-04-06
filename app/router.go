@@ -49,7 +49,7 @@ func NewRouter(
 	webhook.POST("/snap/payment/callback", snapController.HandleCallback)
 
 	//Logged-In User Routes
-	user := router.Group("/api/v1").Use(gateMiddleware.HandleAccess).Use(userMiddleware.HandleUserAccess)
+	user := router.Group("/api/v1").Use(gateMiddleware.HandleAccess).Use(userMiddleware.EarlyUserAccess)
 	user.POST("/user/logout", authController.Logout)
 	user.GET("/user", authController.CurrentUser)
 
@@ -60,7 +60,7 @@ func NewRouter(
 	user.POST("/checkout", txController.InitiateTransaction)
 
 	//Admin Routes
-	admin := router.Group("/api/v1").Use(adminMiddleware.HandleAdminAccess)
+	admin := router.Group("/api/v1").Use(adminMiddleware.AdminAccess)
 	admin.GET("/admin/seat/:link", seatController.DetailsByLink)
 	admin.PUT("/admin/seat/:link", seatController.UpdateByLink)
 	admin.GET("/admin/seat/attended/:link", seatController.UpdateToAttended)
