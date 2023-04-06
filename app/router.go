@@ -53,7 +53,7 @@ func NewRouter(
 	user.POST("/user/logout", authController.Logout)
 	user.GET("/user", authController.CurrentUser)
 
-	//Ticketing Routes
+	//Logged-In User Ticketing Routes
 	user.Use(gateMiddleware.HandleAccess).PATCH("/user", userController.UpdateInfo)
 	user.Use(gateMiddleware.HandleAccess).POST("/seat_map", reservationController.ReserveSeats)
 	user.GET("/checkout", txController.GetNewTransactionDetails)

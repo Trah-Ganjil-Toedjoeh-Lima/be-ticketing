@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"net/http"
+	"reflect"
 	"strconv"
 	"time"
 )
@@ -22,10 +23,11 @@ type ReservationController struct {
 	reservationService *service.ReservationService
 	txService          *service.TransactionService
 	seatService        *service.SeatService
+	userService        *service.UserService
 }
 
-func NewReservationController(config *config.AppConfig, txDb *gorm.DB, log *util.LogUtil, reservationService *service.ReservationService, txService *service.TransactionService, seatService *service.SeatService) *ReservationController {
-	return &ReservationController{config: config, txDb: txDb, log: log, reservationService: reservationService, txService: txService, seatService: seatService}
+func NewReservationController(config *config.AppConfig, txDb *gorm.DB, log *util.LogUtil, reservationService *service.ReservationService, txService *service.TransactionService, seatService *service.SeatService, userService *service.UserService) *ReservationController {
+	return &ReservationController{config: config, txDb: txDb, log: log, reservationService: reservationService, txService: txService, seatService: seatService, userService: userService}
 }
 
 func (r *ReservationController) GetSeatsInfo(c *gin.Context) {
@@ -77,6 +79,15 @@ func (r *ReservationController) GetSeatsInfo(c *gin.Context) {
 func (r *ReservationController) ReserveSeats(c *gin.Context) {
 	contextData, _ := c.Get("accessDetails")              //get the details about the current user that make request from the context passed by user middleware
 	accessDetails, _ := contextData.(*util.AccessDetails) //type assertion
+
+	user, _ := r.userService.GetById(accessDetails.UserId)
+	if reflect.ValueOf(user.Name).IsZero() || reflect.ValueOf(user.Phone).IsZero() { //check if user has fill their identity data
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"message": "fail",
+			"error":   "you are not authorized, please fill your name or phone number data",
+		})
+		return
+	}
 
 	var inputData validation.ReservationRequest //get the seats data in request body
 	if err := c.ShouldBindJSON(&inputData); err != nil {
