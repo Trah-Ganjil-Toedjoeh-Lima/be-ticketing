@@ -36,10 +36,10 @@ func NewRouter(
 	public.POST("user/register_email", authController.RegisterByEmail)
 	public.POST("user/otp", authController.VerifyOtp)
 	public.Use(gateMiddleware.HandleAccess).GET("/seat_map", reservationController.GetSeatsInfo)
+	public.POST("/user/login", authController.Login)
 
 	//public.POST("/user/register", authController.Register) //This route is no longer needed for current GMCO's ticketing case,
-	//public.POST("/user/sign_in", authController.SignIn) //but the code implementation in the controller is still remain
-	//public.POST("/user/login", authController.Login) //in case of future use
+	//public.POST("/user/sign_in", authController.SignIn) //but the code implementation in the controller is still remain in case of future use
 
 	//Public Post Ticketing
 	public.Use(qrMiddleware.HandleScanQr).GET("/seat/:link", seatController.InfoByLink)
@@ -69,6 +69,7 @@ func NewRouter(
 	admin.POST("/admin/close_the_gate", gateController.CloseGate)
 	admin.PATCH("/admin/qr_scan_behaviour", gateController.UpdateQrScanBehaviour)
 	admin.GET("/admin/get_app_config", gateController.GetAppConfig)
+	admin.GET("/admin/seats", seatController.AllDetails)
 
 	return router
 }

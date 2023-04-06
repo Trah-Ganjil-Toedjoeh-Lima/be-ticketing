@@ -24,10 +24,11 @@ type ReservationController struct {
 	txService          *service.TransactionService
 	seatService        *service.SeatService
 	userService        *service.UserService
+	tokenUtil          *util.TokenUtil
 }
 
-func NewReservationController(config *config.AppConfig, txDb *gorm.DB, log *util.LogUtil, reservationService *service.ReservationService, txService *service.TransactionService, seatService *service.SeatService, userService *service.UserService) *ReservationController {
-	return &ReservationController{config: config, txDb: txDb, log: log, reservationService: reservationService, txService: txService, seatService: seatService, userService: userService}
+func NewReservationController(config *config.AppConfig, txDb *gorm.DB, log *util.LogUtil, reservationService *service.ReservationService, txService *service.TransactionService, seatService *service.SeatService, userService *service.UserService, tokenUtil *util.TokenUtil) *ReservationController {
+	return &ReservationController{config: config, txDb: txDb, log: log, reservationService: reservationService, txService: txService, seatService: seatService, userService: userService, tokenUtil: tokenUtil}
 }
 
 func (r *ReservationController) GetSeatsInfo(c *gin.Context) {
@@ -49,23 +50,15 @@ func (r *ReservationController) GetSeatsInfo(c *gin.Context) {
 		seatsResponse[seat.SeatId-1].Price = seat.Price
 	}
 
-	contextData, ok := c.Get("accessDetails") //get the details about the current user that make request from the context passed by user middleware
-	if !ok {                                  //if user's access details is not exist it means that this user is not logged in
-		c.JSON(http.StatusOK, gin.H{ //return success
-			"message": "success",
-			"data":    seatsResponse,
-			"count":   len(seatsResponse),
-		})
-		return
-	}
-	accessDetails, _ := contextData.(*util.AccessDetails) //type assertion
+	accessDetails, err := r.tokenUtil.GetValidatedAccess(c) //get the user data from the token in the request header
+	if err == nil {                                         //if credentials found (user is logged in)
+		mySeats, _ := r.txService.SeatsBelongsToUser(accessDetails.UserId) //overwrite the response object for this user
+		for _, mySeat := range mySeats {                                   //populate the response object
+			if seatsResponse[mySeat.SeatId-1].Status != "available" { //only overwrite the seat status if it was not overwritten previously by timestamp logic
+				seatsResponse[mySeat.SeatId-1].Status = mySeat.Status
+			}
 
-	mySeats, _ := r.txService.SeatsBelongsToUser(accessDetails.UserId) //overwrite the response object for this user
-	for _, mySeat := range mySeats {                                   //populate the response object
-		if seatsResponse[mySeat.SeatId-1].Status != "available" { //only overwrite the seat status if it was not overwritten previously by timestamp logic
-			seatsResponse[mySeat.SeatId-1].Status = mySeat.Status
 		}
-
 	}
 
 	c.JSON(http.StatusOK, gin.H{ //return success

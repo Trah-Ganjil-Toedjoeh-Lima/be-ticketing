@@ -42,7 +42,7 @@ func InitializeServer() *gin.Engine {
 	reservationService := service.NewReservationService(appConfig, transactionService)
 	seatRepository := repository.NewSeatRepository(db, logUtil)
 	seatService := service.NewSeatService(appConfig, seatRepository, transactionRepository)
-	reservationController := controller.NewReservationController(appConfig, db, logUtil, reservationService, transactionService, seatService, userService)
+	reservationController := controller.NewReservationController(appConfig, db, logUtil, reservationService, transactionService, seatService, userService, tokenUtil)
 	snapUtil := util.NewSnapUtil(appConfig)
 	transactionController := controller.NewTransactionController(transactionService, userService, snapUtil, logUtil)
 	minioClient := app.NewMinio(appConfig, logger)
