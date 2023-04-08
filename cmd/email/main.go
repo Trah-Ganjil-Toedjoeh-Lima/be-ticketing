@@ -3,14 +3,15 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
+	"strconv"
+
 	"github.com/frchandra/ticketing-gmcgo/app"
 	"github.com/frchandra/ticketing-gmcgo/app/util"
 	"github.com/frchandra/ticketing-gmcgo/config"
 	"github.com/frchandra/ticketing-gmcgo/injector"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
-	"log"
-	"strconv"
 )
 
 func main() {
@@ -46,7 +47,7 @@ func newMinio() *minio.Client {
 	appConfig := config.NewAppConfig()
 
 	minioClient, errInit := minio.New(appConfig.MinioHost+":"+appConfig.MinioPort, &minio.Options{ // Initialize minio client object.
-		Creds:  credentials.NewStaticV4(appConfig.MinioRootUser, appConfig.MinioRootPassword, ""),
+		Creds:  credentials.NewStaticV4(appConfig.MinioAccessKey, appConfig.MinioSecretKey, ""),
 		Secure: false,
 	})
 	if errInit != nil {

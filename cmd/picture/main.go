@@ -4,12 +4,13 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"log"
+
 	"github.com/frchandra/ticketing-gmcgo/config"
 	"github.com/kumparan/bimg"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 	"github.com/skip2/go-qrcode"
-	"log"
 )
 
 func main() {
@@ -98,7 +99,7 @@ func newMinio() (*minio.Client, error) {
 	appConfig := config.NewAppConfig()
 
 	minioClient, errInit := minio.New(appConfig.MinioHost+":"+appConfig.MinioPort, &minio.Options{ // Initialize minio client object.
-		Creds:  credentials.NewStaticV4(appConfig.MinioRootUser, appConfig.MinioRootPassword, ""),
+		Creds:  credentials.NewStaticV4(appConfig.MinioAccessKey, appConfig.MinioSecretKey, ""),
 		Secure: false,
 	})
 	if errInit != nil {
