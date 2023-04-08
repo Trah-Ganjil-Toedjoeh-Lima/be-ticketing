@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+
 	"github.com/frchandra/ticketing-gmcgo/config"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
@@ -12,8 +13,8 @@ func NewMinio(appConfig *config.AppConfig, log *logrus.Logger) *minio.Client {
 	ctx := context.Background()
 
 	minioClient, errInit := minio.New(appConfig.MinioHost+":"+appConfig.MinioPort, &minio.Options{ // Initialize minio client object.
-		Creds:  credentials.NewStaticV4(appConfig.MinioRootUser, appConfig.MinioRootPassword, ""),
-		Secure: false,
+		Creds:  credentials.NewStaticV4(appConfig.MinioAccessKey, appConfig.MinioSecretKey, ""),
+		Secure: appConfig.MinioSecure,
 	})
 	if errInit != nil {
 		log.Fatalln(errInit)

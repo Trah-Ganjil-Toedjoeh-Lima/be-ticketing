@@ -1,11 +1,12 @@
 package config
 
 import (
-	"github.com/joho/godotenv"
 	"log"
 	"os"
 	"strconv"
 	"time"
+
+	"github.com/joho/godotenv"
 )
 
 type AppConfig struct {
@@ -30,8 +31,9 @@ type AppConfig struct {
 	MinioHost          string
 	MinioPort          string
 	MinioLocation      string
-	MinioRootUser      string
-	MinioRootPassword  string
+	MinioAccessKey     string
+	MinioSecretKey     string
+	MinioSecure        bool
 	MinioTicketsBucket string
 
 	AccessSecret  string
@@ -67,11 +69,12 @@ type AppConfig struct {
 }
 
 func NewAppConfig() *AppConfig {
-	midtransIsProduction, _ := strconv.ParseBool(getEnv("MIDTRANS_IS_PRODUCTION", "0"))
-	isProduction, _ := strconv.ParseBool(getEnv("IS_PRODUCTION", "0"))
+	minioSecure, _ := strconv.ParseBool(getEnv("MINIO_SECURE", "false"))
+	midtransIsProduction, _ := strconv.ParseBool(getEnv("MIDTRANS_IS_PRODUCTION", "false"))
+	isProduction, _ := strconv.ParseBool(getEnv("IS_PRODUCTION", "false"))
 
 	accessMinute, _ := time.ParseDuration(getEnv("ACCESS_MINUTE", "15m"))
-	refreshMinute, _ := time.ParseDuration(getEnv("ACCESS_MINUTE", "120m"))
+	refreshMinute, _ := time.ParseDuration(getEnv("REFRESH_MINUTE", "120m"))
 	transactionMinute, _ := time.ParseDuration(getEnv("TRANSACTION_MINUTE", "15m"))
 	totpPeriodSecond, _ := time.ParseDuration(getEnv("TOTP_PERIOD", "5m"))
 
@@ -101,8 +104,9 @@ func NewAppConfig() *AppConfig {
 		MinioHost:          getEnv("MINIO_HOST", ""),
 		MinioPort:          getEnv("MINIO_PORT", ""),
 		MinioLocation:      getEnv("MINIO_LOCATION", ""),
-		MinioRootUser:      getEnv("MINIO_ROOT_USER", ""),
-		MinioRootPassword:  getEnv("MINIO_ROOT_PASSWORD", ""),
+		MinioAccessKey:     getEnv("MINIO_ACCESS_KEY", ""),
+		MinioSecretKey:     getEnv("MINIO_SECRET_KEY", ""),
+		MinioSecure:        minioSecure,
 		MinioTicketsBucket: getEnv("MINIO_TICKETS_BUCKET", ""),
 
 		AccessSecret:  getEnv("ACCESS_SECRET", ""),
