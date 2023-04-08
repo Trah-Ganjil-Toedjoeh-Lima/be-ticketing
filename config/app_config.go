@@ -1,11 +1,12 @@
 package config
 
 import (
-	"github.com/joho/godotenv"
 	"log"
 	"os"
 	"strconv"
 	"time"
+
+	"github.com/joho/godotenv"
 )
 
 type AppConfig struct {
@@ -30,8 +31,8 @@ type AppConfig struct {
 	MinioHost          string
 	MinioPort          string
 	MinioLocation      string
-	MinioRootUser      string
-	MinioRootPassword  string
+	MinioAccessKey     string
+	MinioSecretKey     string
 	MinioTicketsBucket string
 
 	AccessSecret  string
@@ -101,8 +102,8 @@ func NewAppConfig() *AppConfig {
 		MinioHost:          getEnv("MINIO_HOST", ""),
 		MinioPort:          getEnv("MINIO_PORT", ""),
 		MinioLocation:      getEnv("MINIO_LOCATION", ""),
-		MinioRootUser:      getEnv("MINIO_ROOT_USER", ""),
-		MinioRootPassword:  getEnv("MINIO_ROOT_PASSWORD", ""),
+		MinioAccessKey:     getEnv("MINIO_ACCESS_KEY", ""),
+		MinioSecretKey:     getEnv("MINIO_SECRET_KEY", ""),
 		MinioTicketsBucket: getEnv("MINIO_TICKETS_BUCKET", ""),
 
 		AccessSecret:  getEnv("ACCESS_SECRET", ""),
