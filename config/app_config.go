@@ -33,6 +33,7 @@ type AppConfig struct {
 	MinioLocation      string
 	MinioAccessKey     string
 	MinioSecretKey     string
+	MinioSecure        bool
 	MinioTicketsBucket string
 
 	AccessSecret  string
@@ -68,11 +69,12 @@ type AppConfig struct {
 }
 
 func NewAppConfig() *AppConfig {
-	midtransIsProduction, _ := strconv.ParseBool(getEnv("MIDTRANS_IS_PRODUCTION", "0"))
-	isProduction, _ := strconv.ParseBool(getEnv("IS_PRODUCTION", "0"))
+	minioSecure, _ := strconv.ParseBool(getEnv("MINIO_SECURE", "false"))
+	midtransIsProduction, _ := strconv.ParseBool(getEnv("MIDTRANS_IS_PRODUCTION", "false"))
+	isProduction, _ := strconv.ParseBool(getEnv("IS_PRODUCTION", "false"))
 
 	accessMinute, _ := time.ParseDuration(getEnv("ACCESS_MINUTE", "15m"))
-	refreshMinute, _ := time.ParseDuration(getEnv("ACCESS_MINUTE", "120m"))
+	refreshMinute, _ := time.ParseDuration(getEnv("REFRESH_MINUTE", "120m"))
 	transactionMinute, _ := time.ParseDuration(getEnv("TRANSACTION_MINUTE", "15m"))
 	totpPeriodSecond, _ := time.ParseDuration(getEnv("TOTP_PERIOD", "5m"))
 
@@ -104,6 +106,7 @@ func NewAppConfig() *AppConfig {
 		MinioLocation:      getEnv("MINIO_LOCATION", ""),
 		MinioAccessKey:     getEnv("MINIO_ACCESS_KEY", ""),
 		MinioSecretKey:     getEnv("MINIO_SECRET_KEY", ""),
+		MinioSecure:        minioSecure,
 		MinioTicketsBucket: getEnv("MINIO_TICKETS_BUCKET", ""),
 
 		AccessSecret:  getEnv("ACCESS_SECRET", ""),
