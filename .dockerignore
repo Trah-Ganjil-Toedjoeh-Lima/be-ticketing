@@ -1,4 +1,10 @@
 # Ignore Docker build files
-app.Dockerfile
+Dockerfile
+docker-compose.yml
+LICENSE
+README.md
+.infra
+.gitignore
+.github/*
 /storage/ticket/*
 /storage/logs/*
