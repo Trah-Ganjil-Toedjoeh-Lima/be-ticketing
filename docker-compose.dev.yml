@@ -32,10 +32,10 @@ services:
       context: .
       dockerfile: ./Dockerfile
     hostname: app
-    env_file: .env
     volumes:
       - ./storage/:/ticketing-gmcgo/storage/
       - ./resource/:/ticketing-gmcgo/resource/
+      - ./.env:/ticketing-gmcgo/.env
     ports:
       - "8080:8080"
     networks:

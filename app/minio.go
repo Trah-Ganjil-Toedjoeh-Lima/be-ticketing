@@ -11,16 +11,18 @@ import (
 
 func NewMinio(appConfig *config.AppConfig, log *logrus.Logger) *minio.Client {
 	ctx := context.Background()
+	var minioClient *minio.Client
+	var err error
 
-	minioClient, errInit := minio.New(appConfig.MinioHost+":"+appConfig.MinioPort, &minio.Options{ // Initialize minio client object.
+	minioClient, err = minio.New(appConfig.MinioHost+":"+appConfig.MinioPort, &minio.Options{ // Initialize minio client object.
 		Creds:  credentials.NewStaticV4(appConfig.MinioAccessKey, appConfig.MinioSecretKey, ""),
-		Secure: appConfig.MinioSecure,
+		Secure: false,
 	})
-	if errInit != nil {
-		log.Fatalln(errInit)
+	if err != nil {
+		log.Fatalln(err)
 	}
 
-	err := minioClient.MakeBucket(ctx, appConfig.MinioTicketsBucket, minio.MakeBucketOptions{Region: appConfig.MinioLocation})
+	err = minioClient.MakeBucket(ctx, appConfig.MinioTicketsBucket, minio.MakeBucketOptions{Region: appConfig.MinioLocation})
 	if err != nil {
 		exists, errBucketExists := minioClient.BucketExists(ctx, appConfig.MinioTicketsBucket) // Check to see if we already own this bucket (which happens if you run this twice)
 		if errBucketExists == nil && exists {
