@@ -66,7 +66,7 @@ func (t *TransactionController) InitiateTransaction(c *gin.Context) {
 	response, midtransErr := t.snapUtil.CreateTransaction(&snapRequest) //send request to midtrans
 	if midtransErr != nil {
 		t.log.ControllerResponseLog(midtransErr, "TransactionController@InitiateTransaction", c.ClientIP(), contextData.(*util.AccessDetails).UserId)
-		t.log.Log.
+		t.log.Logrus.
 			WithField("snap_request", snapRequest).
 			WithField("snap_response", response).
 			Error("error when sending data to midtrans")

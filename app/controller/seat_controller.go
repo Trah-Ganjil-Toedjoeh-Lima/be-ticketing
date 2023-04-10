@@ -20,7 +20,7 @@ func NewSeatController(seatService *service.SeatService, txService *service.Tran
 func (s *SeatController) AllDetails(c *gin.Context) {
 	transactions, err := s.txService.GetAllWithDetails()
 	if err != nil {
-		s.log.Log.WithField("occurrence", "SeatsController@InfoByLink").Error(err)
+		s.log.Logrus.WithField("occurrence", "SeatsController@InfoByLink").Error(err)
 		util.GinResponseError(c, http.StatusNotFound, "request fail", "error when processing the request data")
 		return
 	}
@@ -35,7 +35,7 @@ func (s *SeatController) InfoByLink(c *gin.Context) {
 	link := c.Param("link")
 	seatDetails, err := s.txService.GetDetailsByLink(link)
 	if err != nil {
-		s.log.Log.WithField("occurrence", "SeatsController@InfoByLink").Error(err)
+		s.log.Logrus.WithField("occurrence", "SeatsController@InfoByLink").Error(err)
 		util.GinResponseError(c, http.StatusNotFound, "request fail", "error when processing the request data")
 		return
 	}
@@ -55,7 +55,7 @@ func (s *SeatController) DetailsByLink(c *gin.Context) {
 	link := c.Param("link")
 	seatDetails, err := s.txService.GetDetailsByLink(link)
 	if err != nil {
-		s.log.Log.WithField("occurrence", "SeatsController@InfoByLink").Error(err)
+		s.log.Logrus.WithField("occurrence", "SeatsController@InfoByLink").Error(err)
 		util.GinResponseError(c, http.StatusNotFound, "request fail", "error when processing the request data")
 		return
 	}

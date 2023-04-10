@@ -7,6 +7,7 @@ import (
 	"github.com/frchandra/ticketing-gmcgo/config"
 	"github.com/midtrans/midtrans-go"
 	"github.com/midtrans/midtrans-go/snap"
+	"os"
 )
 
 type SnapUtil struct {
@@ -17,14 +18,15 @@ type SnapUtil struct {
 func NewSnapUtil(app *config.AppConfig) *SnapUtil {
 	var snapClient snap.Client
 	if app.MidtransIsProduction == false {
-		if app.IsProduction == true { //TODO: create your own logger
-			midtrans.DefaultLoggerLevel = &midtrans.LoggerImplementation{LogLevel: midtrans.LogError}
-		} else {
-			snapClient.New(app.ServerKeySandbox, midtrans.Sandbox)
-			midtrans.DefaultLoggerLevel = &midtrans.LoggerImplementation{LogLevel: midtrans.LogDebug}
-		}
+		snapClient.New(app.ServerKeySandbox, midtrans.Sandbox)
 	} else {
 		snapClient.New(app.ServerKeySandbox, midtrans.Production)
+	}
+
+	if app.IsProduction == true || app.MidtransIsProduction == true { //TODO: create your own logger
+		midtrans.DefaultLoggerLevel = (*midtrans.LoggerImplementation)(&SnapLogger{LogLevel: midtrans.LogError})
+	} else {
+		midtrans.DefaultLoggerLevel = (*midtrans.LoggerImplementation)(&SnapLogger{LogLevel: midtrans.LogDebug})
 	}
 
 	return &SnapUtil{
@@ -62,6 +64,27 @@ func (u *SnapUtil) CheckSignature(message map[string]interface{}) error {
 	return nil
 }
 
-func (u *SnapUtil) HandleCallback() {
+type SnapLogger struct {
+	LogLevel midtrans.LogLevel
+}
 
+// Error : Logs a warning message using Printf conventions.
+func (l *SnapLogger) Error(format string, val ...interface{}) {
+	if l.LogLevel >= midtrans.LogError {
+		fmt.Fprintf(os.Stderr, "ERROR - "+format+"\n", val...)
+	}
+}
+
+// Info : Logs information message using Printf conventions.
+func (l *SnapLogger) Info(format string, val ...interface{}) {
+	if l.LogLevel >= midtrans.LogInfo {
+		fmt.Fprintf(os.Stdout, "INFO - "+format+"\n", val...)
+	}
+}
+
+// Debug : Log debug message using Printf conventions.
+func (l *SnapLogger) Debug1(format string, val ...interface{}) {
+	if l.LogLevel >= midtrans.LogDebug {
+		fmt.Fprintf(os.Stdout, "DEBUG - "+format+"\n", val...)
+	}
 }
