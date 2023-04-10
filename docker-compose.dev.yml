@@ -30,7 +30,7 @@ services:
       - "traefik.http.routers.gmcgo-app.rule=(Host(`gmcgo.localhost`) && PathPrefix(`/api`))"
     build:
       context: .
-      dockerfile: ./app.Dockerfile
+      dockerfile: ./Dockerfile
     hostname: app
     env_file: .env
     volumes:
@@ -180,3 +180,14 @@ services:
       - elasticsearch
       - proxy
     restart: unless-stopped
+
+networks:
+  gmcgo-network:
+    driver: bridge
+
+volumes:
+  pgdata:
+    driver: local
+  setup:
+  elasticsearch:
+  minio:
