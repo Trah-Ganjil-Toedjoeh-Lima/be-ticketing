@@ -151,7 +151,7 @@ func getEnv(key, fallback string) string {
 	} else {
 		err := godotenv.Load()
 		if err != nil {
-			log.Fatalf("Error on loading .env file")
+			log.Printf("Error on loading .env file")
 		}
 		if valuedotenv, ok := os.LookupEnv(key); ok {
 			return valuedotenv
