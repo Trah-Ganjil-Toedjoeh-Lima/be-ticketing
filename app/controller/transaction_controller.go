@@ -20,6 +20,7 @@ func NewTransactionController(txService *service.TransactionService, userService
 	return &TransactionController{txService: txService, userService: userService, snapUtil: snapUtil, log: log}
 }
 
+// GetLatestTransactionDetails GET /checkout
 func (t *TransactionController) GetLatestTransactionDetails(c *gin.Context) {
 	contextData, _ := c.Get("accessDetails")              //get the transaction and user info details for this request. user id is obtained from the context passed by user_middleware
 	accessDetails, _ := contextData.(*util.AccessDetails) //type assertion

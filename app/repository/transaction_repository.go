@@ -28,8 +28,29 @@ func (t *TransactionRepository) GetDetailsByLink(transaction *model.Transaction,
 	return result
 }
 
+type basicTransaction struct {
+	UserName string
+	Email    string
+	Phone    string
+	Link     string
+	SeatName string
+	Price    uint
+}
+
 func (t *TransactionRepository) GetBasicsByLink(transaction *model.Transaction, link string) *gorm.DB {
-	result := t.db.Select("users.name", "users.email", "users.phone", "seats.name").Joins("User").Joins("Seat", t.db.Where(&model.Seat{Link: link})).First(transaction)
+	var basic basicTransaction
+	result := t.db.Model(transaction).Select("users.name AS user_name", "users.email", "users.phone", "seats.link", "seats.name AS seat_name", "seats.price").
+		Joins("inner join users on users.user_id = transactions.user_id").
+		Joins("inner join seats on seats.seat_id = transactions.seat_id").
+		Where("seats.link = ?", link).
+		Order("transaction_id").
+		Limit(1).
+		Scan(&basic)
+	transaction.User.Name = basic.UserName
+	transaction.User.Email = basic.Email
+	transaction.User.Phone = basic.Phone
+	transaction.Seat.Link = basic.Link
+	transaction.Seat.Name = basic.SeatName
 	return result
 }
 
@@ -39,7 +60,19 @@ func (t *TransactionRepository) GetByUser(transactions *[]model.Transaction, use
 }
 
 func (t *TransactionRepository) GetDetailsByUserConfirmation(transactions *[]model.Transaction, userId uint64, confirmation string) *gorm.DB {
-	result := t.db.Joins("User").Joins("Seat").Where("transactions.user_id = ?", userId).Where("confirmation = ?", confirmation).Find(transactions)
+	var basics []basicTransaction
+	result := t.db.Table("transactions").Select("users.name AS user_name", "users.email", "users.phone", "seats.link", "seats.name AS seat_name", "seats.price").
+		Joins("inner join users on users.user_id = transactions.user_id").
+		Joins("inner join seats on seats.seat_id = transactions.seat_id").
+		Where("transactions.user_id = ?", userId).
+		Where("transactions.confirmation = ?", confirmation).
+		Order("transaction_id").
+		Scan(&basics)
+	for index, basic := range basics {
+
+	}
+
+	//result := t.db.Joins("User").Joins("Seat").Where("transactions.user_id = ?", userId).Where("confirmation = ?", confirmation).Find(transactions)
 	return result
 }
 
