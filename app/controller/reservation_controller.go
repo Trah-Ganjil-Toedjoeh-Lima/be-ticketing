@@ -53,16 +53,18 @@ func (r *ReservationController) GetSeatsInfo(c *gin.Context) {
 		seatsResponse[seat.SeatId-1].Column = seat.Column
 	}
 
-	accessDetails, tokenEmptyError := r.tokenUtil.GetValidatedAccess(c)   //get the user data from the token in the request header
-	tokenExpiredError := r.tokenUtil.FetchAuthn(accessDetails.AccessUuid) //check if token exist in the token storage (Check if the token is expired)
-	if tokenEmptyError == nil && tokenExpiredError == nil {               //if credentials found (user is logged in) and token is not expired
-		mySeats, _ := r.txService.SeatsBelongsToUser(accessDetails.UserId) //overwrite the response object for this user
-		for _, mySeat := range mySeats {                                   //populate the response object
-			if seatsResponse[mySeat.SeatId-1].Status != "available" { //only overwrite the seat status if it was not overwritten previously by timestamp logic
-				seatsResponse[mySeat.SeatId-1].Status = mySeat.Status
+	accessDetails, tokenEmptyError := r.tokenUtil.GetValidatedAccess(c) //get the user data from the token in the request header
+	if tokenEmptyError == nil {                                         //if credentials found (user is logged in) and token is not expired
+		tokenExpiredError := r.tokenUtil.FetchAuthn(accessDetails.AccessUuid) //check if token exist in the token storage (Check if the token is expired)
+		if tokenExpiredError == nil {
+			mySeats, _ := r.txService.SeatsBelongsToUser(accessDetails.UserId) //overwrite the response object for this user
+			for _, mySeat := range mySeats {                                   //populate the response object
+				if seatsResponse[mySeat.SeatId-1].Status != "available" { //only overwrite the seat status if it was not overwritten previously by timestamp logic
+					seatsResponse[mySeat.SeatId-1].Status = mySeat.Status
+				}
 			}
-
 		}
+
 	}
 
 	c.JSON(http.StatusOK, gin.H{ //return success
