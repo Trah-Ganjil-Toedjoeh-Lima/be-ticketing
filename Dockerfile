@@ -31,9 +31,8 @@ RUN apk add terminus-font font-inconsolata font-dejavu font-noto font-noto-cjk f
 WORKDIR /ticketing-gmcgo
 
 COPY --from=builder /go/src/bin /ticketing-gmcgo
-
-RUN mkdir "/ticketing-gmcgo/storage"
-RUN mkdir "/ticketing-gmcgo/resource"
+COPY storage /ticketing-gmcgo/storage
+COPY resource /ticketing-gmcgo/resource
 
 EXPOSE 5000
 CMD ["/ticketing-gmcgo/app"]
