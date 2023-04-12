@@ -17,5 +17,10 @@ jobs:
       run: docker build . --file Dockerfile --tag trahganjil/gmco-ticketing-be:$(git rev-parse --short HEAD)
     - name: Push to DockerHub
       run: docker login -u ${{ secrets.DH_USER }} -p ${{ secrets.DH_PASS }} && docker push trahganjil/gmco-ticketing-be:$(git rev-parse --short HEAD)
+
+  deploy:
+    runs-on: self-hosted
+    needs: build
+    steps:
     - name: Run Docker Container
       run: export DOCKER_TAG=$(git rev-parse --short HEAD) && cp ~/projects/vault/.env .env && docker compose up -d
