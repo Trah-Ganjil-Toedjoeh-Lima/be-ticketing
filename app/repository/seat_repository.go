@@ -2,17 +2,15 @@ package repository
 
 import (
 	"github.com/frchandra/ticketing-gmcgo/app/model"
-	"github.com/frchandra/ticketing-gmcgo/app/util"
 	"gorm.io/gorm"
 )
 
 type SeatRepository struct {
-	db  *gorm.DB
-	log *util.LogUtil
+	db *gorm.DB
 }
 
-func NewSeatRepository(db *gorm.DB, log *util.LogUtil) *SeatRepository {
-	return &SeatRepository{db: db, log: log}
+func NewSeatRepository(db *gorm.DB) *SeatRepository {
+	return &SeatRepository{db: db}
 }
 
 func (r *SeatRepository) UpdatePostSaleStatus(link, status string) *gorm.DB {
@@ -32,9 +30,6 @@ func (r *SeatRepository) UpdateStatusTxn(txn *gorm.DB, seatId uint, status strin
 
 func (r *SeatRepository) GetAll(seats *[]model.Seat) *gorm.DB {
 	result := r.db.Find(seats)
-	if result.Error != nil {
-		r.log.BasicLog(result.Error, "SeatRepository@GetAll")
-	}
 	return result
 }
 
