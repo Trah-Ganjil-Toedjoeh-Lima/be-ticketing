@@ -8,7 +8,22 @@ services:
     env_file:
       - .env
     ports:
-      - "127.0.0.1:8080:8080"
+      - "127.0.0.1:5000:5000"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.gmco-be-http.rule=Host(`dev.gmco-event.com`) && PathPrefix(`/api/v1`)"
+      - "traefik.http.routers.gmco-be-http.entrypoints=web"
+      - "traefik.http.routers.gmco-be-http.middlewares=redirect-to-https@docker"
+      - "traefik.http.routers.gmco-be-http.service=noop@internal"
+      - "traefik.http.routers.gmco-be-https.rule=Host(`dev.gmco-event.com`) && PathPrefix(`/api/v1`)"
+      - "traefik.http.routers.gmco-be-https.entrypoints=websecure"
+      - "traefik.http.routers.gmco-be-https.tls=true"
+      - "traefik.http.routers.gmco-be-https.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.gmco-be-https.middlewares=cors-header@docker,gmco-be-strip@docker"
+      - "traefik.http.middlewares.gmco-be-strip.stripprefix.prefixes=/api/v1"
     networks:
       - gateway_ingress
-    
+
+networks:
+  gateway_ingress:
+    external: true
