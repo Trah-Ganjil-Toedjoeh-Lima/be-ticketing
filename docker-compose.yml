@@ -1,8 +1,8 @@
-version: '3.7'
+version: '3'
 
 services:
   gmco-ticketing-be:
-    image: trahganjil/gmco-ticketing-be:{DOCKER_TAG}
+    image: trahganjil/gmco-ticketing-be:${DOCKER_TAG}
     restart: unless-stopped
     container_name: gmco_be
     env_file:

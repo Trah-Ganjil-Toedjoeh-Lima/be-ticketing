@@ -18,4 +18,4 @@ jobs:
     - name: Push to DockerHub
       run: docker login -u ${{ secrets.DH_USER }} -p ${{ secrets.DH_PASS }} && docker push trahganjil/gmco-ticketing-be:$(git rev-parse --short HEAD)
     - name: Run Docker Container
-      run: cp ~/projects/vault/.env . && docker compose up -d
+      run: export DOCKER_TAG=$(git rev-parse --short HEAD) && cp ~/projects/vault/.env .env && docker compose up -d
