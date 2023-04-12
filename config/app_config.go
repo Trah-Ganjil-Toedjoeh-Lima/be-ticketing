@@ -9,6 +9,17 @@ import (
 	"github.com/joho/godotenv"
 )
 
+type EmailConfig struct {
+	MailMailer      string
+	MailHost        string
+	MailPort        string
+	MailUsername    string
+	MailPassword    string
+	MailEncryption  string
+	MailFromAddress string
+	MailFromName    string
+}
+
 type AppConfig struct {
 	AppName      string
 	IsProduction bool
@@ -48,14 +59,9 @@ type AppConfig struct {
 	ClientKeyProduction  string
 	ServerKeyProduction  string
 
-	MailMailer      string
-	MailHost        string
-	MailPort        string
-	MailUsername    string
-	MailPassword    string
-	MailEncryption  string
-	MailFromAddress string
-	MailFromName    string
+	Email1 EmailConfig
+	Email2 EmailConfig
+	Email3 EmailConfig
 
 	TransactionMinute time.Duration
 	TotpPeriod        uint
@@ -69,9 +75,43 @@ type AppConfig struct {
 }
 
 func NewAppConfig() *AppConfig {
-	minioSecure, _ := strconv.ParseBool(getEnv("MINIO_SECURE", "false"))
 	midtransIsProduction, _ := strconv.ParseBool(getEnv("MIDTRANS_IS_PRODUCTION", "false"))
 	isProduction, _ := strconv.ParseBool(getEnv("IS_PRODUCTION", "false"))
+
+	email1 := EmailConfig{
+		getEnv("MAIL_MAILER_1", "smtp"),
+		getEnv("MAIL_HOST_1", "smtp.gmail.com"),
+		getEnv("MAIL_PORT_1", "465"),
+		getEnv("MAIL_USERNAME_1", ""),
+		getEnv("MAIL_PASSWORD_1", ""),
+		getEnv("MAIL_ENCRYPTION_1", "ssl"),
+		getEnv("MAIL_FROM_ADDRESS_1", ""),
+		getEnv("MAIL_FROM_NAME_1", "gmco"),
+	}
+
+	email2 := EmailConfig{
+		getEnv("MAIL_MAILER_2", "smtp"),
+		getEnv("MAIL_HOST_2", "smtp.gmail.com"),
+		getEnv("MAIL_PORT_2", "465"),
+		getEnv("MAIL_USERNAME_2", ""),
+		getEnv("MAIL_PASSWORD_2", ""),
+		getEnv("MAIL_ENCRYPTION_2", "ssl"),
+		getEnv("MAIL_FROM_ADDRESS_2", ""),
+		getEnv("MAIL_FROM_NAME_2", "gmco"),
+	}
+
+	email3 := EmailConfig{
+		getEnv("MAIL_MAILER_3", "smtp"),
+		getEnv("MAIL_HOST_3", "smtp.gmail.com"),
+		getEnv("MAIL_PORT_3", "465"),
+		getEnv("MAIL_USERNAME_3", ""),
+		getEnv("MAIL_PASSWORD_3", ""),
+		getEnv("MAIL_ENCRYPTION_3", "ssl"),
+		getEnv("MAIL_FROM_ADDRESS_3", ""),
+		getEnv("MAIL_FROM_NAME_3", "gmco"),
+	}
+
+	minioSecure, _ := strconv.ParseBool(getEnv("MINIO_SECURE", "false"))
 
 	accessMinute, _ := time.ParseDuration(getEnv("ACCESS_MINUTE", "15m"))
 	refreshMinute, _ := time.ParseDuration(getEnv("REFRESH_MINUTE", "120m"))
@@ -121,14 +161,9 @@ func NewAppConfig() *AppConfig {
 		ClientKeyProduction:  getEnv("CLIENT_KEY_PRODUCTION", ""),
 		ServerKeyProduction:  getEnv("SERVER_KEY_PRODUCTION", ""),
 
-		MailMailer:      getEnv("MAIL_MAILER", "smtp"),
-		MailHost:        getEnv("MAIL_HOST", "smtp.gmail.com"),
-		MailPort:        getEnv("MAIL_PORT", "465"),
-		MailUsername:    getEnv("MAIL_USERNAME", ""),
-		MailPassword:    getEnv("MAIL_PASSWORD", ""),
-		MailEncryption:  getEnv("MAIL_ENCRYPTION", "ssl"),
-		MailFromAddress: getEnv("MAIL_FROM_ADDRESS", ""),
-		MailFromName:    getEnv("MAIL_FROM_NAME", "gmco"),
+		Email1: email1,
+		Email2: email2,
+		Email3: email3,
 
 		TransactionMinute: transactionMinute,
 		TotpPeriod:        uint(totpPeriodSecond.Seconds()),

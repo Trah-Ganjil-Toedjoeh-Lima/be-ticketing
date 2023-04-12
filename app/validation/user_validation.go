@@ -20,3 +20,10 @@ type OtpVerification struct {
 type RegisterEmailValidation struct {
 	Email string `json:"email" binding:"required,email,min=5,max=36"`
 }
+
+type UserTicketsResponse struct {
+	Name  string
+	Email string
+	Phone string
+	Seat  []BasicSeatResponse
+}

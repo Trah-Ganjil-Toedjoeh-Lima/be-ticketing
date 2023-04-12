@@ -58,6 +58,7 @@ func NewRouter(
 	user.Use(gateMiddleware.HandleAccess).POST("/seat_map", reservationController.ReserveSeats)
 	user.GET("/checkout", txController.GetLatestTransactionDetails)
 	user.POST("/checkout", txController.InitiateTransaction)
+	user.GET("/user/tickets", userController.ShowMyTickets)
 
 	//Admin Routes
 	admin := router.Group("/api/v1").Use(adminMiddleware.AdminAccess)

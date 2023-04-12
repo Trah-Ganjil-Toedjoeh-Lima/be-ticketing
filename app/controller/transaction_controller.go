@@ -37,9 +37,9 @@ func (t *TransactionController) GetLatestTransactionDetails(c *gin.Context) {
 		return
 	}
 
-	var seatResponses []validation.BasicResponse //transform data
+	var seatResponses []validation.BasicSeatResponse //transform data
 	for _, tx := range txDetails {
-		seatResponse := validation.BasicResponse{Name: tx.Seat.Name, Price: tx.Seat.Price}
+		seatResponse := validation.BasicSeatResponse{Name: tx.Seat.Name, Price: tx.Seat.Price, Category: tx.Seat.Category}
 		seatResponses = append(seatResponses, seatResponse)
 	}
 
@@ -61,7 +61,7 @@ func (t *TransactionController) InitiateTransaction(c *gin.Context) {
 	snapRequest, err := t.txService.PrepareTransactionData(accessDetails.UserId) //prepare snap request
 	if err != nil {
 		t.log.ControllerResponseLog(err, "TransactionController@InitiateTransaction", c.ClientIP(), contextData.(*util.AccessDetails).UserId)
-		util.GinResponseError(c, http.StatusNotFound, "something went wrong", "error when getting the data")
+		util.GinResponseError(c, http.StatusNotFound, "something went wrong", err.Error())
 		return
 	}
 	response, midtransErr := t.snapUtil.CreateTransaction(&snapRequest) //send request to midtrans

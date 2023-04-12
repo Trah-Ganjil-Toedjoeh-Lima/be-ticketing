@@ -9,9 +9,10 @@ type ReservationResponse struct {
 	Column uint   `json:"column"`
 }
 
-type BasicResponse struct {
-	Name  string `json:"name"`
-	Price uint   `json:"price"`
+type BasicSeatResponse struct {
+	Name     string `json:"name"`
+	Price    uint   `json:"price"`
+	Category string `json:"category"`
 }
 
 type ReservationRequest struct {

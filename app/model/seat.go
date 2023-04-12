@@ -8,6 +8,7 @@ import (
 type Seat struct {
 	SeatId         uint   `gorm:"primaryKey"`
 	Name           string `gorm:"unique;not null"`
+	Category       string `gorm:"not null"`
 	Row            string `gorm:"not null"`
 	Column         uint   `gorm:"not null"`
 	Price          uint   `gorm:"not null"`

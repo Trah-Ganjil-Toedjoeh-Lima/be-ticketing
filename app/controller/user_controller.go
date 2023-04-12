@@ -12,14 +12,16 @@ import (
 
 type UserController struct {
 	userService *service.UserService
+	txService   *service.TransactionService
 	tokenUtil   *util.TokenUtil
 	config      *config.AppConfig
 }
 
-func NewUserController(userService *service.UserService, tokenUtil *util.TokenUtil, config *config.AppConfig) *UserController {
-	return &UserController{userService: userService, tokenUtil: tokenUtil, config: config}
+func NewUserController(userService *service.UserService, txService *service.TransactionService, tokenUtil *util.TokenUtil, config *config.AppConfig) *UserController {
+	return &UserController{userService: userService, txService: txService, tokenUtil: tokenUtil, config: config}
 }
 
+// UpdateInfo PATCH /user
 func (u *UserController) UpdateInfo(c *gin.Context) {
 	contextData, isExist := c.Get("accessDetails") //get the details about the current user that make request from the context passed by user middleware
 	if isExist == false {
@@ -60,6 +62,7 @@ func (u *UserController) UpdateInfo(c *gin.Context) {
 	})
 }
 
+// CurrentUser GET /user
 func (u *UserController) CurrentUser(c *gin.Context) {
 	contextData, isExist := c.Get("accessDetails") //get the details about the current user that make request from the context passed by user middleware
 	if isExist == false {
@@ -84,4 +87,51 @@ func (u *UserController) CurrentUser(c *gin.Context) {
 		"data":    user,
 	})
 	return
+}
+
+// ShowMyTickets GET /user/tickets
+func (u *UserController) ShowMyTickets(c *gin.Context) {
+	contextData, isExist := c.Get("accessDetails") //get the details about the current user that make request from the context passed by user middleware
+	if isExist == false {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "fail",
+			"error":   "cannot get access details",
+		})
+		return
+	}
+	accessDetails, _ := contextData.(*util.AccessDetails)
+
+	transactions, err := u.txService.GetDetailsByUserConfirmation(accessDetails.UserId, "settlement")
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "fail",
+			"error":   err.Error(),
+		})
+		return
+	}
+
+	var seatsResponse []validation.BasicSeatResponse
+	var seatResponse validation.BasicSeatResponse
+	for _, transaction := range transactions {
+		seatResponse = validation.BasicSeatResponse{
+			Name:     transaction.Seat.Name,
+			Price:    transaction.Seat.Price,
+			Category: transaction.Seat.Category,
+		}
+		seatsResponse = append(seatsResponse, seatResponse)
+	}
+
+	response := validation.UserTicketsResponse{
+		Name:  transactions[0].User.Name,
+		Phone: transactions[0].User.Phone,
+		Email: transactions[0].User.Email,
+		Seat:  seatsResponse,
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "success",
+		"data":    response,
+	})
+	return
+
 }
