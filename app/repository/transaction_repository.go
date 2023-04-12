@@ -39,18 +39,15 @@ func (t *TransactionRepository) GetDetailsByLink(transaction *model.Transaction,
 	return result
 }
 
-func (t *TransactionRepository) GetDetailsByUser(transactions *[]model.Transaction, userId uint64) *gorm.DB {
-	result := t.db.Joins("User").Joins("Seat").Where("transactions.user_id = ?", userId).Find(transactions)
-	if result.Error != nil {
-		t.log.BasicLog(result.Error, "TransactionRepotisoty@GetDetailsByUser")
-	}
+func (t *TransactionRepository) GetByUser(transactions *[]model.Transaction, userId uint64) *gorm.DB {
+	result := t.db.Where("transactions.user_id = ?", userId).Find(transactions)
 	return result
 }
 
 func (t *TransactionRepository) GetDetailsByUserConfirmation(transactions *[]model.Transaction, userId uint64, confirmation string) *gorm.DB {
 	result := t.db.Joins("User").Joins("Seat").Where("transactions.user_id = ?", userId).Where("confirmation = ?", confirmation).Find(transactions)
 	if result.Error != nil {
-		t.log.BasicLog(result.Error, "TransactionRepotisoty@GetDetailsByUser")
+		t.log.BasicLog(result.Error, "TransactionRepotisoty@GetByUser")
 	}
 	return result
 }
@@ -79,11 +76,8 @@ func (t *TransactionRepository) UpdatePaymentStatus(orderId, vendor, confirmatio
 	return result
 }
 
-func (t *TransactionRepository) UpdateUserPaymentStatus(userId uint64, orderId, confirmation string) *gorm.DB {
-	result := t.db.Model(&model.Transaction{}).Where("user_id = ? AND order_id = ?", userId, orderId).Update("confirmation", confirmation)
-	if result.Error != nil {
-		t.log.BasicLog(result.Error, "TransactionRepotisoty@UpdateUserPaymentStatus")
-	}
+func (t *TransactionRepository) UpdatePaymentStatusByUser(userId uint64, confirmation string) *gorm.DB {
+	result := t.db.Model(&model.Transaction{}).Where("user_id = ?", userId).Update("confirmation", confirmation)
 	return result
 }
 
@@ -105,9 +99,6 @@ func (t *TransactionRepository) InsertOne(tx *model.Transaction) *gorm.DB {
 
 func (t *TransactionRepository) SoftDeleteBySeatUser(seatId uint, userId uint64) *gorm.DB {
 	result := t.db.Where("seat_id = ? AND user_id = ?", seatId, userId).Delete(&model.Transaction{})
-	if result.Error != nil {
-		t.log.BasicLog(result.Error, "TransactionRepotisoty@SoftDeleteBySeatUser")
-	}
 	return result
 }
 

@@ -54,9 +54,9 @@ func (s *TransactionService) GetDetailsByLink(link string) (model.Transaction, e
 	return transaction, nil
 }
 
-func (s *TransactionService) GetDetailsByUser(userId uint64) ([]model.Transaction, error) {
+func (s *TransactionService) GetByUser(userId uint64) ([]model.Transaction, error) {
 	var transactions []model.Transaction //get user's transaction
-	if result := s.txRepo.GetDetailsByUser(&transactions, userId); result.Error != nil {
+	if result := s.txRepo.GetByUser(&transactions, userId); result.Error != nil {
 		return transactions, errors.New("database operation error")
 	}
 	transactions = s.CleanUpGhostTransaction(transactions)
@@ -92,22 +92,20 @@ func (s *TransactionService) CleanUpGhostTransaction(transactions []model.Transa
 	var newTransaction []model.Transaction //cek apakah ada transaksi ngambang, jika ada buang dari slice dan update db
 	for _, tx := range transactions {
 		if time.Now().After(tx.CreatedAt.Add(s.config.TransactionMinute)) && tx.Confirmation != "settlement" { //if tx created_at + 15 < time now  => berarti transaction ngambang
-			//update database
-			s.txRepo.UpdateUserPaymentStatus(tx.UserId, "", "not_continued")
+			s.txRepo.UpdatePaymentStatusByUser(tx.UserId, "not_continued") //update database
 			s.txRepo.SoftDeleteBySeatUser(tx.SeatId, tx.UserId)
 		} else {
 			newTransaction = append(newTransaction, tx)
 		}
 	}
-	//transaksi bersih
-	return newTransaction
+	return newTransaction //transaksi bersih
 }
 
 func (s *TransactionService) SeatsBelongsToUser(userId uint64) ([]model.Seat, error) {
 	var seats []model.Seat
 
 	var transactions []model.Transaction //get user's transaction
-	if result := s.txRepo.GetDetailsByUser(&transactions, userId); result.Error != nil {
+	if result := s.txRepo.GetByUser(&transactions, userId); result.Error != nil {
 		return seats, errors.New("database operation error")
 	}
 	if transactions = s.CleanUpGhostTransaction(transactions); len(transactions) < 1 {

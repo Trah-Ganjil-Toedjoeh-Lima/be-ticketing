@@ -26,6 +26,7 @@ func NewAuthController(userService *service.UserService, tokenUtil *util.TokenUt
 	return &AuthController{userService: userService, tokenUtil: tokenUtil, log: log, emailUtil: emailUtil, config: config}
 }
 
+// VerifyOtp POST /user/otp
 func (u *AuthController) VerifyOtp(c *gin.Context) {
 	var inputData validation.OtpVerification //validate the input data
 	if err := c.ShouldBindJSON(&inputData); err != nil {
@@ -231,6 +232,7 @@ func (u *AuthController) SignIn(c *gin.Context) {
 	return
 }
 
+// Login POST /user/login
 func (u *AuthController) Login(c *gin.Context) {
 	var inputData validation.LoginValidation
 	var userInput model.User
@@ -281,6 +283,7 @@ func (u *AuthController) Login(c *gin.Context) {
 	return
 }
 
+// Logout POST /user/logout
 func (u *AuthController) Logout(c *gin.Context) {
 	accessDetails, err := u.tokenUtil.GetValidatedAccess(c)
 	if err != nil {
@@ -298,6 +301,7 @@ func (u *AuthController) Logout(c *gin.Context) {
 	return
 }
 
+// RefreshToken POST /user/refresh
 func (u *AuthController) RefreshToken(c *gin.Context) {
 	token, err := u.tokenUtil.Refresh(c)
 	if err != nil {
