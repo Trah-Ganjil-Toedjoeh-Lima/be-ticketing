@@ -35,5 +35,5 @@ COPY --from=builder /go/src/bin /ticketing-gmcgo
 RUN mkdir "/ticketing-gmcgo/storage"
 RUN mkdir "/ticketing-gmcgo/resource"
 
-EXPOSE 8080 8080
+EXPOSE 5000
 CMD ["/ticketing-gmcgo/app"]
