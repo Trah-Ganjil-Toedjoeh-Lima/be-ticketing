@@ -2,7 +2,3 @@
 /.idea
 /.infra/dbdata
 /.infra/esdata
-/resource/static/snap.html
-/storage/picture/*
-/storage/ticket/*
-/storage/logs/*
