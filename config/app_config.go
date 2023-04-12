@@ -1,9 +1,12 @@
 package config
 
 import (
+	"log"
 	"os"
 	"strconv"
 	"time"
+
+	"github.com/joho/godotenv"
 )
 
 type AppConfig struct {
@@ -142,9 +145,18 @@ func NewAppConfig() *AppConfig {
 
 func getEnv(key, fallback string) string {
 	value := os.Getenv(key)
+
 	if value != "" {
 		return value
 	} else {
-		return fallback
+		err := godotenv.Load()
+		if err != nil {
+			log.Fatalf("Error on loading .env file")
+		}
+		if valuedotenv, ok := os.LookupEnv(key); ok {
+			return valuedotenv
+		} else {
+			return fallback
+		}
 	}
 }
