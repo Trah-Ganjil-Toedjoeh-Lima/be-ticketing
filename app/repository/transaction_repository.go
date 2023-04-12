@@ -25,9 +25,6 @@ func (t *TransactionRepository) GetAllWithDetails(transactions *[]model.Transact
 
 func (t *TransactionRepository) GetBySeatTxn(txn *gorm.DB, transaction *model.Transaction, seatId uint) *gorm.DB {
 	result := txn.Where("seat_id = ?", seatId).Find(transaction)
-	if result.Error != nil {
-		t.log.BasicLog(result.Error, "TransactionRepotisoty@GetBySeatTxn")
-	}
 	return result
 }
 

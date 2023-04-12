@@ -29,21 +29,21 @@ func (s *SeatService) GetAllSeats() ([]model.Seat, error) {
 
 func (s *SeatService) UpdatePostSaleStatus(link, status string) error {
 	if result := s.seatRepo.UpdatePostSaleStatus(link, status); result.Error != nil {
-		return errors.New("database operation error")
+		return result.Error
 	}
 	return nil
 }
 
 func (s *SeatService) UpdateStatus(seatId uint, status string) error {
 	if result := s.seatRepo.UpdateStatus(seatId, status); result.Error != nil {
-		return errors.New("database operation error")
+		return result.Error
 	}
 	return nil
 }
 
 func (s *SeatService) UpdateStatusTxn(txn *gorm.DB, seatId uint, status string) error {
 	if result := s.seatRepo.UpdateStatusTxn(txn, seatId, status); result.Error != nil {
-		return errors.New("database operation error")
+		return result.Error
 	}
 	return nil
 }
@@ -51,7 +51,7 @@ func (s *SeatService) UpdateStatusTxn(txn *gorm.DB, seatId uint, status string) 
 func (s *SeatService) IsOwnedTxn(txn *gorm.DB, seatId uint, userId uint64) error {
 	var seat model.Seat
 	if result := s.seatRepo.GetByIdTxn(txn, &seat, seatId); result.Error != nil { //get requested seat
-		return errors.New("database operation error")
+		return result.Error
 	}
 	//start validation logic
 	if seat.Status == "available" { //check from seat table
@@ -67,7 +67,7 @@ func (s *SeatService) IsOwnedTxn(txn *gorm.DB, seatId uint, userId uint64) error
 			//this case can be caused by irresponsible user that left their reservation but not complete the transaction
 			return nil
 		} else if result.Error != nil { //get the newest transaction data for this seat from transaction table. Check if the query returns an error
-			return errors.New("database operation error")
+			return result.Error
 		}
 
 		if transaction.Confirmation == "settlement" { //if this transaction is already settled it mean that this seat is unavailable
