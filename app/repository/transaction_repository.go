@@ -68,9 +68,9 @@ func (t *TransactionRepository) GetDetailsByUserConfirmation(transactions *[]mod
 		Where("transactions.confirmation = ?", confirmation).
 		Order("transaction_id").
 		Scan(&basics)
-	for index, basic := range basics {
+	// for index, basic := range basics {
 
-	}
+	// }
 
 	//result := t.db.Joins("User").Joins("Seat").Where("transactions.user_id = ?", userId).Where("confirmation = ?", confirmation).Find(transactions)
 	return result

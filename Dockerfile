@@ -1,32 +1,22 @@
 # Step 1
-FROM golang:alpine AS builder
-
-ENV PATH="/go/bin:${PATH}"
-ENV GO111MODULE=on
-ENV CGO_ENABLED=1
-ENV GOOS=linux
-ENV GOARCH=amd64
+FROM golang:latest AS builder
 ENV GOPROXY=https://goproxy.io,direct
 
-RUN apk -U add ca-certificates
-RUN apk update && apk upgrade && apk add pkgconf git bash build-base
-
-RUN apk update
-RUN apk add vips-dev
+RUN apt update && apt install -y apt-utils
+RUN apt install --no-install-recommends -y libvips-dev
 
 WORKDIR /go/src
 COPY . .
 RUN go mod download -x
 
-RUN go build -o ./bin/app ./cmd/app/main.go
-RUN go build -o ./bin/migrator ./cmd/migrator/main.go
-RUN go build -o ./bin/email ./cmd/email/main.go
+RUN CGO_ENABLED=1 go build -o ./bin/app ./cmd/app/main.go
+RUN CGO_ENABLED=1 go build -o ./bin/migrator ./cmd/migrator/main.go
+RUN CGO_ENABLED=1 go build -o ./bin/email ./cmd/email/main.go
 
 # Step 2
-FROM alpine:latest AS runner
-RUN apk update
-RUN apk add vips-dev
-RUN apk add terminus-font font-inconsolata font-dejavu font-noto font-noto-cjk font-awesome font-noto-extra
+FROM debian:stable-slim AS runner
+RUN apt update && apt install -y apt-utils
+RUN apt install -y --no-install-recommends libvips xfonts-terminus fonts-inconsolata fonts-dejavu fonts-noto fonts-noto-cjk fonts-font-awesome fonts-noto-extra
 
 WORKDIR /ticketing-gmcgo
 
