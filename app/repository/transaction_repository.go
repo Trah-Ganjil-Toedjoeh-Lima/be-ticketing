@@ -38,6 +38,7 @@ type transactionFields struct {
 	SeatId        uint
 	SeatName      string
 	Price         uint
+	Category      string
 	CreatedAt     time.Time
 	UpdatedAt     time.Time
 }
@@ -53,6 +54,7 @@ func (t *TransactionRepository) GetBasicsByLink(transaction *model.Transaction, 
 		"seats.seat_id",
 		"seats.name AS seat_name",
 		"seats.price",
+		"seats.category",
 		"transactions.created_at",
 		"transactions.updated_at").
 		Joins("inner join users on users.user_id = transactions.user_id").
@@ -65,7 +67,7 @@ func (t *TransactionRepository) GetBasicsByLink(transaction *model.Transaction, 
 	var transactionBuff model.Transaction = model.Transaction{
 		TransactionId: basic.TransactionId,
 		User:          model.User{UserId: basic.UserId, Name: basic.UserName, Phone: basic.Phone, Email: basic.Email},
-		Seat:          model.Seat{SeatId: basic.SeatId, Name: basic.SeatName, Price: basic.Price},
+		Seat:          model.Seat{SeatId: basic.SeatId, Name: basic.SeatName, Price: basic.Price, Category: basic.Category},
 		CreatedAt:     basic.CreatedAt,
 		UpdatedAt:     basic.UpdatedAt,
 	}
@@ -89,6 +91,7 @@ func (t *TransactionRepository) GetDetailsByUserConfirmation(transactions *[]mod
 		"seats.seat_id",
 		"seats.name AS seat_name",
 		"seats.price",
+		"seats.category",
 		"transactions.created_at",
 		"transactions.updated_at").
 		Joins("inner join users on users.user_id = transactions.user_id").
@@ -104,7 +107,7 @@ func (t *TransactionRepository) GetDetailsByUserConfirmation(transactions *[]mod
 		transactionBuff = model.Transaction{
 			TransactionId: basic.TransactionId,
 			User:          model.User{UserId: basic.UserId, Name: basic.UserName, Phone: basic.Phone, Email: basic.Email},
-			Seat:          model.Seat{SeatId: basic.SeatId, Name: basic.SeatName, Price: basic.Price},
+			Seat:          model.Seat{SeatId: basic.SeatId, Name: basic.SeatName, Price: basic.Price, Category: basic.Category},
 			CreatedAt:     basic.CreatedAt,
 			UpdatedAt:     basic.UpdatedAt,
 		}
@@ -130,6 +133,7 @@ func (t *TransactionRepository) GetDetailsByOrder(transactions *[]model.Transact
 		"seats.seat_id",
 		"seats.name AS seat_name",
 		"seats.price",
+		"seats.category",
 		"transactions.created_at",
 		"transactions.updated_at").
 		Joins("inner join users on users.user_id = transactions.user_id").
@@ -143,7 +147,7 @@ func (t *TransactionRepository) GetDetailsByOrder(transactions *[]model.Transact
 		transactionBuff = model.Transaction{
 			TransactionId: basic.TransactionId,
 			User:          model.User{UserId: basic.UserId, Name: basic.UserName, Phone: basic.Phone, Email: basic.Email},
-			Seat:          model.Seat{SeatId: basic.SeatId, Name: basic.SeatName, Price: basic.Price},
+			Seat:          model.Seat{SeatId: basic.SeatId, Name: basic.SeatName, Price: basic.Price, Category: basic.Category},
 			CreatedAt:     basic.CreatedAt,
 			UpdatedAt:     basic.UpdatedAt,
 		}

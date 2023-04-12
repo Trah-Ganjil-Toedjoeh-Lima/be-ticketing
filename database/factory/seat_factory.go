@@ -16,12 +16,13 @@ func NewSeatFactory(db *gorm.DB) SeatFactory {
 
 func (this SeatFactory) RunFactory() error {
 	seat := &model.Seat{
-		Name:   "A8",
-		Price:  145000,
-		Link:   uuid.New().String(),
-		Status: "available",
-		Row:    "A",
-		Column: 8,
+		Name:     "A8",
+		Price:    145000,
+		Category: "Diamond",
+		Link:     uuid.New().String(),
+		Status:   "available",
+		Row:      "A",
+		Column:   8,
 	}
 	err := this.db.Debug().Create(seat).Error
 	if err != nil {
@@ -29,12 +30,13 @@ func (this SeatFactory) RunFactory() error {
 	}
 
 	seat = &model.Seat{
-		Name:   "A9",
-		Price:  145000,
-		Link:   uuid.New().String(),
-		Status: "available",
-		Row:    "A",
-		Column: 9,
+		Name:     "A9",
+		Price:    145000,
+		Category: "Diamond",
+		Link:     uuid.New().String(),
+		Status:   "available",
+		Row:      "A",
+		Column:   9,
 	}
 	err = this.db.Debug().Create(seat).Error
 	if err != nil {
@@ -42,12 +44,13 @@ func (this SeatFactory) RunFactory() error {
 	}
 
 	seat = &model.Seat{
-		Name:   "A22",
-		Price:  145000,
-		Link:   uuid.New().String(),
-		Status: "available",
-		Row:    "A",
-		Column: 22,
+		Name:     "A22",
+		Price:    145000,
+		Category: "Gold",
+		Link:     uuid.New().String(),
+		Status:   "available",
+		Row:      "A",
+		Column:   22,
 	}
 	err = this.db.Debug().Create(seat).Error
 	if err != nil {
@@ -55,12 +58,13 @@ func (this SeatFactory) RunFactory() error {
 	}
 
 	seat = &model.Seat{
-		Name:   "A23",
-		Price:  145000,
-		Link:   uuid.New().String(),
-		Status: "available",
-		Row:    "A",
-		Column: 23,
+		Name:     "A23",
+		Price:    145000,
+		Category: "Gold",
+		Link:     uuid.New().String(),
+		Status:   "available",
+		Row:      "A",
+		Column:   23,
 	}
 	err = this.db.Debug().Create(seat).Error
 	if err != nil {
@@ -68,12 +72,13 @@ func (this SeatFactory) RunFactory() error {
 	}
 
 	seat = &model.Seat{
-		Name:   "C1",
-		Price:  165000,
-		Link:   uuid.New().String(),
-		Status: "available",
-		Row:    "C",
-		Column: 1,
+		Name:     "C1",
+		Price:    165000,
+		Category: "Iron",
+		Link:     uuid.New().String(),
+		Status:   "available",
+		Row:      "C",
+		Column:   1,
 	}
 	err = this.db.Debug().Create(seat).Error
 	if err != nil {
@@ -81,12 +86,13 @@ func (this SeatFactory) RunFactory() error {
 	}
 
 	seat = &model.Seat{
-		Name:   "C2",
-		Price:  165000,
-		Link:   uuid.New().String(),
-		Status: "available",
-		Row:    "C",
-		Column: 2,
+		Name:     "C2",
+		Price:    165000,
+		Category: "Iron",
+		Link:     uuid.New().String(),
+		Status:   "available",
+		Row:      "C",
+		Column:   2,
 	}
 	err = this.db.Debug().Create(seat).Error
 	if err != nil {
@@ -94,12 +100,13 @@ func (this SeatFactory) RunFactory() error {
 	}
 
 	seat = &model.Seat{
-		Name:   "D1",
-		Price:  165000,
-		Link:   uuid.New().String(),
-		Status: "available",
-		Row:    "D",
-		Column: 1,
+		Name:     "D1",
+		Price:    165000,
+		Category: "Wood",
+		Link:     uuid.New().String(),
+		Status:   "available",
+		Row:      "D",
+		Column:   1,
 	}
 	err = this.db.Debug().Create(seat).Error
 	if err != nil {
@@ -107,12 +114,13 @@ func (this SeatFactory) RunFactory() error {
 	}
 
 	seat = &model.Seat{
-		Name:   "D2",
-		Price:  165000,
-		Link:   uuid.New().String(),
-		Status: "available",
-		Row:    "D",
-		Column: 2,
+		Name:     "D2",
+		Price:    165000,
+		Category: "Wood",
+		Link:     uuid.New().String(),
+		Status:   "available",
+		Row:      "D",
+		Column:   2,
 	}
 	err = this.db.Debug().Create(seat).Error
 	if err != nil {

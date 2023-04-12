@@ -44,10 +44,11 @@ func (s *SeatController) InfoByLink(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "success",
 		"data": gin.H{
-			"user_name":  seatDetails.User.Name,
-			"user_email": seatDetails.User.Email,
-			"user_phone": seatDetails.User.Phone,
-			"seat_name":  seatDetails.Seat.Name,
+			"user_name":     seatDetails.User.Name,
+			"user_email":    seatDetails.User.Email,
+			"user_phone":    seatDetails.User.Phone,
+			"seat_name":     seatDetails.Seat.Name,
+			"seat_category": seatDetails.Seat.Category,
 		},
 	})
 	return

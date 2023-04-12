@@ -114,8 +114,9 @@ func (u *UserController) ShowMyTickets(c *gin.Context) {
 	var seatResponse validation.BasicSeatResponse
 	for _, transaction := range transactions {
 		seatResponse = validation.BasicSeatResponse{
-			Name:  transaction.Seat.Name,
-			Price: transaction.Seat.Price,
+			Name:     transaction.Seat.Name,
+			Price:    transaction.Seat.Price,
+			Category: transaction.Seat.Category,
 		}
 		seatsResponse = append(seatsResponse, seatResponse)
 	}
