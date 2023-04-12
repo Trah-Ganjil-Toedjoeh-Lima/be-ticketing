@@ -42,17 +42,7 @@ func (g *ConfigController) UpdateQrScanBehaviour(c *gin.Context) {
 		util.GinResponseError(c, http.StatusBadRequest, "error when processing the request data", err.Error())
 		return
 	}
-	if inputData["qr_scan_behaviour"] == "open_gate" {
-		g.config.QrScanBehaviour = inputData["qr_scan_behaviour"]
-		c.Status(http.StatusOK)
-		return
-	}
-	if inputData["qr_scan_behaviour"] == "ticket_exchanging" {
-		g.config.QrScanBehaviour = inputData["qr_scan_behaviour"]
-		c.Status(http.StatusOK)
-		return
-	}
-	c.Status(http.StatusBadRequest)
+	g.config.QrScanBehaviour = inputData["qr_scan_behaviour"]
+	c.Status(http.StatusOK)
 	return
-
 }

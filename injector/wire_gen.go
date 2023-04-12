@@ -37,7 +37,7 @@ func InitializeServer() *gin.Engine {
 	userController := controller.NewUserController(userService, tokenUtil, appConfig)
 	emailUtil := util.NewEmailUtil(appConfig, logUtil)
 	authController := controller.NewAuthController(userService, tokenUtil, logUtil, emailUtil, appConfig)
-	transactionRepository := repository.NewTransactionRepository(db, logUtil)
+	transactionRepository := repository.NewTransactionRepository(db)
 	transactionService := service.NewTransactionService(transactionRepository, appConfig)
 	reservationService := service.NewReservationService(appConfig, transactionService)
 	seatRepository := repository.NewSeatRepository(db, logUtil)
