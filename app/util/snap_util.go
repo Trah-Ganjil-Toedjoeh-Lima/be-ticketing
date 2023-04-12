@@ -20,10 +20,10 @@ func NewSnapUtil(app *config.AppConfig, logrus *logrus.Logger) *SnapUtil {
 	if app.MidtransIsProduction == false {
 		snapClient.New(app.ServerKeySandbox, midtrans.Sandbox)
 	} else {
-		snapClient.New(app.ServerKeySandbox, midtrans.Production)
+		snapClient.New(app.ServerKeyProduction, midtrans.Production)
 	}
 
-	if app.IsProduction == true || app.MidtransIsProduction == true { //TODO: create your own logger
+	if app.IsProduction == true || app.MidtransIsProduction == true {
 		snapClient.HttpClient = &midtrans.HttpClientImplementation{
 			HttpClient: midtrans.DefaultGoHttpClient,
 			Logger:     &SnapLogger{LogLevel: midtrans.LogError, Logrus: logrus},
