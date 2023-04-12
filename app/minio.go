@@ -15,7 +15,7 @@ func NewMinio(appConfig *config.AppConfig, log *logrus.Logger) *minio.Client {
 	var err error
 
 	minioClient, err = minio.New(appConfig.MinioHost+":"+appConfig.MinioPort, &minio.Options{ // Initialize minio client object.
-		Creds:  credentials.NewStaticV4(appConfig.MinioAccessKey, appConfig.MinioSecretKey, ""),
+		Creds:  credentials.NewStaticV4(appConfig.MinioRootUser, appConfig.MinioRootPassword, ""),
 		Secure: false,
 	})
 	if err != nil {

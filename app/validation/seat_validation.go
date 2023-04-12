@@ -5,6 +5,8 @@ type ReservationResponse struct {
 	Name   string `json:"name"`
 	Price  uint   `json:"price"`
 	Status string `json:"status"`
+	Row    string `json:"row"`
+	Column uint   `json:"column"`
 }
 
 type BasicResponse struct {

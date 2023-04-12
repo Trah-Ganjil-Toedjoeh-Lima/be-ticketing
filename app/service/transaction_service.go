@@ -63,9 +63,9 @@ func (s *TransactionService) GetDetailsByUser(userId uint64) ([]model.Transactio
 	return transactions, nil
 }
 
-func (s *TransactionService) GetDetailsByUserWhereNew(userId uint64) ([]model.Transaction, error) {
+func (s *TransactionService) GetDetailsByUserConfirmation(userId uint64, confirmation string) ([]model.Transaction, error) {
 	var transactions []model.Transaction //get user's transaction
-	if result := s.txRepo.GetDetailsByUserConfirmation(&transactions, userId, "reserved"); result.Error != nil {
+	if result := s.txRepo.GetDetailsByUserConfirmation(&transactions, userId, confirmation); result.Error != nil {
 		return transactions, errors.New("database operation error")
 	}
 	transactions = s.CleanUpGhostTransaction(transactions)

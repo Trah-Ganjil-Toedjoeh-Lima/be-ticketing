@@ -20,18 +20,18 @@ func NewTransactionController(txService *service.TransactionService, userService
 	return &TransactionController{txService: txService, userService: userService, snapUtil: snapUtil, log: log}
 }
 
-func (t *TransactionController) GetNewTransactionDetails(c *gin.Context) {
-	contextData, _ := c.Get("accessDetails")              //get the details about the current user that make request from the context passed by user middleware
+func (t *TransactionController) GetLatestTransactionDetails(c *gin.Context) {
+	contextData, _ := c.Get("accessDetails")              //get the transaction and user info details for this request. user id is obtained from the context passed by user_middleware
 	accessDetails, _ := contextData.(*util.AccessDetails) //type assertion
-	txDetails, err := t.txService.GetDetailsByUserWhereNew(accessDetails.UserId)
+	txDetails, err := t.txService.GetDetailsByUserConfirmation(accessDetails.UserId, "reserved")
 	if err != nil {
-		t.log.ControllerResponseLog(err, "TransactionController@GetNewTransactionDetails", c.ClientIP(), contextData.(*util.AccessDetails).UserId)
+		t.log.ControllerResponseLog(err, "TransactionController@GetLatestTransactionDetails", c.ClientIP(), contextData.(*util.AccessDetails).UserId)
 		util.GinResponseError(c, http.StatusNotFound, "something went wrong", "error when getting the data")
 		return
 	}
 
 	if len(txDetails) < 1 {
-		t.log.ControllerResponseLog(errors.New("cannot find transaction data for this user"), "TransactionController@GetNewTransactionDetails", c.ClientIP(), contextData.(*util.AccessDetails).UserId)
+		t.log.ControllerResponseLog(errors.New("cannot find transaction data for this user"), "TransactionController@GetLatestTransactionDetails", c.ClientIP(), contextData.(*util.AccessDetails).UserId)
 		util.GinResponseError(c, http.StatusNotFound, "cannot find data", "cannot find transaction data for this user")
 		return
 	}

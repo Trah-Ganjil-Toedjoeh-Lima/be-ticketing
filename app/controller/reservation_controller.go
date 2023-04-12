@@ -43,11 +43,13 @@ func (r *ReservationController) GetSeatsInfo(c *gin.Context) {
 	for _, seat := range seats {
 		seatsResponse[seat.SeatId-1].SeatId = seat.SeatId
 		seatsResponse[seat.SeatId-1].Name = seat.Name
-		if seat.Status != "purchased" && time.Now().After(seat.CreatedAt.Add(r.config.TransactionMinute)) { //overwrite the response with timestamp logic
+		if seat.Status != "purchased" && time.Now().After(seat.UpdatedAt.Add(r.config.TransactionMinute)) { //overwrite the response with timestamp logic
 			seat.Status = "available"
 		}
 		seatsResponse[seat.SeatId-1].Status = seat.Status
 		seatsResponse[seat.SeatId-1].Price = seat.Price
+		seatsResponse[seat.SeatId-1].Row = seat.Row
+		seatsResponse[seat.SeatId-1].Column = seat.Column
 	}
 
 	accessDetails, err := r.tokenUtil.GetValidatedAccess(c) //get the user data from the token in the request header

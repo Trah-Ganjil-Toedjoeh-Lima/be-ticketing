@@ -31,8 +31,8 @@ type AppConfig struct {
 	MinioHost          string
 	MinioPort          string
 	MinioLocation      string
-	MinioAccessKey     string
-	MinioSecretKey     string
+	MinioRootUser      string
+	MinioRootPassword  string
 	MinioSecure        bool
 	MinioTicketsBucket string
 
@@ -104,8 +104,8 @@ func NewAppConfig() *AppConfig {
 		MinioHost:          getEnv("MINIO_HOST", ""),
 		MinioPort:          getEnv("MINIO_PORT", ""),
 		MinioLocation:      getEnv("MINIO_LOCATION", ""),
-		MinioAccessKey:     getEnv("MINIO_ACCESS_KEY", ""),
-		MinioSecretKey:     getEnv("MINIO_SECRET_KEY", ""),
+		MinioRootUser:      getEnv("MINIO_ROOT_USER", ""),
+		MinioRootPassword:  getEnv("MINIO_ROOT_PASSWORD", ""),
 		MinioSecure:        minioSecure,
 		MinioTicketsBucket: getEnv("MINIO_TICKETS_BUCKET", ""),
 

@@ -56,7 +56,7 @@ func NewRouter(
 	//Logged-In User Ticketing Routes
 	user.Use(gateMiddleware.HandleAccess).PATCH("/user", userController.UpdateInfo)
 	user.Use(gateMiddleware.HandleAccess).POST("/seat_map", reservationController.ReserveSeats)
-	user.GET("/checkout", txController.GetNewTransactionDetails)
+	user.GET("/checkout", txController.GetLatestTransactionDetails)
 	user.POST("/checkout", txController.InitiateTransaction)
 
 	//Admin Routes
