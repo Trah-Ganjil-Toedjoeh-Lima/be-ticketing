@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"fmt"
 	"github.com/frchandra/ticketing-gmcgo/app/service"
 	"github.com/frchandra/ticketing-gmcgo/app/util"
 	"github.com/frchandra/ticketing-gmcgo/config"
@@ -46,11 +47,9 @@ func (m *ScanQrMiddleware) HandleScanQr(c *gin.Context) {
 	adminUser, _ := m.userService.GetById(accessDetails.UserId)
 	if adminUser.Name == m.config.AdminName && adminUser.Email == m.config.AdminEmail && adminUser.Phone == m.config.AdminPhone { //check if this user is admin
 		//redirect as admin
-		if m.config.QrScanBehaviour == "open_gate" {
-			c.Redirect(http.StatusFound, "/api/v1/admin/seat/attended/"+c.Param("link"))
-
-		} else if m.config.QrScanBehaviour == "ticket_exchanging" {
-			c.Redirect(http.StatusFound, "/api/v1/admin/seat/exchanged/"+c.Param("link"))
+		if m.config.QrScanBehaviour != "default" {
+			fmt.Println("OK<<<<<<<<<")
+			c.Redirect(http.StatusFound, "/api/v1/admin/seat/"+c.Param("link")+"/"+m.config.QrScanBehaviour)
 		} else {
 			c.Redirect(http.StatusFound, "/api/v1/admin/seat/"+c.Param("link"))
 		}

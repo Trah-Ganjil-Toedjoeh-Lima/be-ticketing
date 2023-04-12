@@ -56,15 +56,14 @@ func NewRouter(
 	//Logged-In User Ticketing Routes
 	user.Use(gateMiddleware.HandleAccess).PATCH("/user", userController.UpdateInfo)
 	user.Use(gateMiddleware.HandleAccess).POST("/seat_map", reservationController.ReserveSeats)
-	user.GET("/checkout", txController.GetNewTransactionDetails)
+	user.GET("/checkout", txController.GetLatestTransactionDetails)
 	user.POST("/checkout", txController.InitiateTransaction)
 
 	//Admin Routes
 	admin := router.Group("/api/v1").Use(adminMiddleware.AdminAccess)
 	admin.GET("/admin/seat/:link", seatController.DetailsByLink)
 	admin.PUT("/admin/seat/:link", seatController.UpdateByLink)
-	admin.GET("/admin/seat/attended/:link", seatController.UpdateToAttended)
-	admin.GET("/admin/seat/exchanged/:link", seatController.UpdateToExchanged)
+	admin.GET("/admin/seat/:link/:status", seatController.UpdateToStatus)
 	admin.POST("/admin/open_the_gate", gateController.OpenGate)
 	admin.POST("/admin/close_the_gate", gateController.CloseGate)
 	admin.PATCH("/admin/qr_scan_behaviour", gateController.UpdateQrScanBehaviour)

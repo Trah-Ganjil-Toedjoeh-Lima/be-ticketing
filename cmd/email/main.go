@@ -47,7 +47,7 @@ func newMinio() *minio.Client {
 	appConfig := config.NewAppConfig()
 
 	minioClient, errInit := minio.New(appConfig.MinioHost+":"+appConfig.MinioPort, &minio.Options{ // Initialize minio client object.
-		Creds:  credentials.NewStaticV4(appConfig.MinioAccessKey, appConfig.MinioSecretKey, ""),
+		Creds:  credentials.NewStaticV4(appConfig.MinioRootUser, appConfig.MinioRootPassword, ""),
 		Secure: appConfig.MinioSecure,
 	})
 	if errInit != nil {

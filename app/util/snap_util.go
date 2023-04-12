@@ -7,6 +7,7 @@ import (
 	"github.com/frchandra/ticketing-gmcgo/config"
 	"github.com/midtrans/midtrans-go"
 	"github.com/midtrans/midtrans-go/snap"
+	"github.com/sirupsen/logrus"
 )
 
 type SnapUtil struct {
@@ -14,17 +15,24 @@ type SnapUtil struct {
 	snapClient snap.Client
 }
 
-func NewSnapUtil(app *config.AppConfig) *SnapUtil {
+func NewSnapUtil(app *config.AppConfig, logrus *logrus.Logger) *SnapUtil {
 	var snapClient snap.Client
 	if app.MidtransIsProduction == false {
-		if app.IsProduction == true { //TODO: create your own logger
-			midtrans.DefaultLoggerLevel = &midtrans.LoggerImplementation{LogLevel: midtrans.LogError}
-		} else {
-			snapClient.New(app.ServerKeySandbox, midtrans.Sandbox)
-			midtrans.DefaultLoggerLevel = &midtrans.LoggerImplementation{LogLevel: midtrans.LogDebug}
-		}
+		snapClient.New(app.ServerKeySandbox, midtrans.Sandbox)
 	} else {
 		snapClient.New(app.ServerKeySandbox, midtrans.Production)
+	}
+
+	if app.IsProduction == true || app.MidtransIsProduction == true { //TODO: create your own logger
+		snapClient.HttpClient = &midtrans.HttpClientImplementation{
+			HttpClient: midtrans.DefaultGoHttpClient,
+			Logger:     &SnapLogger{LogLevel: midtrans.LogError, Logrus: logrus},
+		}
+	} else {
+		snapClient.HttpClient = &midtrans.HttpClientImplementation{
+			HttpClient: midtrans.DefaultGoHttpClient,
+			Logger:     &SnapLogger{LogLevel: midtrans.LogDebug, Logrus: logrus},
+		}
 	}
 
 	return &SnapUtil{
@@ -62,6 +70,35 @@ func (u *SnapUtil) CheckSignature(message map[string]interface{}) error {
 	return nil
 }
 
-func (u *SnapUtil) HandleCallback() {
+type SnapLogger struct {
+	LogLevel midtrans.LogLevel
+	Logrus   *logrus.Logger
+}
 
+// Error : Logs a warning message using Printf conventions.
+func (l *SnapLogger) Error(format string, val ...interface{}) {
+	if l.LogLevel >= midtrans.LogError {
+		l.Logrus.
+			WithField("occurrence", "MIDTRANS ERROR").
+			WithField("FORMAT", format).
+			Error(val)
+	}
+}
+
+// Info : Logs information message using Printf conventions.
+func (l *SnapLogger) Info(format string, val ...interface{}) {
+	if l.LogLevel >= midtrans.LogInfo {
+		l.Logrus.
+			WithField("occurrence", "MIDTRANS INFO").
+			WithField("FORMAT", format).
+			Info(val)
+	}
+}
+
+// Debug : Log debug message using Printf conventions.
+func (l *SnapLogger) Debug(format string, val ...interface{}) {
+	l.Logrus.
+		WithField("occurrence", "MIDTRANS DEBUG").
+		WithField("FORMAT", format).
+		Debug(val)
 }

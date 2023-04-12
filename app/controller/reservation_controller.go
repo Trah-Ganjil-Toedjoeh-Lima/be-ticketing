@@ -31,6 +31,7 @@ func NewReservationController(config *config.AppConfig, txDb *gorm.DB, log *util
 	return &ReservationController{config: config, txDb: txDb, log: log, reservationService: reservationService, txService: txService, seatService: seatService, userService: userService, tokenUtil: tokenUtil}
 }
 
+// GetSeatsInfo GET /seat_map
 func (r *ReservationController) GetSeatsInfo(c *gin.Context) {
 	seats, err := r.seatService.GetAllSeats() //get all seats from db
 	if err != nil {
@@ -43,15 +44,18 @@ func (r *ReservationController) GetSeatsInfo(c *gin.Context) {
 	for _, seat := range seats {
 		seatsResponse[seat.SeatId-1].SeatId = seat.SeatId
 		seatsResponse[seat.SeatId-1].Name = seat.Name
-		if seat.Status != "purchased" && time.Now().After(seat.CreatedAt.Add(r.config.TransactionMinute)) { //overwrite the response with timestamp logic
+		if seat.Status != "purchased" && time.Now().After(seat.UpdatedAt.Add(r.config.TransactionMinute)) { //overwrite the response with timestamp logic
 			seat.Status = "available"
 		}
 		seatsResponse[seat.SeatId-1].Status = seat.Status
 		seatsResponse[seat.SeatId-1].Price = seat.Price
+		seatsResponse[seat.SeatId-1].Row = seat.Row
+		seatsResponse[seat.SeatId-1].Column = seat.Column
 	}
 
-	accessDetails, err := r.tokenUtil.GetValidatedAccess(c) //get the user data from the token in the request header
-	if err == nil {                                         //if credentials found (user is logged in)
+	accessDetails, tokenEmptyError := r.tokenUtil.GetValidatedAccess(c)   //get the user data from the token in the request header
+	tokenExpiredError := r.tokenUtil.FetchAuthn(accessDetails.AccessUuid) //check if token exist in the token storage (Check if the token is expired)
+	if tokenEmptyError == nil && tokenExpiredError == nil {               //if credentials found (user is logged in) and token is not expired
 		mySeats, _ := r.txService.SeatsBelongsToUser(accessDetails.UserId) //overwrite the response object for this user
 		for _, mySeat := range mySeats {                                   //populate the response object
 			if seatsResponse[mySeat.SeatId-1].Status != "available" { //only overwrite the seat status if it was not overwritten previously by timestamp logic
@@ -69,6 +73,7 @@ func (r *ReservationController) GetSeatsInfo(c *gin.Context) {
 	return
 }
 
+// ReserveSeats POST /seat_map
 func (r *ReservationController) ReserveSeats(c *gin.Context) {
 	contextData, _ := c.Get("accessDetails")              //get the details about the current user that make request from the context passed by user middleware
 	accessDetails, _ := contextData.(*util.AccessDetails) //type assertion
