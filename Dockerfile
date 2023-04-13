@@ -16,7 +16,7 @@ RUN CGO_ENABLED=1 go build -o ./bin/email ./cmd/email/main.go
 # Step 2
 FROM debian:stable-slim AS runner
 RUN apt update && apt install -y apt-utils
-RUN apt install -y --no-install-recommends libvips xfonts-terminus fonts-inconsolata fonts-dejavu fonts-noto fonts-noto-cjk fonts-font-awesome fonts-noto-extra
+RUN apt install -y --no-install-recommends libvips xfonts-terminus fonts-inconsolata fonts-dejavu fonts-noto fonts-noto-cjk fonts-font-awesome fonts-noto-extra openssl
 
 WORKDIR /ticketing-gmcgo
 
