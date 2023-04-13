@@ -64,7 +64,7 @@ func (s *TransactionService) GetBasicsByLink(link string) (model.Transaction, er
 
 func (s *TransactionService) GetByUser(userId uint64) ([]model.Transaction, error) {
 	var transactions []model.Transaction //get user's transaction
-	if result := s.txRepo.GetByUser(&transactions, userId); result.Error != nil {
+	if result := s.txRepo.GetDetailsByUser(&transactions, userId); result.Error != nil {
 		return transactions, result.Error
 	}
 	transactions = s.CleanUpGhostTransaction(transactions)
@@ -113,7 +113,7 @@ func (s *TransactionService) SeatsBelongsToUser(userId uint64) ([]model.Seat, er
 	var seats []model.Seat
 
 	var transactions []model.Transaction //get user's transaction
-	if result := s.txRepo.GetByUser(&transactions, userId); result.Error != nil {
+	if result := s.txRepo.GetDetailsByUser(&transactions, userId); result.Error != nil {
 		return seats, result.Error
 	}
 	if transactions = s.CleanUpGhostTransaction(transactions); len(transactions) < 1 {

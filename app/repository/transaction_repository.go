@@ -39,6 +39,7 @@ type transactionFields struct {
 	SeatName      string
 	Price         uint
 	Category      string
+	Confirmation  string
 	CreatedAt     time.Time
 	UpdatedAt     time.Time
 }
@@ -75,8 +76,41 @@ func (t *TransactionRepository) GetBasicsByLink(transaction *model.Transaction, 
 	return result
 }
 
-func (t *TransactionRepository) GetByUser(transactions *[]model.Transaction, userId uint64) *gorm.DB {
-	result := t.db.Where("transactions.user_id = ?", userId).Find(transactions)
+func (t *TransactionRepository) GetDetailsByUser(transactions *[]model.Transaction, userId uint64) *gorm.DB {
+	var basics []transactionFields
+	result := t.db.Table("transactions").Select(
+		"transactions.transaction_id",
+		"users.user_id",
+		"users.name AS user_name",
+		"users.email",
+		"users.phone",
+		"seats.seat_id",
+		"seats.name AS seat_name",
+		"seats.price",
+		"seats.category",
+		"transactions.confirmation",
+		"transactions.created_at",
+		"transactions.updated_at").
+		Joins("inner join users on users.user_id = transactions.user_id").
+		Joins("inner join seats on seats.seat_id = transactions.seat_id").
+		Where("transactions.user_id = ?", userId).
+		Order("transaction_id").
+		Scan(&basics)
+
+	var transactionsBuff []model.Transaction
+	var transactionBuff model.Transaction
+	for _, basic := range basics {
+		transactionBuff = model.Transaction{
+			TransactionId: basic.TransactionId,
+			User:          model.User{UserId: basic.UserId, Name: basic.UserName, Phone: basic.Phone, Email: basic.Email},
+			Seat:          model.Seat{SeatId: basic.SeatId, Name: basic.SeatName, Price: basic.Price, Category: basic.Category},
+			Confirmation:  basic.Confirmation,
+			CreatedAt:     basic.CreatedAt,
+			UpdatedAt:     basic.UpdatedAt,
+		}
+		transactionsBuff = append(transactionsBuff, transactionBuff)
+	}
+	*transactions = transactionsBuff
 	return result
 }
 
