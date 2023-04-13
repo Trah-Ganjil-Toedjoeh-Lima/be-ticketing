@@ -15,14 +15,14 @@ func NewUserFactory(db *gorm.DB, config *config.AppConfig) *UserFactory {
 	return &UserFactory{db: db, config: config}
 }
 
-func (this *UserFactory) RunFactory() error {
+func (f *UserFactory) RunFactory() error {
 	adminUser := model.User{
-		Name:  this.config.AdminName,
-		Email: this.config.AdminEmail,
-		Phone: this.config.AdminPhone,
+		Name:  f.config.AdminName,
+		Email: f.config.AdminEmail,
+		Phone: f.config.AdminPhone,
 	}
 
-	err := this.db.Debug().Create(&adminUser).Error
+	err := f.db.Debug().Create(&adminUser).Error
 	if err != nil {
 		return err
 	}
