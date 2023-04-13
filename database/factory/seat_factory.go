@@ -15,6 +15,7 @@ func NewSeatFactory(db *gorm.DB) SeatFactory {
 }
 
 func (this SeatFactory) RunFactory() error {
+
 	seat := &model.Seat{
 		Name:     "A8",
 		Price:    145000,
@@ -25,6 +26,20 @@ func (this SeatFactory) RunFactory() error {
 		Column:   8,
 	}
 	err := this.db.Debug().Create(seat).Error
+	if err != nil {
+		return err
+	}
+
+	seat = &model.Seat{
+		Name:     "G40",
+		Price:    145000,
+		Category: "Diamond",
+		Link:     uuid.New().String(),
+		Status:   "available",
+		Row:      "G",
+		Column:   40,
+	}
+	err = this.db.Debug().Create(seat).Error
 	if err != nil {
 		return err
 	}
