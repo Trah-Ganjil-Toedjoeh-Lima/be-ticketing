@@ -23,6 +23,10 @@ var MiddlewareSet = wire.NewSet(
 	middleware.NewScanQrMiddleware,
 )
 
+var HomeSet = wire.NewSet(
+	controller.NewHomeController,
+)
+
 var UserSet = wire.NewSet(
 	repository.NewUserRepository,
 	service.NewUserService,
@@ -73,6 +77,7 @@ func InitializeServer() *gin.Engine {
 		app.NewLogger,
 		MiddlewareSet,
 		UtilSet,
+		HomeSet,
 		UserSet,
 		SeatSet,
 		ReservationSet,

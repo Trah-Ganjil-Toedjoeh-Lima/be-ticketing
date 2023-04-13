@@ -15,6 +15,7 @@ func NewRouter(
 	gateMiddleware *middleware.GateMiddleware,
 	qrMiddleware *middleware.ScanQrMiddleware,
 
+	homeController *controller.HomeController,
 	userController *controller.UserController,
 	authController *controller.AuthController,
 	reservationController *controller.ReservationController,
@@ -37,6 +38,10 @@ func NewRouter(
 	public.POST("user/otp", authController.VerifyOtp)
 	public.Use(gateMiddleware.HandleAccess).GET("/seat_map", reservationController.GetSeatsInfo)
 	public.POST("/user/login", authController.Login)
+
+	//Health Check
+	router.GET("/", homeController.HealthCheck)
+	router.GET("/api/v1", homeController.HealthCheck)
 
 	//public.POST("/user/register", authController.Register) //This route is no longer needed for current GMCO's ticketing case,
 	//public.POST("/user/sign_in", authController.SignIn) //but the code implementation in the controller is still remain in case of future use
