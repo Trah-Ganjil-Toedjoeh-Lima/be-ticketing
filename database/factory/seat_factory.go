@@ -126,7 +126,7 @@ func (f *SeatFactory) RunFactory() error {
 	}
 	// ROW E
 	rowName = "E"
-	for j := 1; j <= 52; j++ { //column
+	for j := 1; j <= 54; j++ { //column
 		name := rowName + strconv.Itoa(j)
 		var category string
 		if j <= 16 {
