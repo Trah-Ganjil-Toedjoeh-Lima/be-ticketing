@@ -5,6 +5,7 @@ import (
 	"github.com/frchandra/ticketing-gmcgo/app/service"
 	"github.com/frchandra/ticketing-gmcgo/app/util"
 	"github.com/frchandra/ticketing-gmcgo/app/validation"
+	"github.com/frchandra/ticketing-gmcgo/config"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -14,10 +15,11 @@ type TransactionController struct {
 	userService *service.UserService
 	snapUtil    *util.SnapUtil
 	log         *util.LogUtil
+	appConfig   *config.AppConfig
 }
 
-func NewTransactionController(txService *service.TransactionService, userService *service.UserService, snapUtil *util.SnapUtil, log *util.LogUtil) *TransactionController {
-	return &TransactionController{txService: txService, userService: userService, snapUtil: snapUtil, log: log}
+func NewTransactionController(txService *service.TransactionService, userService *service.UserService, snapUtil *util.SnapUtil, log *util.LogUtil, appConfig *config.AppConfig) *TransactionController {
+	return &TransactionController{txService: txService, userService: userService, snapUtil: snapUtil, log: log, appConfig: appConfig}
 }
 
 // GetLatestTransactionDetails GET /checkout
@@ -55,6 +57,7 @@ func (t *TransactionController) GetLatestTransactionDetails(c *gin.Context) {
 	return
 }
 
+// InitiateTransaction POST /checkout
 func (t *TransactionController) InitiateTransaction(c *gin.Context) {
 	contextData, _ := c.Get("accessDetails")                                     //get the details about the current user that make request from the context passed by user middleware
 	accessDetails, _ := contextData.(*util.AccessDetails)                        //type assertion
@@ -74,10 +77,19 @@ func (t *TransactionController) InitiateTransaction(c *gin.Context) {
 		util.GinResponseError(c, http.StatusNotFound, "something went wrong", "error when getting the data")
 		return
 	}
+
+	var midtransClientKey string
+	if t.appConfig.MidtransIsProduction == false {
+		midtransClientKey = t.appConfig.ClientKeySandbox
+	} else {
+		midtransClientKey = t.appConfig.ClientKeyProduction
+	}
+
 	c.JSON(http.StatusOK, gin.H{
-		"message":       "success",
-		"snap_request":  snapRequest,
-		"snap_response": response,
+		"message":             "success",
+		"snap_request":        snapRequest,
+		"snap_response":       response,
+		"midtrans_client_key": midtransClientKey,
 	})
 	return
 }
