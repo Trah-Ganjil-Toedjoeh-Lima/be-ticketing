@@ -5,6 +5,7 @@ on:
     branches:
     - master
     - development
+    - fix/otp-window
 
 jobs:
   build:
