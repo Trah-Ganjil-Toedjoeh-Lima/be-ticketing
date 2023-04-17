@@ -32,8 +32,8 @@ func NewRouter(
 	}
 
 	//Health Check (scope: public)
-	router.GET("/", homeController.HealthCheck)
-	router.GET(config.EndpointPrefix, homeController.HealthCheck)
+	//router.GET("/", homeController.HealthCheck)
+	router.GET(config.EndpointPrefix+"health", homeController.HealthCheck)
 
 	//Midtrans Webhook (scope: public)
 	webhook := router.Group(config.EndpointPrefix + "snap")
