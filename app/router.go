@@ -32,12 +32,11 @@ func NewRouter(
 	}
 
 	//Health Check (scope: public)
-	//router.GET("/", homeController.HealthCheck)
 	router.GET(config.EndpointPrefix+"health", homeController.HealthCheck)
 
 	//Midtrans Webhook (scope: public)
 	webhook := router.Group(config.EndpointPrefix + "snap")
-	webhook.POST("payment/callback", snapController.HandleCallback)
+	webhook.POST("/payment/callback", snapController.HandleCallback)
 
 	//User Standard Auth Routes (scope: public)
 	auth := router.Group(config.EndpointPrefix + "user")
