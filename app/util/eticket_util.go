@@ -3,6 +3,7 @@ package util
 import (
 	"bytes"
 	"context"
+
 	"github.com/frchandra/ticketing-gmcgo/config"
 	"github.com/kumparan/bimg"
 	"github.com/minio/minio-go/v7"
@@ -21,7 +22,7 @@ func NewETicketUtil(config *config.AppConfig, minio *minio.Client, log *LogUtil)
 
 func (e *ETicketUtil) GenerateETicket(seatName, seatLink string) ([]byte, error) {
 
-	url := e.config.AppUrl + ":" + e.config.AppPort + "/api/v1/seat/" + seatLink //creating basic qr code
+	url := e.config.AppUrl + ":" + e.config.AppPort + e.config.EndpointPrefix + "seat/" + seatLink //creating basic qr code
 	qr, err := qrcode.Encode(url, qrcode.Medium, 256)
 	if err != nil {
 		e.log.BasicLog(err, "when generating e-ticket qr code")
