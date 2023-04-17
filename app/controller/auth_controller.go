@@ -39,7 +39,7 @@ func (u *AuthController) VerifyOtp(c *gin.Context) {
 
 	user, _ := u.userService.GetByEmail(inputData.Email) //get user from db using the email field
 
-	if valid, err := totp.ValidateCustom(inputData.Otp, user.TotpSecret, time.Now(), totp.ValidateOpts{Period: u.config.TotpPeriod, Algorithm: otp.AlgorithmSHA1, Digits: 6}); err != nil { //verify otp
+	if valid, err := totp.ValidateCustom(inputData.Otp, user.TotpSecret, time.Now(), totp.ValidateOpts{Period: u.config.TotpPeriod, Algorithm: otp.AlgorithmSHA1, Digits: 6, Skew: 1}); err != nil { //verify otp
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "fail",
 			"error":   err.Error(),
