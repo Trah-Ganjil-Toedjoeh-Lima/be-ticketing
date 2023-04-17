@@ -17,7 +17,6 @@ func NewCache(appConfig *config.AppConfig, log *logrus.Logger) *redis.Client {
 	if err != nil {
 		panic(err)
 	}
-	//uncomment this during development phase
 	cache.FlushAll(ctx)
 	log.Info("redis connected successfully " + cache.String())
 	return cache

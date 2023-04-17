@@ -35,6 +35,20 @@ func (g *ConfigController) CloseGate(c *gin.Context) {
 	return
 }
 
+func (g *ConfigController) SetToProduction(c *gin.Context) {
+	g.config.MidtransIsProduction = true
+	g.config.IsProduction = true
+	c.Status(http.StatusOK)
+	return
+}
+
+func (g *ConfigController) SetToSandbox(c *gin.Context) {
+	g.config.MidtransIsProduction = false
+	g.config.IsProduction = false
+	c.Status(http.StatusOK)
+	return
+}
+
 func (g *ConfigController) UpdateQrScanBehaviour(c *gin.Context) {
 	var inputData map[string]string //get the data in request body
 	if err := c.ShouldBindJSON(&inputData); err != nil {

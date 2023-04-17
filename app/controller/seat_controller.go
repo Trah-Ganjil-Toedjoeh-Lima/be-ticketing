@@ -91,6 +91,7 @@ func (s *SeatController) UpdateByLink(c *gin.Context) {
 	})
 }
 
+// UpdateToStatus GET /admin/seat/:link/:status
 func (s *SeatController) UpdateToStatus(c *gin.Context) {
 	link := c.Param("link")
 	status := c.Param("status")
