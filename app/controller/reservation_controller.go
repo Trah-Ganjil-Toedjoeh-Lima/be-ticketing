@@ -51,6 +51,7 @@ func (r *ReservationController) GetSeatsInfo(c *gin.Context) {
 		seatsResponse[seat.SeatId-1].Price = seat.Price
 		seatsResponse[seat.SeatId-1].Row = seat.Row
 		seatsResponse[seat.SeatId-1].Column = seat.Column
+		seatsResponse[seat.SeatId-1].Category = seat.Category
 	}
 
 	accessDetails, tokenEmptyError := r.tokenUtil.GetValidatedAccess(c) //get the user data from the token in the request header
