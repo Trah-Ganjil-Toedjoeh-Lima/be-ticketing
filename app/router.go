@@ -57,9 +57,9 @@ func NewRouter(
 	//User data (scope: buyer user)
 	user := router.Group(config.EndpointPrefix + "user").Use(userMiddleware.UserAccess)
 	user.POST("/logout", authController.Logout)
-	user.GET("/", userController.CurrentUser)
+	user.GET("/profile", userController.CurrentUser)
 	user.GET("/tickets", userController.ShowMyTickets)
-	user.PATCH("/", userController.UpdateInfo)
+	user.PATCH("/profile", userController.UpdateInfo)
 
 	//Ticketing routes (scope: buyer user)
 	userTicketing := router.Group(config.EndpointPrefix).Use(gateMiddleware.HandleAccess)
