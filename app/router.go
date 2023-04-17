@@ -61,7 +61,7 @@ func NewRouter(
 	user.PATCH("/profile", userController.UpdateInfo)
 
 	//Ticketing routes (scope: buyer user)
-	userTicketing := router.Group(config.EndpointPrefix).Use(gateMiddleware.HandleAccess)
+	userTicketing := router.Group(config.EndpointPrefix).Use(gateMiddleware.HandleAccess).Use(userMiddleware.UserAccess)
 	userTicketing.POST("seat_map", reservationController.ReserveSeats)
 	userTicketing.GET("checkout", txController.GetLatestTransactionDetails)
 	userTicketing.POST("checkout", txController.InitiateTransaction)
