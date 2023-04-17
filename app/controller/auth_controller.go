@@ -1,10 +1,6 @@
 package controller
 
 import (
-	"net/http"
-	"reflect"
-	"time"
-
 	"github.com/frchandra/ticketing-gmcgo/app/model"
 	"github.com/frchandra/ticketing-gmcgo/app/service"
 	"github.com/frchandra/ticketing-gmcgo/app/util"
@@ -13,6 +9,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/pquerna/otp"
 	"github.com/pquerna/otp/totp"
+	"net/http"
+	"reflect"
+	"time"
 )
 
 type AuthController struct {
@@ -40,19 +39,13 @@ func (u *AuthController) VerifyOtp(c *gin.Context) {
 
 	user, _ := u.userService.GetByEmail(inputData.Email) //get user from db using the email field
 
-	if valid1, err1 := totp.ValidateCustom(inputData.Otp, user.TotpSecret1, time.Now(), totp.ValidateOpts{Period: u.config.TotpPeriod, Algorithm: otp.AlgorithmSHA1, Digits: 6}); err1 != nil { //verify otp
+	if valid, err := totp.ValidateCustom(inputData.Otp, user.TotpSecret, time.Now(), totp.ValidateOpts{Period: u.config.TotpPeriod, Algorithm: otp.AlgorithmSHA1, Digits: 6}); err != nil { //verify otp
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "fail",
-			"error":   err1.Error(),
+			"error":   err.Error(),
 		})
 		return
-	} else if valid2, err2 := totp.ValidateCustom(inputData.Otp, user.TotpSecret1, time.Now(), totp.ValidateOpts{Period: u.config.TotpPeriod2, Algorithm: otp.AlgorithmSHA1, Digits: 6}); err2 != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "fail",
-			"error":   err2.Error(),
-		})
-		return
-	} else if !valid1 && !valid2 {
+	} else if !valid {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "otp is not valid",
 		})
@@ -89,28 +82,12 @@ func (u *AuthController) RegisterByEmail(c *gin.Context) {
 	user, _ := u.userService.GetByEmail(inputData.Email) //check if user exist in the database
 
 	if reflect.ValueOf(user).IsZero() { //if the user not found
-		totpSecret1, err := totp.Generate(totp.GenerateOpts{ //generate newTotpSecret for this user
+		totpSecret, err := totp.Generate(totp.GenerateOpts{ //generate newTotpSecret for this user
 			Issuer:      "gmco",
 			AccountName: inputData.Email,
 			Period:      u.config.TotpPeriod,
 			Algorithm:   otp.AlgorithmSHA1,
 		})
-
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"message": "fail",
-				"error":   err.Error(),
-			})
-			return
-		}
-
-		totpSecret2, err := totp.Generate(totp.GenerateOpts{ //generate newTotpSecret for this user
-			Issuer:      "gmco",
-			AccountName: inputData.Email,
-			Period:      u.config.TotpPeriod2,
-			Algorithm:   otp.AlgorithmSHA1,
-		})
-
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"message": "fail",
@@ -120,9 +97,8 @@ func (u *AuthController) RegisterByEmail(c *gin.Context) {
 		}
 
 		newUser := model.User{ // insert new user record
-			Email:       inputData.Email,
-			TotpSecret1: totpSecret1.Secret(),
-			TotpSecret2: totpSecret2.Secret(),
+			Email:      inputData.Email,
+			TotpSecret: totpSecret.Secret(),
 		}
 		_, err = u.userService.InsertOne(&newUser)
 		if err != nil {
@@ -131,14 +107,6 @@ func (u *AuthController) RegisterByEmail(c *gin.Context) {
 				"error":   err.Error(),
 			})
 			return
-		}
-
-		now := time.Now()
-		var totpSecret *otp.Key
-		if now.Minute()%5 < 2 {
-			totpSecret = totpSecret1
-		} else {
-			totpSecret = totpSecret2
 		}
 
 		totpToken, err := totp.GenerateCodeCustom(totpSecret.Secret(), time.Now(), totp.ValidateOpts{Period: u.config.TotpPeriod}) //generate totp token
@@ -161,22 +129,13 @@ func (u *AuthController) RegisterByEmail(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"message":             "success",
 			"totp_token":          totpToken,
-			"totp_secret":         totpSecret1.Secret(),
-			"totp_secret2":        totpSecret2.Secret(),
+			"totp_secret":         totpSecret.Secret(),
 			"is_new_registration": true,
 		})
 		return
 	}
 
-	now := time.Now()
-	var TotpSecret string
-	if now.Minute()%5 < 2 {
-		TotpSecret = user.TotpSecret1
-	} else {
-		TotpSecret = user.TotpSecret2
-	}
-
-	totpToken, err := totp.GenerateCodeCustom(TotpSecret, time.Now(), totp.ValidateOpts{Period: u.config.TotpPeriod}) //generate totp token
+	totpToken, err := totp.GenerateCodeCustom(user.TotpSecret, time.Now(), totp.ValidateOpts{Period: u.config.TotpPeriod}) //generate totp token
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "fail",
@@ -196,8 +155,7 @@ func (u *AuthController) RegisterByEmail(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message":             "success",
 		"totp_token":          totpToken,
-		"totp_secret1":        user.TotpSecret1,
-		"totp_secret2":        user.TotpSecret2,
+		"totp_secret":         user.TotpSecret,
 		"is_new_registration": false,
 	})
 }

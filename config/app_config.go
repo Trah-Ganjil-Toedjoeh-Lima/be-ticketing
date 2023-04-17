@@ -65,7 +65,6 @@ type AppConfig struct {
 
 	TransactionMinute time.Duration
 	TotpPeriod        uint
-	TotpPeriod2       uint
 
 	AdminName  string
 	AdminEmail string
@@ -118,7 +117,6 @@ func NewAppConfig() *AppConfig {
 	refreshMinute, _ := time.ParseDuration(getEnv("REFRESH_MINUTE", "120m"))
 	transactionMinute, _ := time.ParseDuration(getEnv("TRANSACTION_MINUTE", "15m"))
 	totpPeriodSecond, _ := time.ParseDuration(getEnv("TOTP_PERIOD", "5m"))
-	totpPeriod2Second, _ := time.ParseDuration(getEnv("TOTP_PERIOD_2", "10m"))
 
 	dbMaxIdleConnection, _ := strconv.Atoi(getEnv("DB_MAX_IDLE_CONNECTION", "10"))
 	dbMaxOpenConnection, _ := strconv.Atoi(getEnv("DB_MAX_OPEN_CONNECTION", "10"))
@@ -169,7 +167,6 @@ func NewAppConfig() *AppConfig {
 
 		TransactionMinute: transactionMinute,
 		TotpPeriod:        uint(totpPeriodSecond.Seconds()),
-		TotpPeriod2:       uint(totpPeriod2Second.Seconds()),
 
 		AdminName:  getEnv("ADMIN_NAME", ""),
 		AdminEmail: getEnv("ADMIN_EMAIL", ""),

@@ -1,9 +1,8 @@
 package model
 
 import (
-	"time"
-
 	"gorm.io/gorm"
+	"time"
 )
 
 type User struct {
@@ -11,8 +10,7 @@ type User struct {
 	Name        string
 	Email       string `gorm:"not null"`
 	Phone       string
-	TotpSecret1 string         `json:"-"`
-	TotpSecret2 string         `json:"-"`
+	TotpSecret  string         `json:"-"`
 	Transaction []Transaction  `gorm:"foreignKey:UserId;references:UserId"json:"-"`
 	CreatedAt   time.Time      `json:"-"`
 	UpdatedAt   time.Time      `json:"-"`
