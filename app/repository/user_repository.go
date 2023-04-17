@@ -43,10 +43,10 @@ func (u *UserRepository) InsertOne(user *model.User) *gorm.DB {
 
 func (u *UserRepository) GetByPairs(userInput, userResult *model.User) *gorm.DB {
 	var result *gorm.DB
-	if result = u.db.Model(model.User{}).Where("name = ?", userInput.Name).Take(userResult); result.Error == nil {
+	if result = u.db.Model(model.User{}).Where("email = ?", userInput.Email).Take(userResult); result.Error == nil {
 		return result
 	}
-	if result = u.db.Model(model.User{}).Where("email = ?", userInput.Email).Take(userResult); result.Error == nil {
+	if result = u.db.Model(model.User{}).Where("name = ?", userInput.Name).Take(userResult); result.Error == nil {
 		return result
 	}
 	u.log.BasicLog(result.Error, "UserRepository@GetByPairs")
