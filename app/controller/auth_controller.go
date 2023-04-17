@@ -83,11 +83,7 @@ func (u *AuthController) RegisterByEmail(c *gin.Context) {
 		return
 	}
 
-	user, err := u.userService.GetByEmail(inputData.Email) //check if user exist in the database
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"message": "error", "error": err.Error()})
-		return
-	}
+	user, _ := u.userService.GetByEmail(inputData.Email) //check if user exist in the database
 
 	if reflect.ValueOf(user).IsZero() { //if the user not found
 		totpSecret, err := totp.Generate(totp.GenerateOpts{ //generate newTotpSecret for this user
