@@ -44,7 +44,11 @@ func (m *ScanQrMiddleware) HandleScanQr(c *gin.Context) {
 		return
 	}
 
-	adminUser, _ := m.userService.GetById(accessDetails.UserId)
+	adminUser, err := m.userService.GetById(accessDetails.UserId)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"message": "error", "error": err.Error()})
+		return
+	}
 	if adminUser.Name == m.config.AdminName && adminUser.Email == m.config.AdminEmail && adminUser.Phone == m.config.AdminPhone { //check if this user is admin
 		//redirect as admin
 		if m.config.QrScanBehaviour != "default" {

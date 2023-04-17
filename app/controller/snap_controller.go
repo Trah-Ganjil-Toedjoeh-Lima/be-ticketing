@@ -28,7 +28,11 @@ func (s *SnapController) HandleCallback(c *gin.Context) {
 		c.Status(http.StatusBadRequest)
 		return
 	}
-	txStatus, _ := message["transaction_status"].(string) //handle according to the "transaction_status" field from the json data
+	txStatus, ok := message["transaction_status"].(string) //handle according to the "transaction_status" field from the json data
+	if !ok {
+		c.JSON(http.StatusNotFound, gin.H{"message": "error", "error": "cannot get transaction status details"})
+		return
+	}
 	if txStatus == "pending" {
 		if err := s.snapService.HandlePending(message); err != nil {
 			c.Status(http.StatusNotFound)

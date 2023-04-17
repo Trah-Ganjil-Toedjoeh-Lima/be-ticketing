@@ -163,10 +163,14 @@ func (tu *TokenUtil) GetValidatedAccess(c *gin.Context) (*AccessDetails, error) 
 		return nil, err
 	}
 
-	claims, _ := token.Claims.(jwt.MapClaims)
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return nil, errors.New("cannot process token claims")
+	}
+
 	accessUuid, ok := claims["access_uuid"].(string)
 	if !ok {
-		return nil, err
+		return nil, errors.New("cannot process access uuid")
 	}
 
 	userId, err := strconv.ParseUint(fmt.Sprintf("%.f", claims["user_id"]), 10, 64)

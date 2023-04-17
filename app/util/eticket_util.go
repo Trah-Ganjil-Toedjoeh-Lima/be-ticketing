@@ -65,7 +65,11 @@ func (e *ETicketUtil) GenerateETicket(seatName, seatLink string) ([]byte, error)
 		Opacity: 1,
 	}
 
-	frame, _ := bimg.Read("./storage/picture/polite_cat.png")
+	frame, err := bimg.Read("./storage/picture/polite_cat.png")
+	if err != nil {
+		e.log.BasicLog(err, "when generating e-ticket")
+		return nil, err
+	}
 
 	ticket, err := bimg.NewImage(frame).WatermarkImage(content)
 	if err != nil {

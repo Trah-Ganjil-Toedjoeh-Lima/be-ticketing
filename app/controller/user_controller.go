@@ -31,7 +31,11 @@ func (u *UserController) UpdateInfo(c *gin.Context) {
 		})
 		return
 	}
-	accessDetails, _ := contextData.(*util.AccessDetails)
+	accessDetails, ok := contextData.(*util.AccessDetails)
+	if !ok {
+		c.JSON(http.StatusNotFound, gin.H{"message": "error", "error": "cannot get access details"})
+		return
+	}
 
 	var inputData validation.RegisterValidation //validate the input data
 	if err := c.ShouldBindJSON(&inputData); err != nil {
@@ -72,7 +76,11 @@ func (u *UserController) CurrentUser(c *gin.Context) {
 		})
 		return
 	}
-	accessDetails, _ := contextData.(*util.AccessDetails)
+	accessDetails, ok := contextData.(*util.AccessDetails)
+	if !ok {
+		c.JSON(http.StatusNotFound, gin.H{"message": "error", "error": "cannot get access details"})
+		return
+	}
 
 	user, err := u.userService.GetById(accessDetails.UserId) //get the user data given the user id from the token
 	if err != nil {
@@ -99,7 +107,11 @@ func (u *UserController) ShowMyTickets(c *gin.Context) {
 		})
 		return
 	}
-	accessDetails, _ := contextData.(*util.AccessDetails)
+	accessDetails, ok := contextData.(*util.AccessDetails)
+	if !ok {
+		c.JSON(http.StatusNotFound, gin.H{"message": "error", "error": "cannot get access details"})
+		return
+	}
 
 	transactions, err := u.txService.GetDetailsByUserConfirmation(accessDetails.UserId, "settlement")
 	if err != nil {

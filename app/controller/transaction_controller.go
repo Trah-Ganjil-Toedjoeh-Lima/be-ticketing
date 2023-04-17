@@ -24,8 +24,16 @@ func NewTransactionController(txService *service.TransactionService, userService
 
 // GetLatestTransactionDetails GET /checkout
 func (t *TransactionController) GetLatestTransactionDetails(c *gin.Context) {
-	contextData, _ := c.Get("accessDetails")              //get the transaction and user info details for this request. user id is obtained from the context passed by user_middleware
-	accessDetails, _ := contextData.(*util.AccessDetails) //type assertion
+	contextData, ok := c.Get("accessDetails") //get the transaction and user info details for this request. user id is obtained from the context passed by user_middleware
+	if !ok {
+		c.JSON(http.StatusNotFound, gin.H{"message": "error", "error": "cannot get access details"})
+		return
+	}
+	accessDetails, ok := contextData.(*util.AccessDetails) //type assertion
+	if !ok {
+		c.JSON(http.StatusNotFound, gin.H{"message": "error", "error": "cannot get process details"})
+		return
+	}
 	txDetails, err := t.txService.GetDetailsByUserConfirmation(accessDetails.UserId, "reserved")
 	if err != nil {
 		t.log.ControllerResponseLog(err, "TransactionController@GetLatestTransactionDetails", c.ClientIP(), contextData.(*util.AccessDetails).UserId)
@@ -59,8 +67,16 @@ func (t *TransactionController) GetLatestTransactionDetails(c *gin.Context) {
 
 // InitiateTransaction POST /checkout
 func (t *TransactionController) InitiateTransaction(c *gin.Context) {
-	contextData, _ := c.Get("accessDetails")                                     //get the details about the current user that make request from the context passed by user middleware
-	accessDetails, _ := contextData.(*util.AccessDetails)                        //type assertion
+	contextData, ok := c.Get("accessDetails") //get the details about the current user that make request from the context passed by user middleware
+	if !ok {
+		c.JSON(http.StatusNotFound, gin.H{"message": "error", "error": "cannot get access details"})
+		return
+	}
+	accessDetails, ok := contextData.(*util.AccessDetails) //type assertion
+	if !ok {
+		c.JSON(http.StatusNotFound, gin.H{"message": "error", "error": "cannot get process details"})
+		return
+	}
 	snapRequest, err := t.txService.PrepareTransactionData(accessDetails.UserId) //prepare snap request
 	if err != nil {
 		t.log.ControllerResponseLog(err, "TransactionController@InitiateTransaction", c.ClientIP(), contextData.(*util.AccessDetails).UserId)
