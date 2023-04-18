@@ -54,7 +54,7 @@ func (s *SeatController) InfoByLink(c *gin.Context) {
 	return
 }
 
-// DetailsByLink GET /admin/seat/:link
+// DetailsByLink GET /seat/:link (invoked by middleware.HandleScanQr)
 func (s *SeatController) DetailsByLink(c *gin.Context) {
 	link := c.Param("link")
 	seatDetails, err := s.txService.GetDetailsByLink(link)
@@ -70,7 +70,7 @@ func (s *SeatController) DetailsByLink(c *gin.Context) {
 	return
 }
 
-// UpdateByLink PUT /admin/seat/:link
+// UpdateByLink PUT GET /seat/:link (invoked by middleware.HandleScanQr)
 func (s *SeatController) UpdateByLink(c *gin.Context) {
 	link := c.Param("link")
 	var inputData map[string]string //get the seats data in request body
@@ -89,12 +89,12 @@ func (s *SeatController) UpdateByLink(c *gin.Context) {
 		"message": "success",
 		"data":    postSaleStatus,
 	})
+	return
 }
 
-// UpdateToStatus GET /admin/seat/:link/:status
-func (s *SeatController) UpdateToStatus(c *gin.Context) {
+// UpdateToStatus GET /seat/:link/
+func (s *SeatController) UpdateToStatus(c *gin.Context, status string) {
 	link := c.Param("link")
-	status := c.Param("status")
 	if err := s.seatService.UpdatePostSaleStatus(link, status); err != nil {
 		s.log.BasicLog(err, "SeatController@UpdateByLink")
 		util.GinResponseError(c, http.StatusBadRequest, "error when processing the request data", err.Error())
@@ -104,4 +104,5 @@ func (s *SeatController) UpdateToStatus(c *gin.Context) {
 		"message": "success",
 		"data":    status,
 	})
+	return
 }

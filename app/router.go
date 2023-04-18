@@ -45,7 +45,7 @@ func NewRouter(
 	auth.POST("/otp", authController.VerifyOtp)
 	auth.POST("/login", authController.Login)
 
-	//Post Ticketing (scope: public)
+	//Post Ticketing (scope: public and admin in some cases)
 	qr := router.Group(config.EndpointPrefix).Use(qrMiddleware.HandleScanQr)
 	qr.GET("seat/:link", seatController.InfoByLink)
 
@@ -68,9 +68,7 @@ func NewRouter(
 
 	//Admin Routes (scope: admin user)
 	admin := router.Group(config.EndpointPrefix + "admin").Use(adminMiddleware.AdminAccess)
-	admin.GET("/seat/:link", seatController.DetailsByLink)
 	admin.PUT("/seat/:link", seatController.UpdateByLink)
-	admin.GET("/seat/:link/:status", seatController.UpdateToStatus)
 
 	admin.POST("/open_the_gate", gateController.OpenGate)
 	admin.POST("/close_the_gate", gateController.CloseGate)
