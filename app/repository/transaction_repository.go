@@ -209,7 +209,7 @@ func (t *TransactionRepository) UpdatePaymentStatusById(txId uint64, confirmatio
 }
 
 func (t *TransactionRepository) UpdateOrderIdById(txId uint64, orderId string) *gorm.DB {
-	result := t.db.Model(&model.Transaction{}).Where("transaction_id = ?", txId).Update("order_id", orderId)
+	result := t.db.Model(&model.Transaction{}).Where("transaction_id = ?", txId).Updates(model.Transaction{OrderId: orderId, CreatedAt: time.Now()})
 	return result
 }
 

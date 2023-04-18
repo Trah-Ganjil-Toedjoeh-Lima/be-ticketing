@@ -13,12 +13,13 @@ import (
 )
 
 type TransactionService struct {
-	txRepo *repository.TransactionRepository
-	config *config.AppConfig
+	txRepo      *repository.TransactionRepository
+	seatService *SeatService
+	config      *config.AppConfig
 }
 
-func NewTransactionService(txRepo *repository.TransactionRepository, config *config.AppConfig) *TransactionService {
-	return &TransactionService{txRepo: txRepo, config: config}
+func NewTransactionService(txRepo *repository.TransactionRepository, searService *SeatService, config *config.AppConfig) *TransactionService {
+	return &TransactionService{txRepo: txRepo, seatService: searService, config: config}
 }
 
 func (s *TransactionService) CreateTx(userId uint64, seatIds []uint) error {
@@ -148,7 +149,10 @@ func (s *TransactionService) PrepareTransactionData(userId uint64) (snap.Request
 	var grossAmt int64 //populate the item detail
 	var itemDetails []midtrans.ItemDetails
 	for _, tx := range txDetails {
-		s.txRepo.UpdateOrderIdById(tx.TransactionId, orderId) //update order_id of this transaction in the database
+		s.txRepo.UpdateOrderIdById(tx.TransactionId, orderId)                          //update order_id of this transaction in the database and renew the created_at field
+		if err := s.seatService.UpdateStatus(tx.Seat.SeatId, "reserved"); err != nil { //renew the updated at field
+			return snap.Request{}, err
+		}
 
 		grossAmt += int64(tx.Seat.Price)
 		itemDetail := midtrans.ItemDetails{
