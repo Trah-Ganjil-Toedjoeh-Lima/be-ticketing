@@ -150,7 +150,7 @@ func (s *TransactionService) PrepareTransactionData(userId uint64) (snap.Request
 	for _, tx := range txDetails {
 		grossAmt += int64(tx.Seat.Price)
 		itemDetail := midtrans.ItemDetails{
-			ID:       strconv.FormatUint(uint64(tx.SeatId), 10),
+			ID:       strconv.FormatUint(uint64(tx.Seat.SeatId), 10),
 			Price:    int64(tx.Seat.Price),
 			Category: tx.Seat.Category,
 			Qty:      1,
