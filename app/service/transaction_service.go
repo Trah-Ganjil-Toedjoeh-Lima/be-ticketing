@@ -117,7 +117,7 @@ func (s *TransactionService) SeatsBelongsToUser(userId uint64) ([]model.Seat, er
 		return seats, result.Error
 	}
 	if transactions = s.CleanUpGhostTransaction(transactions); len(transactions) < 1 {
-		return seats, errors.New("this user doesen`t have any transaction")
+		return seats, errors.New("this user does not have any transaction")
 	}
 	for _, tx := range transactions {
 		if tx.Confirmation == "reserved" {

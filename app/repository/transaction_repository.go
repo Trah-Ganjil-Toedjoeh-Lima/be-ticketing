@@ -39,6 +39,7 @@ type transactionFields struct {
 	SeatName      string
 	Price         uint
 	Category      string
+	Link          string
 	Confirmation  string
 	CreatedAt     time.Time
 	UpdatedAt     time.Time
@@ -168,6 +169,7 @@ func (t *TransactionRepository) GetDetailsByOrder(transactions *[]model.Transact
 		"seats.name AS seat_name",
 		"seats.price",
 		"seats.category",
+		"seats.link",
 		"transactions.created_at",
 		"transactions.updated_at").
 		Joins("inner join users on users.user_id = transactions.user_id").
@@ -181,7 +183,7 @@ func (t *TransactionRepository) GetDetailsByOrder(transactions *[]model.Transact
 		transactionBuff = model.Transaction{
 			TransactionId: basic.TransactionId,
 			User:          model.User{UserId: basic.UserId, Name: basic.UserName, Phone: basic.Phone, Email: basic.Email},
-			Seat:          model.Seat{SeatId: basic.SeatId, Name: basic.SeatName, Price: basic.Price, Category: basic.Category},
+			Seat:          model.Seat{SeatId: basic.SeatId, Name: basic.SeatName, Price: basic.Price, Category: basic.Category, Link: basic.Link},
 			CreatedAt:     basic.CreatedAt,
 			UpdatedAt:     basic.UpdatedAt,
 		}
