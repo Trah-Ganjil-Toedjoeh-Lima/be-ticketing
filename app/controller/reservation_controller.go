@@ -57,12 +57,8 @@ func (r *ReservationController) GetSeatsInfo(c *gin.Context) {
 	if tokenEmptyError == nil {                                         //if credentials found (user is logged in) and token is not expired
 		tokenExpiredError := r.tokenUtil.FetchAuthn(accessDetails.AccessUuid) //check if token exist in the token storage (Check if the token is expired)
 		if tokenExpiredError == nil {
-			mySeats, err := r.txService.SeatsBelongsToUser(accessDetails.UserId) //overwrite the response object for this user
-			if err != nil {
-				c.JSON(http.StatusNotFound, gin.H{"message": "error", "error": err.Error()})
-				return
-			}
-			for _, mySeat := range mySeats { //populate the response object
+			mySeats, _ := r.txService.SeatsBelongsToUser(accessDetails.UserId) //overwrite the response object for this user
+			for _, mySeat := range mySeats {                                   //populate the response object
 				if seatsResponse[mySeat.SeatId-1].Status != "available" { //only overwrite the seat status if it was not overwritten previously by timestamp logic
 					seatsResponse[mySeat.SeatId-1].Status = mySeat.Status
 				}
