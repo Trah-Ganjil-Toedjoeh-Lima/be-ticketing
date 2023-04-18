@@ -532,6 +532,42 @@ func (f *SeatFactory) RunFactory() error {
 			return err
 		}
 	}
+	// ROW U
+	rowName = "U"
+	for j := 1; j <= 63; j++ { //column
+		name := rowName + strconv.Itoa(j)
+		seat := &model.Seat{
+			Name:     name,
+			Price:    0,
+			Category: pink,
+			Link:     uuid.New().String(),
+			Status:   "available",
+			Row:      rowName,
+			Column:   uint(j),
+		}
+		err := f.db.Debug().Create(seat).Error
+		if err != nil {
+			return err
+		}
+	}
+	// ROW V
+	rowName = "V"
+	for j := 1; j <= 62; j++ { //column
+		name := rowName + strconv.Itoa(j)
+		seat := &model.Seat{
+			Name:     name,
+			Price:    0,
+			Category: pink,
+			Link:     uuid.New().String(),
+			Status:   "available",
+			Row:      rowName,
+			Column:   uint(j),
+		}
+		err := f.db.Debug().Create(seat).Error
+		if err != nil {
+			return err
+		}
+	}
 
 	//
 	// SET PRICE
