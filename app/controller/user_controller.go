@@ -54,8 +54,9 @@ func (u *UserController) UpdateInfo(c *gin.Context) {
 	affectedRows, err := u.userService.UpdateById(accessDetails.UserId, &newUser)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "fail",
-			"error":   err.Error(),
+			"message":       "fail",
+			"error":         "This email is already registered. Please use other email",
+			"error_details": err.Error(),
 		})
 		return
 	}
@@ -118,6 +119,13 @@ func (u *UserController) ShowMyTickets(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{
 			"message": "fail",
 			"error":   err.Error(),
+		})
+		return
+	}
+	if len(transactions) < 1 {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "fail",
+			"error":   "this user does not have any transaction data yet",
 		})
 		return
 	}

@@ -120,7 +120,7 @@ func (s *TransactionService) SeatsBelongsToUser(userId uint64) ([]model.Seat, er
 		return seats, errors.New("this user does not have any transaction")
 	}
 	for _, tx := range transactions {
-		if tx.Confirmation == "reserved" {
+		if tx.Confirmation == "reserved" || tx.Confirmation == "pending" {
 			tx.Seat.Status = "reserved_by_me"
 		}
 		if tx.Confirmation == "settlement" {
