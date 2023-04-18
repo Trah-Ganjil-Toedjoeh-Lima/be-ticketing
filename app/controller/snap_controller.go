@@ -39,11 +39,13 @@ func (s *SnapController) HandleCallback(c *gin.Context) {
 			s.log.BasicLog(err, "SnapController@HandleCallback@HandlePending")
 			return
 		}
-		go func() {
-			if err := s.snapService.SendInfoEmail(s.snapService.PrepareTxDetailsByMsg(message)); err != nil {
-				s.log.BasicLog(err, "SnapController@HandleCallback@HandlePending@SendInfoEmail")
-			}
-		}()
+		//this code is used for sending reservation confirmation email to the user before his/her transaction is completed (settled)
+		/*		go func() {
+				if err := s.snapService.SendInfoEmail(s.snapService.PrepareTxDetailsByMsg(message)); err != nil {
+					s.log.BasicLog(err, "SnapController@HandleCallback@HandlePending@SendInfoEmail")
+				}
+			}()*/
+		//this is just an informational email, thus it can be disabled
 	} else if txStatus == "settlement" {
 		if err := s.snapService.HandleSettlement(message); err != nil {
 			c.Status(http.StatusNotFound)
