@@ -53,15 +53,24 @@ func (t *TransactionController) GetLatestTransactionDetails(c *gin.Context) {
 		seatResponses = append(seatResponses, seatResponse)
 	}
 
+	var midtransClientKey string
+	if t.appConfig.MidtransIsProduction == false {
+		midtransClientKey = t.appConfig.ClientKeySandbox
+	} else {
+		midtransClientKey = t.appConfig.ClientKeyProduction
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"message": "success",
 		"data": gin.H{
-			"seats":      seatResponses,
-			"user_name":  txDetails[0].User.Name,
-			"user_email": txDetails[0].User.Email,
-			"user_phone": txDetails[0].User.Phone,
+			"seats":               seatResponses,
+			"user_name":           txDetails[0].User.Name,
+			"user_email":          txDetails[0].User.Email,
+			"user_phone":          txDetails[0].User.Phone,
+			"midtrans_client_key": midtransClientKey,
 		},
 	})
+
 	return
 }
 
