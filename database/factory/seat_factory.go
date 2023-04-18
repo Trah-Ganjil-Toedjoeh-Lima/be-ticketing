@@ -5,7 +5,6 @@ import (
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"strconv"
-	"time"
 )
 
 type SeatFactory struct {
@@ -23,7 +22,7 @@ func (f *SeatFactory) RunFactory() error {
 	blue := "blue"
 	green := "green"
 
-	var redPrice uint = 120000
+	redPrice := 120000
 	yellowPrice := 170000
 	greenPrice := 145000
 	pinkPrice := 85000
@@ -574,7 +573,7 @@ func (f *SeatFactory) RunFactory() error {
 	// SET PRICE
 	//
 	// RED
-	err := f.db.Model(model.Seat{}).Where("category = ?", red).Updates(model.Seat{Price: redPrice, CreatedAt: time.Now()}).Error
+	err := f.db.Model(model.Seat{}).Where("category = ?", red).Update("price", redPrice).Error
 	if err != nil {
 		return err
 	}
