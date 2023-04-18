@@ -5,11 +5,30 @@
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
+    <title>TICKETING - GC GMCO 2023</title>
 </head>
 <body>
-    <h1>Hello {{ .Name }}</h1>
-    <p>Pesanan Berhasil!!. ini pesanan anda</p>
+
+    <h3>Halo {{ .Name }}</h3>
+    <p>Pesanan Berhasil. Anda telah mendapatkan tiket konser "Grand Concert GMCO Anjangsana Simfoni" pada: </p>
+    <ul>
+        <li>Hari/Tanggal: Sabtu, 12 November 2022</li>
+        <li>Waktu: 17:00 (Open Gate) 18:30 (Start Show)</li>
+        <li>Venue: Auditorium Driyarkara Universitas Sanata Dharma, Yogyakarta</li>
+    </ul>
+    <p>
+        Penonton diwajibkan untuk menunjukkan QR Code yang terdapat pada e-mail ini untuk ditukarkan dengan tiket. Waktu dan tempat penukaran QR Code menjadi tiket akan kami informasikan kambali melalui media sosial Gadjah Mada Chamber Orchestra.
+    </p>
+    <p>
+        Setiap pembeli tiket dilarang menyebarluaskan QR Code yang telah didapatkan untuk menghindari adanya duplikasi oleh pihak yang tidak bertanggung jawab. Apabila terjadi duplikasi pada QR Code, hanya QR Code yang terverifikasi pertama (pada saat penukaran tiket) yang dianggap valid. QR Code yang sudah diterima pembeli menjadi tanggung jawab pembeli yang bersangkutan sepenuhnya, pihak GMCO Live tidak bertanggung jawab atas segala kerugian yang ditimbulkan akibat kelalaian pembeli.
+    </p>
+    <p>
+        Ikuti selalu media sosial Gadjah Mada Chamber Orchestra untuk mendapatkan infromasi terbaru dari kami
+    </p>
+    <br>
+    <p>Terima kasih atas dukungan anda. Enjoy the Show!</p>
+
+    <h3>e-ticket:</h3>
     <ul>
         {{range $index, $element := .Seats}}
             <li>{{$element}}</li>
