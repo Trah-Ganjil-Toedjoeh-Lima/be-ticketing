@@ -5,7 +5,6 @@ import (
 	"github.com/frchandra/ticketing-gmcgo/app/service"
 	"github.com/frchandra/ticketing-gmcgo/app/util"
 	"github.com/frchandra/ticketing-gmcgo/app/validation"
-	"github.com/frchandra/ticketing-gmcgo/config"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -13,12 +12,10 @@ import (
 type UserController struct {
 	userService *service.UserService
 	txService   *service.TransactionService
-	tokenUtil   *util.TokenUtil
-	config      *config.AppConfig
 }
 
-func NewUserController(userService *service.UserService, txService *service.TransactionService, tokenUtil *util.TokenUtil, config *config.AppConfig) *UserController {
-	return &UserController{userService: userService, txService: txService, tokenUtil: tokenUtil, config: config}
+func NewUserController(userService *service.UserService, txService *service.TransactionService) *UserController {
+	return &UserController{userService: userService, txService: txService}
 }
 
 // UpdateInfo PATCH /user

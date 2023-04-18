@@ -161,7 +161,7 @@ func (s *TransactionService) PrepareTransactionData(userId uint64) (snap.Request
 		itemDetails = append(itemDetails, itemDetail)
 
 	}
-	var snapRequest snap.Request = snap.Request{ //create snap request data object
+	var snapRequest = snap.Request{ //create snap request data object
 		TransactionDetails: midtrans.TransactionDetails{
 			OrderID:  orderId,
 			GrossAmt: grossAmt,

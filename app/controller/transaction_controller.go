@@ -11,15 +11,14 @@ import (
 )
 
 type TransactionController struct {
-	txService   *service.TransactionService
-	userService *service.UserService
-	snapUtil    *util.SnapUtil
-	log         *util.LogUtil
-	appConfig   *config.AppConfig
+	txService *service.TransactionService
+	snapUtil  *util.SnapUtil
+	log       *util.LogUtil
+	appConfig *config.AppConfig
 }
 
-func NewTransactionController(txService *service.TransactionService, userService *service.UserService, snapUtil *util.SnapUtil, log *util.LogUtil, appConfig *config.AppConfig) *TransactionController {
-	return &TransactionController{txService: txService, userService: userService, snapUtil: snapUtil, log: log, appConfig: appConfig}
+func NewTransactionController(txService *service.TransactionService, snapUtil *util.SnapUtil, log *util.LogUtil, appConfig *config.AppConfig) *TransactionController {
+	return &TransactionController{txService: txService, snapUtil: snapUtil, log: log, appConfig: appConfig}
 }
 
 // GetLatestTransactionDetails GET /checkout
