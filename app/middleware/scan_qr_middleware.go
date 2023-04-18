@@ -50,12 +50,10 @@ func (m *ScanQrMiddleware) HandleScanQr(c *gin.Context) {
 		return
 	}
 	if adminUser.Name == m.config.AdminName && adminUser.Email == m.config.AdminEmail && adminUser.Phone == m.config.AdminPhone { //check if this user is admin
-		//redirect as admin
-		if m.config.QrScanBehaviour != "default" {
-			c.Redirect(http.StatusFound, m.config.EndpointPrefix+"admin/seat/"+c.Param("link")+"/"+m.config.QrScanBehaviour)
-		} else {
-			c.Redirect(http.StatusFound, m.config.EndpointPrefix+"admin/seat/"+c.Param("link"))
-		}
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "fail",
+			"error":   "admin should use /v1/admin endpoint",
+		})
 		return
 	}
 	//redirect as user
