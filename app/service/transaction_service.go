@@ -100,8 +100,8 @@ func (s *TransactionService) CleanUpGhostTransaction(transactions []model.Transa
 	var newTransaction []model.Transaction //cek apakah ada transaksi ngambang, jika ada buang dari slice dan update db
 	for _, tx := range transactions {
 		if time.Now().After(tx.CreatedAt.Add(s.config.TransactionMinute)) && tx.Confirmation != "settlement" { //if tx created_at + 15 < time now  => berarti transaction ngambang
-			s.txRepo.UpdatePaymentStatusByUser(tx.UserId, "not_continued") //update database
-			s.txRepo.SoftDeleteBySeatUser(tx.SeatId, tx.UserId)
+			s.txRepo.UpdatePaymentStatusById(tx.TransactionId, "not_continued") //update database
+			s.txRepo.SoftDeleteBySeatUser(tx.Seat.SeatId, tx.User.UserId)
 		} else {
 			newTransaction = append(newTransaction, tx)
 		}
@@ -137,8 +137,8 @@ func (s *TransactionService) PrepareTransactionData(userId uint64) (snap.Request
 	if txDetails = s.CleanUpGhostTransaction(txDetails); len(txDetails) < 1 { //clean up 'ghost' transaction that may be created by this user
 		return snap.Request{}, errors.New("cannot find any transaction for this user")
 	}
-	orderId := uuid.New().String()               //create order_id for the new midtrans transaction
-	s.txRepo.UpdateUserOrderId(userId, orderId)  //update order_id of this transaction in the database
+	orderId := uuid.New().String() //create order_id for the new midtrans transaction
+
 	customerDetails := midtrans.CustomerDetails{ //populate the midtrans request with the customer detail
 		FName: txDetails[0].User.Name,
 		LName: "",
@@ -148,6 +148,8 @@ func (s *TransactionService) PrepareTransactionData(userId uint64) (snap.Request
 	var grossAmt int64 //populate the item detail
 	var itemDetails []midtrans.ItemDetails
 	for _, tx := range txDetails {
+		s.txRepo.UpdateOrderIdById(tx.TransactionId, orderId) //update order_id of this transaction in the database
+
 		grossAmt += int64(tx.Seat.Price)
 		itemDetail := midtrans.ItemDetails{
 			ID:       strconv.FormatUint(uint64(tx.Seat.SeatId), 10),
@@ -157,6 +159,7 @@ func (s *TransactionService) PrepareTransactionData(userId uint64) (snap.Request
 			Name:     tx.Seat.Name,
 		}
 		itemDetails = append(itemDetails, itemDetail)
+
 	}
 	var snapRequest snap.Request = snap.Request{ //create snap request data object
 		TransactionDetails: midtrans.TransactionDetails{
