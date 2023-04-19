@@ -24,7 +24,7 @@ func (s *ReservationService) CheckUserSeatCount(seatIds []uint, userId uint64) e
 
 	var prevTxSeatIds []uint //ambil data seatId nya saja
 	for _, tx := range prevTransaction {
-		prevTxSeatIds = append(prevTxSeatIds, tx.SeatId)
+		prevTxSeatIds = append(prevTxSeatIds, tx.Seat.SeatId)
 	}
 
 	diff := util.ElementDifference(seatIds, prevTxSeatIds)            //ambil perbedaan seatId sesudah dan sebelum

@@ -223,6 +223,11 @@ func (t *TransactionRepository) SoftDeleteBySeatUser(seatId uint, userId uint64)
 	return result
 }
 
+func (t *TransactionRepository) SoftDeleteByUserConfirmation(userId uint64, confirmation string) *gorm.DB {
+	result := t.db.Where("user_id = ? AND confirmation = ?", userId, confirmation).Delete(&model.Transaction{})
+	return result
+}
+
 func (t *TransactionRepository) SoftDeleteByOrder(orderId string) *gorm.DB {
 	result := t.db.Where("order_id = ?", orderId).Delete(&model.Transaction{})
 	return result

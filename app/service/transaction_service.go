@@ -23,7 +23,8 @@ func NewTransactionService(txRepo *repository.TransactionRepository, searService
 }
 
 func (s *TransactionService) CreateTx(userId uint64, seatIds []uint) error {
-	for _, seatId := range seatIds { //create tx for each seat
+	s.txRepo.SoftDeleteByUserConfirmation(userId, "reserved") //delete the previous failed reservation
+	for _, seatId := range seatIds {                          //create tx for each seat
 		newTx := model.Transaction{
 			OrderId:      "",
 			UserId:       userId,
@@ -31,7 +32,6 @@ func (s *TransactionService) CreateTx(userId uint64, seatIds []uint) error {
 			Vendor:       "no_vendor",
 			Confirmation: "reserved",
 		}
-		s.txRepo.SoftDeleteBySeatUser(seatId, userId)                  //delete the previous failed reservation
 		if result := s.txRepo.InsertOne(&newTx); result.Error != nil { //save the transaction
 			return result.Error
 		}
