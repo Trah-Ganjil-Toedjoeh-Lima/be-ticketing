@@ -3,6 +3,7 @@ package util
 import (
 	"bytes"
 	"context"
+	"fmt"
 
 	"github.com/frchandra/ticketing-gmcgo/config"
 	"github.com/kumparan/bimg"
@@ -20,66 +21,67 @@ func NewETicketUtil(config *config.AppConfig, minio *minio.Client, log *LogUtil)
 	return &ETicketUtil{config: config, minio: minio, log: log}
 }
 
-func (e *ETicketUtil) GenerateETicket(seatName, seatLink string) ([]byte, error) {
+func (e *ETicketUtil) GenerateETicket(seatName, seatLink, seatCategory string) ([]byte, error) {
 
 	url := "https://gmco-event.com/ticket/" + seatLink //creating basic qr code
-	qr, err := qrcode.Encode(url, qrcode.Medium, 256)
+	generatedQrImage, err := qrcode.Encode(url, qrcode.Medium, 256)
 	if err != nil {
-		e.log.BasicLog(err, "when generating e-ticket qr code")
-		return nil, err
+		fmt.Println(err.Error())
 	}
 
-	title := bimg.Watermark{
-		Top:         2,
-		Left:        38,
-		Text:        "GRAND CONCERT GMCO 2023",
-		Opacity:     1,
-		Width:       200,
-		DPI:         100,
-		Margin:      0,
-		Font:        "sans bold 9",
-		Background:  bimg.Color{0, 0, 0},
-		NoReplicate: true,
+	eticketTemplate, err := bimg.Read("./storage/picture/eticket_template.jpg") //get e-ticket default eticketTemplate
+	if err != nil {
+		fmt.Println(err.Error())
 	}
 
-	seat := bimg.Watermark{
-		Top:         12,
-		Left:        90,
-		Text:        "SEAT - " + seatName,
-		Opacity:     1,
-		Width:       200,
-		DPI:         100,
-		Margin:      0,
-		Font:        "sans bold 11",
-		Background:  bimg.Color{0, 0, 0},
-		NoReplicate: true,
-	}
-
-	newQrCode, err := bimg.NewImage(qr).Watermark(title) //pasting additional information to the qrcode as a watermark
-	newQrCode, err = bimg.NewImage(newQrCode).Watermark(seat)
-
-	content := bimg.WatermarkImage{
-		Left:    0,
-		Top:     0,
-		Buf:     newQrCode,
+	generatedQrWatermark := bimg.WatermarkImage{ //watermark placement
+		Left:    1020,
+		Top:     100,
+		Buf:     generatedQrImage,
 		Opacity: 1,
 	}
-
-	frame, err := bimg.Read("./storage/picture/polite_cat.png")
+	eticket, err := bimg.NewImage(eticketTemplate).WatermarkImage(generatedQrWatermark) //pasting qrcode with watermark to the e-ticket
 	if err != nil {
-		e.log.BasicLog(err, "when generating e-ticket")
-		return nil, err
+		fmt.Println(err.Error())
 	}
 
-	ticket, err := bimg.NewImage(frame).WatermarkImage(content)
+	categoryText := bimg.Watermark{
+		Top:         417,
+		Left:        220,
+		Text:        seatCategory,
+		Opacity:     1,
+		Width:       100,
+		DPI:         100,
+		Margin:      0,
+		Font:        "sans bold 20",
+		Background:  bimg.Color{246, 247, 241},
+		NoReplicate: true,
+	}
+	eticket, err = bimg.NewImage(eticket).Watermark(categoryText)
 	if err != nil {
-		e.log.BasicLog(err, "when generating e-ticket")
-		return nil, err
+		fmt.Println(err.Error())
+	}
+
+	seatNameText := bimg.Watermark{
+		Top:         417,
+		Left:        123,
+		Text:        seatName,
+		Opacity:     1,
+		Width:       100,
+		DPI:         100,
+		Margin:      0,
+		Font:        "sans bold 24",
+		Background:  bimg.Color{246, 247, 241},
+		NoReplicate: true,
+	}
+	eticket, err = bimg.NewImage(eticket).Watermark(seatNameText)
+	if err != nil {
+		fmt.Println(err.Error())
 	}
 
 	bucketName := e.config.MinioTicketsBucket // Upload the file with to minio
 	objectName := seatName + ".png"
-	fileBuffer := bytes.NewReader(ticket)
+	fileBuffer := bytes.NewReader(eticket)
 	fileSize := fileBuffer.Size()
 	contentType := "png"
 
@@ -89,5 +91,5 @@ func (e *ETicketUtil) GenerateETicket(seatName, seatLink string) ([]byte, error)
 		return nil, err
 	}
 
-	return ticket, nil
+	return eticket, nil
 }

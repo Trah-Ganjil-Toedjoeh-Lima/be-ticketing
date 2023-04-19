@@ -101,7 +101,7 @@ func (s *SnapService) SendTicketEmail(seats []model.Seat, receiverName, receiver
 	var seatsName []string
 
 	for _, seat := range seats {
-		ticket, err := s.eticketUtil.GenerateETicket(seat.Name, seat.Link)
+		ticket, err := s.eticketUtil.GenerateETicket(seat.Name, seat.Link, seat.Category)
 		if err != nil {
 			return err
 		}

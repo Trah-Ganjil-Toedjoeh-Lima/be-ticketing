@@ -32,7 +32,7 @@ func main() {
 	var attachments map[string][]byte = make(map[string][]byte)
 
 	for i := 31; i <= 33; i++ {
-		ticket, _ := ticketUtil.GenerateETicket("H"+strconv.Itoa(i), "H"+strconv.Itoa(i))
+		ticket, _ := ticketUtil.GenerateETicket("H"+strconv.Itoa(i), "H"+strconv.Itoa(i), "DIAMOND")
 		attachments["H"+strconv.Itoa(i)+".png"] = ticket
 	}
 
