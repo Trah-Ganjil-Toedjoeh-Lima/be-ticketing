@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/midtrans/midtrans-go"
 	"github.com/midtrans/midtrans-go/snap"
+	"reflect"
 	"strconv"
 	"time"
 )
@@ -39,20 +40,19 @@ func (s *TransactionService) CreateTx(userId uint64, seatIds []uint) error {
 	return nil
 }
 
+func (s *TransactionService) DeleteTxs(transaction *[]model.Transaction) error {
+	if result := s.txRepo.SoftDeletesById(transaction); result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
 func (s *TransactionService) GetAllWithDetails() ([]model.Transaction, error) {
 	var transactions []model.Transaction
 	if result := s.txRepo.GetAllWithDetails(&transactions); result.Error != nil {
 		return transactions, result.Error
 	}
 	return transactions, nil
-}
-
-func (s *TransactionService) GetDetailsByLink(link string) (model.Transaction, error) {
-	var transaction model.Transaction
-	if result := s.txRepo.GetDetailsByLink(&transaction, link); result.Error != nil {
-		return transaction, result.Error
-	}
-	return transaction, nil
 }
 
 func (s *TransactionService) GetBasicsByLink(link string) (model.Transaction, error) {
@@ -63,9 +63,17 @@ func (s *TransactionService) GetBasicsByLink(link string) (model.Transaction, er
 	return transaction, nil
 }
 
+func (s *TransactionService) GetDetailsByLink(link string) (model.Transaction, error) {
+	var transaction model.Transaction
+	if result := s.txRepo.GetDetailsByLink(&transaction, link); result.Error != nil {
+		return transaction, result.Error
+	}
+	return transaction, nil
+}
+
 func (s *TransactionService) GetByUser(userId uint64) ([]model.Transaction, error) {
 	var transactions []model.Transaction //get user's transaction
-	if result := s.txRepo.GetDetailsByUser(&transactions, userId); result.Error != nil {
+	if result := s.txRepo.GetByUser(&transactions, userId); result.Error != nil {
 		return transactions, result.Error
 	}
 	transactions = s.CleanUpGhostTransaction(transactions)
@@ -97,12 +105,23 @@ func (s *TransactionService) GetDetailsByOrder(orderId string) ([]model.Transact
 	return transactions, nil
 }
 
+func (s *TransactionService) UpdatePaymentStatus(orderId, vendor, confirmation string) error {
+	if result := s.txRepo.UpdatePaymentStatus(orderId, vendor, confirmation); result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
 func (s *TransactionService) CleanUpGhostTransaction(transactions []model.Transaction) []model.Transaction {
 	var newTransaction []model.Transaction //cek apakah ada transaksi ngambang, jika ada buang dari slice dan update db
 	for _, tx := range transactions {
 		if time.Now().After(tx.CreatedAt.Add(s.config.TransactionMinute)) && tx.Confirmation != "settlement" { //if tx created_at + 15 < time now  => berarti transaction ngambang
 			s.txRepo.UpdatePaymentStatusById(tx.TransactionId, "not_continued") //update database
-			s.txRepo.SoftDeleteBySeatUser(tx.Seat.SeatId, tx.User.UserId)
+			if reflect.ValueOf(tx.SeatId).IsZero() && reflect.ValueOf(tx.UserId).IsZero() {
+				s.txRepo.SoftDeleteBySeatUser(tx.SeatId, tx.UserId)
+			} else {
+				s.txRepo.SoftDeleteBySeatUser(tx.Seat.SeatId, tx.User.UserId)
+			}
 		} else {
 			newTransaction = append(newTransaction, tx)
 		}
@@ -174,11 +193,4 @@ func (s *TransactionService) PrepareTransactionData(userId uint64) (snap.Request
 		Items:          &itemDetails,
 	}
 	return snapRequest, nil
-}
-
-func (s *TransactionService) UpdatePaymentStatus(orderId, vendor, confirmation string) error {
-	if result := s.txRepo.UpdatePaymentStatus(orderId, vendor, confirmation); result.Error != nil {
-		return result.Error
-	}
-	return nil
 }

@@ -64,6 +64,7 @@ func NewRouter(
 	userTicketing := router.Group(config.EndpointPrefix).Use(gateMiddleware.HandleAccess).Use(userMiddleware.UserAccess)
 	userTicketing.POST("seat_map", reservationController.ReserveSeats)
 	userTicketing.GET("checkout", txController.GetLatestTransactionDetails)
+	userTicketing.DELETE("checkout", txController.DeleteLatestTransaction)
 	userTicketing.POST("checkout", txController.InitiateTransaction)
 
 	//Admin Routes (scope: admin user)
