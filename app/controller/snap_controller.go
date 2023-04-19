@@ -10,12 +10,11 @@ import (
 type SnapController struct {
 	snapService *service.SnapService
 	snapUtil    *util.SnapUtil
-	txService   *service.TransactionService
 	log         *util.LogUtil
 }
 
-func NewSnapController(snapService *service.SnapService, snapUtil *util.SnapUtil, txService *service.TransactionService, log *util.LogUtil) *SnapController {
-	return &SnapController{snapService: snapService, snapUtil: snapUtil, txService: txService, log: log}
+func NewSnapController(snapService *service.SnapService, snapUtil *util.SnapUtil, log *util.LogUtil) *SnapController {
+	return &SnapController{snapService: snapService, snapUtil: snapUtil, log: log}
 }
 
 func (s *SnapController) HandleCallback(c *gin.Context) {

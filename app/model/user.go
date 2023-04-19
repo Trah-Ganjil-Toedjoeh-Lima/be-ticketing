@@ -8,7 +8,7 @@ import (
 type User struct {
 	UserId      uint64 `gorm:"primaryKey"`
 	Name        string
-	Email       string `gorm:"not null"`
+	Email       string `gorm:"not null;uniqueIndex"`
 	Phone       string
 	TotpSecret  string         `json:"-"`
 	Transaction []Transaction  `gorm:"foreignKey:UserId;references:UserId"json:"-"`

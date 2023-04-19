@@ -12,14 +12,14 @@ import (
 
 type TransactionController struct {
 	txService   *service.TransactionService
-	userService *service.UserService
+	seatService *service.SeatService
 	snapUtil    *util.SnapUtil
 	log         *util.LogUtil
 	appConfig   *config.AppConfig
 }
 
-func NewTransactionController(txService *service.TransactionService, userService *service.UserService, snapUtil *util.SnapUtil, log *util.LogUtil, appConfig *config.AppConfig) *TransactionController {
-	return &TransactionController{txService: txService, userService: userService, snapUtil: snapUtil, log: log, appConfig: appConfig}
+func NewTransactionController(txService *service.TransactionService, seatService *service.SeatService, snapUtil *util.SnapUtil, log *util.LogUtil, appConfig *config.AppConfig) *TransactionController {
+	return &TransactionController{txService: txService, seatService: seatService, snapUtil: snapUtil, log: log, appConfig: appConfig}
 }
 
 // GetLatestTransactionDetails GET /checkout
@@ -117,4 +117,46 @@ func (t *TransactionController) InitiateTransaction(c *gin.Context) {
 		"midtrans_client_key": midtransClientKey,
 	})
 	return
+}
+
+// DeleteLatestTransaction DELETE /checkout
+func (t *TransactionController) DeleteLatestTransaction(c *gin.Context) {
+	contextData, ok := c.Get("accessDetails") //get the transaction and user info details for this request. user id is obtained from the context passed by user_middleware
+	if !ok {
+		c.JSON(http.StatusNotFound, gin.H{"message": "error", "error": "cannot get access details"})
+		return
+	}
+	accessDetails, ok := contextData.(*util.AccessDetails) //type assertion
+	if !ok {
+		c.JSON(http.StatusNotFound, gin.H{"message": "error", "error": "cannot get process details"})
+		return
+	}
+	txDetails, err := t.txService.GetDetailsByUserConfirmation(accessDetails.UserId, "reserved")
+	if err != nil {
+		t.log.ControllerResponseLog(err, "TransactionController@GetLatestTransactionDetails", c.ClientIP(), contextData.(*util.AccessDetails).UserId)
+		util.GinResponseError(c, http.StatusNotFound, "something went wrong", "error when getting the data")
+		return
+	}
+
+	if len(txDetails) < 1 {
+		t.log.ControllerResponseLog(errors.New("cannot find transaction data for this user"), "TransactionController@GetLatestTransactionDetails", c.ClientIP(), contextData.(*util.AccessDetails).UserId)
+		util.GinResponseError(c, http.StatusNotFound, "cannot find data", "cannot find transaction data for this user")
+		return
+	}
+
+	if err = t.txService.DeleteTxs(&txDetails); err != nil { //soft delete the transactions
+		c.JSON(http.StatusBadRequest, gin.H{"message": "error", "error": err.Error()})
+		return
+	}
+
+	for _, tx := range txDetails { //update seats availability
+		if err = t.seatService.UpdateStatus(tx.Seat.SeatId, "available"); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"message": "error", "error": err.Error()})
+			return
+		}
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "success"})
+	return
+
 }

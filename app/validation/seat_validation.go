@@ -1,12 +1,13 @@
 package validation
 
 type ReservationResponse struct {
-	SeatId uint   `json:"seat_id"`
-	Name   string `json:"name"`
-	Price  uint   `json:"price"`
-	Status string `json:"status"`
-	Row    string `json:"row"`
-	Column uint   `json:"column"`
+	SeatId   uint   `json:"seat_id"`
+	Name     string `json:"name"`
+	Price    uint   `json:"price"`
+	Status   string `json:"status"`
+	Row      string `json:"row"`
+	Column   uint   `json:"column"`
+	Category string `json:"category"`
 }
 
 type BasicSeatResponse struct {

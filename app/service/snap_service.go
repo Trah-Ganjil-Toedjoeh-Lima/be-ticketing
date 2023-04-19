@@ -10,14 +10,13 @@ type SnapService struct {
 	txService   *TransactionService
 	seatService *SeatService
 	txRepo      *repository.TransactionRepository
-	snapUtil    *util.SnapUtil
 	emailUtil   *util.EmailUtil
 	eticketUtil *util.ETicketUtil
 	log         *util.LogUtil
 }
 
-func NewSnapService(txService *TransactionService, seatService *SeatService, txRepo *repository.TransactionRepository, snapUtil *util.SnapUtil, emailUtil *util.EmailUtil, eticketUtil *util.ETicketUtil, log *util.LogUtil) *SnapService {
-	return &SnapService{txService: txService, seatService: seatService, txRepo: txRepo, snapUtil: snapUtil, emailUtil: emailUtil, eticketUtil: eticketUtil, log: log}
+func NewSnapService(txService *TransactionService, seatService *SeatService, txRepo *repository.TransactionRepository, emailUtil *util.EmailUtil, eticketUtil *util.ETicketUtil, log *util.LogUtil) *SnapService {
+	return &SnapService{txService: txService, seatService: seatService, txRepo: txRepo, emailUtil: emailUtil, eticketUtil: eticketUtil, log: log}
 }
 
 func (s *SnapService) HandleSettlement(message map[string]any) error {

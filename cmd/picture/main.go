@@ -14,7 +14,7 @@ import (
 )
 
 func main() {
-	seatName := "H33" //creating base qrcode
+	seatName := "H44" //creating base qrcode
 	url := config.NewAppConfig().AppUrl + config.NewAppConfig().AppPort
 	qr, err := qrcode.Encode(url, qrcode.Medium, 256)
 	if err != nil {
@@ -24,7 +24,7 @@ func main() {
 	title := bimg.Watermark{
 		Top:         3,
 		Left:        38,
-		Text:        "GRAND CONCERT GMCO 2023",
+		Text:        "DIAMOND",
 		Opacity:     1,
 		Width:       200,
 		DPI:         100,
@@ -57,7 +57,7 @@ func main() {
 		Opacity: 1,
 	}
 
-	frame, err := bimg.Read("./storage/picture/polite_cat.png") //get e-ticket default frame
+	frame, err := bimg.Read("./storage/picture/eticket.png") //get e-ticket default frame
 	if err != nil {
 		fmt.Println(err.Error())
 

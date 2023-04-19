@@ -24,11 +24,6 @@ func (t *TransactionRepository) GetBySeatTxn(txn *gorm.DB, transaction *model.Tr
 	return result
 }
 
-func (t *TransactionRepository) GetDetailsByLink(transaction *model.Transaction, link string) *gorm.DB {
-	result := t.db.Joins("User").Joins("Seat", t.db.Where(&model.Seat{Link: link})).First(transaction)
-	return result
-}
-
 type transactionFields struct {
 	TransactionId uint64
 	UserId        uint64
@@ -75,6 +70,16 @@ func (t *TransactionRepository) GetBasicsByLink(transaction *model.Transaction, 
 		UpdatedAt:     basic.UpdatedAt,
 	}
 	*transaction = transactionBuff
+	return result
+}
+
+func (t *TransactionRepository) GetDetailsByLink(transaction *model.Transaction, link string) *gorm.DB {
+	result := t.db.Joins("User").Joins("Seat", t.db.Where(&model.Seat{Link: link})).First(transaction)
+	return result
+}
+
+func (t *TransactionRepository) GetByUser(transactions *[]model.Transaction, userId uint64) *gorm.DB {
+	result := t.db.Where("user_id = ?", userId).Find(transactions)
 	return result
 }
 
@@ -209,7 +214,7 @@ func (t *TransactionRepository) UpdatePaymentStatusById(txId uint64, confirmatio
 }
 
 func (t *TransactionRepository) UpdateOrderIdById(txId uint64, orderId string) *gorm.DB {
-	result := t.db.Model(&model.Transaction{}).Where("transaction_id = ?", txId).Update("order_id", orderId)
+	result := t.db.Model(&model.Transaction{}).Where("transaction_id = ?", txId).Updates(model.Transaction{OrderId: orderId, CreatedAt: time.Now()})
 	return result
 }
 
@@ -223,7 +228,17 @@ func (t *TransactionRepository) SoftDeleteBySeatUser(seatId uint, userId uint64)
 	return result
 }
 
+func (t *TransactionRepository) SoftDeleteByUserConfirmation(userId uint64, confirmation string) *gorm.DB {
+	result := t.db.Where("user_id = ? AND confirmation = ?", userId, confirmation).Delete(&model.Transaction{})
+	return result
+}
+
 func (t *TransactionRepository) SoftDeleteByOrder(orderId string) *gorm.DB {
 	result := t.db.Where("order_id = ?", orderId).Delete(&model.Transaction{})
+	return result
+}
+
+func (t *TransactionRepository) SoftDeletesById(transactions *[]model.Transaction) *gorm.DB {
+	result := t.db.Delete(transactions)
 	return result
 }

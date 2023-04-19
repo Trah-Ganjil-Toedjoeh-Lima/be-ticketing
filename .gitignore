@@ -3,3 +3,4 @@
 /.infra/dbdata
 /.infra/esdata
 /.infra/vault/file
+/storage/ticket/*

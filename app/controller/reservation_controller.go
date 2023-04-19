@@ -51,6 +51,7 @@ func (r *ReservationController) GetSeatsInfo(c *gin.Context) {
 		seatsResponse[seat.SeatId-1].Price = seat.Price
 		seatsResponse[seat.SeatId-1].Row = seat.Row
 		seatsResponse[seat.SeatId-1].Column = seat.Column
+		seatsResponse[seat.SeatId-1].Category = seat.Category
 	}
 
 	accessDetails, tokenEmptyError := r.tokenUtil.GetValidatedAccess(c) //get the user data from the token in the request header
@@ -102,13 +103,13 @@ func (r *ReservationController) ReserveSeats(c *gin.Context) {
 	}
 
 	var inputData validation.ReservationRequest //get the seats data in request body
-	if err := c.ShouldBindJSON(&inputData); err != nil {
+	if err = c.ShouldBindJSON(&inputData); err != nil {
 		r.log.ControllerResponseLog(err, "ReservationController@ReserveSeats", c.ClientIP(), contextData.(*util.AccessDetails).UserId)
 		util.GinResponseError(c, http.StatusBadRequest, "error when processing the request data", err.Error())
 		return
 	}
 
-	if err := r.reservationService.CheckUserSeatCount(inputData.SeatIds, accessDetails.UserId); err != nil { //check user seat limit
+	if err = r.reservationService.CheckUserSeatCount(inputData.SeatIds, accessDetails.UserId); err != nil { //check user seat limit
 		r.log.ControllerResponseLog(err, "ReservationController@ReserveSeats", c.ClientIP(), contextData.(*util.AccessDetails).UserId)
 		util.GinResponseError(c, http.StatusForbidden, "error when processing the request data", err.Error())
 		return
@@ -120,7 +121,7 @@ func (r *ReservationController) ReserveSeats(c *gin.Context) {
 	}
 
 	for _, seatId := range inputData.SeatIds { //check eligibility for each chair in request
-		if err := r.seatService.IsOwnedTxn(txn, seatId, accessDetails.UserId); err != nil {
+		if err = r.seatService.IsOwnedTxn(txn, seatId, accessDetails.UserId); err != nil {
 			txn.Rollback() //ABORT DATABASE TRANSACTION
 			err = errors.New(err.Error() + " | conflict on this seat. seat_id: " + strconv.Itoa(int(seatId)))
 			r.log.ControllerResponseLog(err, "ReservationController@ReserveSeats", c.ClientIP(), contextData.(*util.AccessDetails).UserId)

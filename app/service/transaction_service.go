@@ -8,21 +8,24 @@ import (
 	"github.com/google/uuid"
 	"github.com/midtrans/midtrans-go"
 	"github.com/midtrans/midtrans-go/snap"
+	"reflect"
 	"strconv"
 	"time"
 )
 
 type TransactionService struct {
-	txRepo *repository.TransactionRepository
-	config *config.AppConfig
+	txRepo      *repository.TransactionRepository
+	seatService *SeatService
+	config      *config.AppConfig
 }
 
-func NewTransactionService(txRepo *repository.TransactionRepository, config *config.AppConfig) *TransactionService {
-	return &TransactionService{txRepo: txRepo, config: config}
+func NewTransactionService(txRepo *repository.TransactionRepository, searService *SeatService, config *config.AppConfig) *TransactionService {
+	return &TransactionService{txRepo: txRepo, seatService: searService, config: config}
 }
 
 func (s *TransactionService) CreateTx(userId uint64, seatIds []uint) error {
-	for _, seatId := range seatIds { //create tx for each seat
+	s.txRepo.SoftDeleteByUserConfirmation(userId, "reserved") //delete the previous failed reservation
+	for _, seatId := range seatIds {                          //create tx for each seat
 		newTx := model.Transaction{
 			OrderId:      "",
 			UserId:       userId,
@@ -30,10 +33,16 @@ func (s *TransactionService) CreateTx(userId uint64, seatIds []uint) error {
 			Vendor:       "no_vendor",
 			Confirmation: "reserved",
 		}
-		s.txRepo.SoftDeleteBySeatUser(seatId, userId)                  //delete the previous failed reservation
 		if result := s.txRepo.InsertOne(&newTx); result.Error != nil { //save the transaction
 			return result.Error
 		}
+	}
+	return nil
+}
+
+func (s *TransactionService) DeleteTxs(transaction *[]model.Transaction) error {
+	if result := s.txRepo.SoftDeletesById(transaction); result.Error != nil {
+		return result.Error
 	}
 	return nil
 }
@@ -46,14 +55,6 @@ func (s *TransactionService) GetAllWithDetails() ([]model.Transaction, error) {
 	return transactions, nil
 }
 
-func (s *TransactionService) GetDetailsByLink(link string) (model.Transaction, error) {
-	var transaction model.Transaction
-	if result := s.txRepo.GetDetailsByLink(&transaction, link); result.Error != nil {
-		return transaction, result.Error
-	}
-	return transaction, nil
-}
-
 func (s *TransactionService) GetBasicsByLink(link string) (model.Transaction, error) {
 	var transaction model.Transaction
 	if result := s.txRepo.GetBasicsByLink(&transaction, link); result.Error != nil {
@@ -62,9 +63,17 @@ func (s *TransactionService) GetBasicsByLink(link string) (model.Transaction, er
 	return transaction, nil
 }
 
+func (s *TransactionService) GetDetailsByLink(link string) (model.Transaction, error) {
+	var transaction model.Transaction
+	if result := s.txRepo.GetDetailsByLink(&transaction, link); result.Error != nil {
+		return transaction, result.Error
+	}
+	return transaction, nil
+}
+
 func (s *TransactionService) GetByUser(userId uint64) ([]model.Transaction, error) {
 	var transactions []model.Transaction //get user's transaction
-	if result := s.txRepo.GetDetailsByUser(&transactions, userId); result.Error != nil {
+	if result := s.txRepo.GetByUser(&transactions, userId); result.Error != nil {
 		return transactions, result.Error
 	}
 	transactions = s.CleanUpGhostTransaction(transactions)
@@ -96,12 +105,23 @@ func (s *TransactionService) GetDetailsByOrder(orderId string) ([]model.Transact
 	return transactions, nil
 }
 
+func (s *TransactionService) UpdatePaymentStatus(orderId, vendor, confirmation string) error {
+	if result := s.txRepo.UpdatePaymentStatus(orderId, vendor, confirmation); result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
 func (s *TransactionService) CleanUpGhostTransaction(transactions []model.Transaction) []model.Transaction {
 	var newTransaction []model.Transaction //cek apakah ada transaksi ngambang, jika ada buang dari slice dan update db
 	for _, tx := range transactions {
 		if time.Now().After(tx.CreatedAt.Add(s.config.TransactionMinute)) && tx.Confirmation != "settlement" { //if tx created_at + 15 < time now  => berarti transaction ngambang
 			s.txRepo.UpdatePaymentStatusById(tx.TransactionId, "not_continued") //update database
-			s.txRepo.SoftDeleteBySeatUser(tx.Seat.SeatId, tx.User.UserId)
+			if reflect.ValueOf(tx.SeatId).IsZero() && reflect.ValueOf(tx.UserId).IsZero() {
+				s.txRepo.SoftDeleteBySeatUser(tx.SeatId, tx.UserId)
+			} else {
+				s.txRepo.SoftDeleteBySeatUser(tx.Seat.SeatId, tx.User.UserId)
+			}
 		} else {
 			newTransaction = append(newTransaction, tx)
 		}
@@ -120,7 +140,7 @@ func (s *TransactionService) SeatsBelongsToUser(userId uint64) ([]model.Seat, er
 		return seats, errors.New("this user does not have any transaction")
 	}
 	for _, tx := range transactions {
-		if tx.Confirmation == "reserved" {
+		if tx.Confirmation == "reserved" || tx.Confirmation == "pending" {
 			tx.Seat.Status = "reserved_by_me"
 		}
 		if tx.Confirmation == "settlement" {
@@ -148,7 +168,10 @@ func (s *TransactionService) PrepareTransactionData(userId uint64) (snap.Request
 	var grossAmt int64 //populate the item detail
 	var itemDetails []midtrans.ItemDetails
 	for _, tx := range txDetails {
-		s.txRepo.UpdateOrderIdById(tx.TransactionId, orderId) //update order_id of this transaction in the database
+		s.txRepo.UpdateOrderIdById(tx.TransactionId, orderId)                          //update order_id of this transaction in the database and renew the created_at field
+		if err := s.seatService.UpdateStatus(tx.Seat.SeatId, "reserved"); err != nil { //renew the updated at field
+			return snap.Request{}, err
+		}
 
 		grossAmt += int64(tx.Seat.Price)
 		itemDetail := midtrans.ItemDetails{
@@ -161,7 +184,7 @@ func (s *TransactionService) PrepareTransactionData(userId uint64) (snap.Request
 		itemDetails = append(itemDetails, itemDetail)
 
 	}
-	var snapRequest snap.Request = snap.Request{ //create snap request data object
+	var snapRequest = snap.Request{ //create snap request data object
 		TransactionDetails: midtrans.TransactionDetails{
 			OrderID:  orderId,
 			GrossAmt: grossAmt,
@@ -170,11 +193,4 @@ func (s *TransactionService) PrepareTransactionData(userId uint64) (snap.Request
 		Items:          &itemDetails,
 	}
 	return snapRequest, nil
-}
-
-func (s *TransactionService) UpdatePaymentStatus(orderId, vendor, confirmation string) error {
-	if result := s.txRepo.UpdatePaymentStatus(orderId, vendor, confirmation); result.Error != nil {
-		return result.Error
-	}
-	return nil
 }
