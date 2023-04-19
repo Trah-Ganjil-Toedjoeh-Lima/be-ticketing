@@ -31,49 +31,44 @@ func NewRouter(
 		router = gin.Default()
 	}
 
-	apiv1 := "/api/v1"
-
 	//Health Check (scope: public)
-	router.GET("/", homeController.HealthCheck)
-	router.GET(apiv1, homeController.HealthCheck)
+	router.GET(config.EndpointPrefix+"health", homeController.HealthCheck)
 
 	//Midtrans Webhook (scope: public)
-	webhook := router.Group(apiv1)
-	webhook.POST("/snap/payment/callback", snapController.HandleCallback)
+	webhook := router.Group(config.EndpointPrefix + "snap")
+	webhook.POST("/payment/callback", snapController.HandleCallback)
 
 	//User Standard Auth Routes (scope: public)
-	auth := router.Group(apiv1 + "/user")
+	auth := router.Group(config.EndpointPrefix + "user")
 	auth.POST("/refresh", authController.RefreshToken)
 	auth.POST("/register_email", authController.RegisterByEmail)
 	auth.POST("/otp", authController.VerifyOtp)
 	auth.POST("/login", authController.Login)
 
-	//Post Ticketing (scope: public)
-	qr := router.Group(apiv1).Use(qrMiddleware.HandleScanQr)
-	qr.GET("/seat/:link", seatController.InfoByLink)
+	//Post Ticketing (scope: public and admin in some cases)
+	qr := router.Group(config.EndpointPrefix).Use(qrMiddleware.HandleScanQr)
+	qr.GET("seat/:link", seatController.InfoByLink)
 
 	//Pre Ticketing (scope: public)
-	seatMap := router.Group(apiv1).Use(gateMiddleware.HandleAccess)
-	seatMap.GET("/seat_map", reservationController.GetSeatsInfo)
+	seatMap := router.Group(config.EndpointPrefix).Use(gateMiddleware.HandleAccess)
+	seatMap.GET("seat_map", reservationController.GetSeatsInfo)
 
 	//User data (scope: buyer user)
-	user := router.Group(apiv1 + "/user").Use(userMiddleware.UserAccess)
+	user := router.Group(config.EndpointPrefix + "user").Use(userMiddleware.UserAccess)
 	user.POST("/logout", authController.Logout)
-	user.GET("/", userController.CurrentUser)
+	user.GET("/profile", userController.CurrentUser)
 	user.GET("/tickets", userController.ShowMyTickets)
-	user.PATCH("/", userController.UpdateInfo)
+	user.PATCH("/profile", userController.UpdateInfo)
 
 	//Ticketing routes (scope: buyer user)
-	userTicketing := router.Group(apiv1).Use(gateMiddleware.HandleAccess)
-	userTicketing.POST("/seat_map", reservationController.ReserveSeats)
-	userTicketing.GET("/checkout", txController.GetLatestTransactionDetails)
-	userTicketing.POST("/checkout", txController.InitiateTransaction)
+	userTicketing := router.Group(config.EndpointPrefix).Use(gateMiddleware.HandleAccess).Use(userMiddleware.UserAccess)
+	userTicketing.POST("seat_map", reservationController.ReserveSeats)
+	userTicketing.GET("checkout", txController.GetLatestTransactionDetails)
+	userTicketing.POST("checkout", txController.InitiateTransaction)
 
 	//Admin Routes (scope: admin user)
-	admin := router.Group(apiv1 + "/admin").Use(adminMiddleware.AdminAccess)
-	admin.GET("/seat/:link", seatController.DetailsByLink)
+	admin := router.Group(config.EndpointPrefix + "admin").Use(adminMiddleware.AdminAccess)
 	admin.PUT("/seat/:link", seatController.UpdateByLink)
-	admin.GET("/seat/:link/:status", seatController.UpdateToStatus)
 
 	admin.POST("/open_the_gate", gateController.OpenGate)
 	admin.POST("/close_the_gate", gateController.CloseGate)

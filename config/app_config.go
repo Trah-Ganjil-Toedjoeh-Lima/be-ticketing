@@ -21,10 +21,11 @@ type EmailConfig struct {
 }
 
 type AppConfig struct {
-	AppName      string
-	IsProduction bool
-	AppUrl       string
-	AppPort      string
+	AppName        string
+	IsProduction   bool
+	AppUrl         string
+	AppPort        string
+	EndpointPrefix string
 
 	DBHost                    string
 	DBUser                    string
@@ -123,10 +124,11 @@ func NewAppConfig() *AppConfig {
 	dbConnectionMaxLifeMinute, _ := time.ParseDuration(getEnv("DB_CONNECTION_MAX_LIFE_MINUTE", "60m"))
 
 	var appConfig = AppConfig{
-		AppName:      getEnv("APP_NAME", "gmcgo"),
-		IsProduction: isProduction,
-		AppUrl:       getEnv("APP_URL", "127.0.0.1"),
-		AppPort:      getEnv("APP_PORT", "8080"),
+		AppName:        getEnv("APP_NAME", "gmcgo"),
+		IsProduction:   isProduction,
+		AppUrl:         getEnv("APP_URL", "127.0.0.1"),
+		AppPort:        getEnv("APP_PORT", "8080"),
+		EndpointPrefix: getEnv("ENDPOINT_PREFIX", "/api/v1"),
 
 		DBHost:                    getEnv("DB_HOST", "localhost"),
 		DBUser:                    getEnv("DB_USER", "root"),

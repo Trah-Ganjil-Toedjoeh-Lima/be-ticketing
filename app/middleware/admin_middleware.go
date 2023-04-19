@@ -52,7 +52,13 @@ func (u *AdminMiddleware) AdminAccess(c *gin.Context) {
 		return
 	}
 
-	adminUser, _ := u.userService.GetById(accessDetails.UserId)
+	adminUser, err := u.userService.GetById(accessDetails.UserId)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"message": "error", "error": err.Error()})
+		c.Abort()
+		return
+	}
+
 	if adminUser.Name == u.config.AdminName && adminUser.Email == u.config.AdminEmail && adminUser.Phone == u.config.AdminPhone { //check if this user is admin
 		c.Set("accessDetails", accessDetails)
 		c.Next()

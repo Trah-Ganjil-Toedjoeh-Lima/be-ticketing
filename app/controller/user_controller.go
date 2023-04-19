@@ -5,7 +5,6 @@ import (
 	"github.com/frchandra/ticketing-gmcgo/app/service"
 	"github.com/frchandra/ticketing-gmcgo/app/util"
 	"github.com/frchandra/ticketing-gmcgo/app/validation"
-	"github.com/frchandra/ticketing-gmcgo/config"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -13,12 +12,10 @@ import (
 type UserController struct {
 	userService *service.UserService
 	txService   *service.TransactionService
-	tokenUtil   *util.TokenUtil
-	config      *config.AppConfig
 }
 
-func NewUserController(userService *service.UserService, txService *service.TransactionService, tokenUtil *util.TokenUtil, config *config.AppConfig) *UserController {
-	return &UserController{userService: userService, txService: txService, tokenUtil: tokenUtil, config: config}
+func NewUserController(userService *service.UserService, txService *service.TransactionService) *UserController {
+	return &UserController{userService: userService, txService: txService}
 }
 
 // UpdateInfo PATCH /user
@@ -31,7 +28,11 @@ func (u *UserController) UpdateInfo(c *gin.Context) {
 		})
 		return
 	}
-	accessDetails, _ := contextData.(*util.AccessDetails)
+	accessDetails, ok := contextData.(*util.AccessDetails)
+	if !ok {
+		c.JSON(http.StatusNotFound, gin.H{"message": "error", "error": "cannot get access details"})
+		return
+	}
 
 	var inputData validation.RegisterValidation //validate the input data
 	if err := c.ShouldBindJSON(&inputData); err != nil {
@@ -50,8 +51,9 @@ func (u *UserController) UpdateInfo(c *gin.Context) {
 	affectedRows, err := u.userService.UpdateById(accessDetails.UserId, &newUser)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "fail",
-			"error":   err.Error(),
+			"message":       "fail",
+			"error":         "This email is already registered. Please use other email",
+			"error_details": err.Error(),
 		})
 		return
 	}
@@ -72,7 +74,11 @@ func (u *UserController) CurrentUser(c *gin.Context) {
 		})
 		return
 	}
-	accessDetails, _ := contextData.(*util.AccessDetails)
+	accessDetails, ok := contextData.(*util.AccessDetails)
+	if !ok {
+		c.JSON(http.StatusNotFound, gin.H{"message": "error", "error": "cannot get access details"})
+		return
+	}
 
 	user, err := u.userService.GetById(accessDetails.UserId) //get the user data given the user id from the token
 	if err != nil {
@@ -99,13 +105,24 @@ func (u *UserController) ShowMyTickets(c *gin.Context) {
 		})
 		return
 	}
-	accessDetails, _ := contextData.(*util.AccessDetails)
+	accessDetails, ok := contextData.(*util.AccessDetails)
+	if !ok {
+		c.JSON(http.StatusNotFound, gin.H{"message": "error", "error": "cannot get access details"})
+		return
+	}
 
 	transactions, err := u.txService.GetDetailsByUserConfirmation(accessDetails.UserId, "settlement")
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
 			"message": "fail",
 			"error":   err.Error(),
+		})
+		return
+	}
+	if len(transactions) < 1 {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "fail",
+			"error":   "this user does not have any transaction data yet",
 		})
 		return
 	}

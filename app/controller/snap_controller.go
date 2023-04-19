@@ -10,12 +10,11 @@ import (
 type SnapController struct {
 	snapService *service.SnapService
 	snapUtil    *util.SnapUtil
-	txService   *service.TransactionService
 	log         *util.LogUtil
 }
 
-func NewSnapController(snapService *service.SnapService, snapUtil *util.SnapUtil, txService *service.TransactionService, log *util.LogUtil) *SnapController {
-	return &SnapController{snapService: snapService, snapUtil: snapUtil, txService: txService, log: log}
+func NewSnapController(snapService *service.SnapService, snapUtil *util.SnapUtil, log *util.LogUtil) *SnapController {
+	return &SnapController{snapService: snapService, snapUtil: snapUtil, log: log}
 }
 
 func (s *SnapController) HandleCallback(c *gin.Context) {
@@ -28,18 +27,24 @@ func (s *SnapController) HandleCallback(c *gin.Context) {
 		c.Status(http.StatusBadRequest)
 		return
 	}
-	txStatus, _ := message["transaction_status"].(string) //handle according to the "transaction_status" field from the json data
+	txStatus, ok := message["transaction_status"].(string) //handle according to the "transaction_status" field from the json data
+	if !ok {
+		c.JSON(http.StatusNotFound, gin.H{"message": "error", "error": "cannot get transaction status details"})
+		return
+	}
 	if txStatus == "pending" {
 		if err := s.snapService.HandlePending(message); err != nil {
 			c.Status(http.StatusNotFound)
 			s.log.BasicLog(err, "SnapController@HandleCallback@HandlePending")
 			return
 		}
-		go func() {
-			if err := s.snapService.SendInfoEmail(s.snapService.PrepareTxDetailsByMsg(message)); err != nil {
-				s.log.BasicLog(err, "SnapController@HandleCallback@HandlePending@SendInfoEmail")
-			}
-		}()
+		//this code is used for sending reservation confirmation email to the user before his/her transaction is completed (settled)
+		/*		go func() {
+				if err := s.snapService.SendInfoEmail(s.snapService.PrepareTxDetailsByMsg(message)); err != nil {
+					s.log.BasicLog(err, "SnapController@HandleCallback@HandlePending@SendInfoEmail")
+				}
+			}()*/
+		//this is just an informational email, thus it can be disabled
 	} else if txStatus == "settlement" {
 		if err := s.snapService.HandleSettlement(message); err != nil {
 			c.Status(http.StatusNotFound)

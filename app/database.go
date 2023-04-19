@@ -21,12 +21,15 @@ func NewDatabase(appConfig *config.AppConfig, log *logrus.Logger) *gorm.DB {
 
 	db, err := gorm.Open(postgres.Open(dsn), gormConfig)
 	if err != nil {
-		log.Panic("failed on connecting to the database server")
+		log.Panic("failed on connecting to the database server. Error: " + err.Error())
 	} else {
 		log.Info("application is successfully connected to the database " + db.Migrator().CurrentDatabase())
 	}
 
-	sqlDB, _ := db.DB()
+	sqlDB, err := db.DB()
+	if err != nil {
+		log.Panic("failed on connecting to the database server. Error: " + err.Error())
+	}
 	sqlDB.SetMaxIdleConns(appConfig.DBMaxIdleConnection)
 	sqlDB.SetMaxOpenConns(appConfig.DBMaxOpenConnection)
 	sqlDB.SetConnMaxLifetime(appConfig.DBConnectionMaxLifeMinute)

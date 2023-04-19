@@ -1,23 +1,26 @@
 package middleware
 
 import (
+	"github.com/frchandra/ticketing-gmcgo/app/controller"
+	"net/http"
+
 	"github.com/frchandra/ticketing-gmcgo/app/service"
 	"github.com/frchandra/ticketing-gmcgo/app/util"
 	"github.com/frchandra/ticketing-gmcgo/config"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
-	"net/http"
 )
 
 type ScanQrMiddleware struct {
-	tokenUtil   *util.TokenUtil
-	log         *logrus.Logger
-	config      *config.AppConfig
-	userService *service.UserService
+	tokenUtil      *util.TokenUtil
+	log            *logrus.Logger
+	config         *config.AppConfig
+	userService    *service.UserService
+	seatController *controller.SeatController
 }
 
-func NewScanQrMiddleware(tokenUtil *util.TokenUtil, log *logrus.Logger, config *config.AppConfig, userService *service.UserService) *ScanQrMiddleware {
-	return &ScanQrMiddleware{tokenUtil: tokenUtil, log: log, config: config, userService: userService}
+func NewScanQrMiddleware(tokenUtil *util.TokenUtil, log *logrus.Logger, config *config.AppConfig, userService *service.UserService, seatController *controller.SeatController) *ScanQrMiddleware {
+	return &ScanQrMiddleware{tokenUtil: tokenUtil, log: log, config: config, userService: userService, seatController: seatController}
 }
 
 func (m *ScanQrMiddleware) HandleScanQr(c *gin.Context) {
@@ -43,14 +46,18 @@ func (m *ScanQrMiddleware) HandleScanQr(c *gin.Context) {
 		return
 	}
 
-	adminUser, _ := m.userService.GetById(accessDetails.UserId)
+	adminUser, err := m.userService.GetById(accessDetails.UserId)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"message": "error", "error": err.Error()})
+		return
+	}
 	if adminUser.Name == m.config.AdminName && adminUser.Email == m.config.AdminEmail && adminUser.Phone == m.config.AdminPhone { //check if this user is admin
-		//redirect as admin
-		if m.config.QrScanBehaviour != "default" {
-			c.Redirect(http.StatusFound, "/api/v1/admin/seat/"+c.Param("link")+"/"+m.config.QrScanBehaviour)
+		if m.config.QrScanBehaviour == "default" {
+			m.seatController.DetailsByLink(c) //redirect to admin controller
 		} else {
-			c.Redirect(http.StatusFound, "/api/v1/admin/seat/"+c.Param("link"))
+			m.seatController.UpdateToStatus(c, m.config.QrScanBehaviour) //redirect to admin controller
 		}
+		c.Abort()
 		return
 	}
 	//redirect as user

@@ -39,6 +39,7 @@ type transactionFields struct {
 	SeatName      string
 	Price         uint
 	Category      string
+	Link          string
 	Confirmation  string
 	CreatedAt     time.Time
 	UpdatedAt     time.Time
@@ -60,6 +61,7 @@ func (t *TransactionRepository) GetBasicsByLink(transaction *model.Transaction, 
 		"transactions.updated_at").
 		Joins("inner join users on users.user_id = transactions.user_id").
 		Joins("inner join seats on seats.seat_id = transactions.seat_id").
+		Where("transactions.deleted_at IS NULL").
 		Where("seats.link = ?", link).
 		Order("transaction_id").
 		Limit(1).
@@ -93,6 +95,7 @@ func (t *TransactionRepository) GetDetailsByUser(transactions *[]model.Transacti
 		"transactions.updated_at").
 		Joins("inner join users on users.user_id = transactions.user_id").
 		Joins("inner join seats on seats.seat_id = transactions.seat_id").
+		Where("transactions.deleted_at IS NULL").
 		Where("transactions.user_id = ?", userId).
 		Order("transaction_id").
 		Scan(&basics)
@@ -126,10 +129,12 @@ func (t *TransactionRepository) GetDetailsByUserConfirmation(transactions *[]mod
 		"seats.name AS seat_name",
 		"seats.price",
 		"seats.category",
+		"transactions.confirmation",
 		"transactions.created_at",
 		"transactions.updated_at").
 		Joins("inner join users on users.user_id = transactions.user_id").
 		Joins("inner join seats on seats.seat_id = transactions.seat_id").
+		Where("transactions.deleted_at IS NULL").
 		Where("transactions.user_id = ?", userId).
 		Where("transactions.confirmation = ?", confirmation).
 		Order("transaction_id").
@@ -142,6 +147,7 @@ func (t *TransactionRepository) GetDetailsByUserConfirmation(transactions *[]mod
 			TransactionId: basic.TransactionId,
 			User:          model.User{UserId: basic.UserId, Name: basic.UserName, Phone: basic.Phone, Email: basic.Email},
 			Seat:          model.Seat{SeatId: basic.SeatId, Name: basic.SeatName, Price: basic.Price, Category: basic.Category},
+			Confirmation:  basic.Confirmation,
 			CreatedAt:     basic.CreatedAt,
 			UpdatedAt:     basic.UpdatedAt,
 		}
@@ -168,6 +174,7 @@ func (t *TransactionRepository) GetDetailsByOrder(transactions *[]model.Transact
 		"seats.name AS seat_name",
 		"seats.price",
 		"seats.category",
+		"seats.link",
 		"transactions.created_at",
 		"transactions.updated_at").
 		Joins("inner join users on users.user_id = transactions.user_id").
@@ -181,7 +188,7 @@ func (t *TransactionRepository) GetDetailsByOrder(transactions *[]model.Transact
 		transactionBuff = model.Transaction{
 			TransactionId: basic.TransactionId,
 			User:          model.User{UserId: basic.UserId, Name: basic.UserName, Phone: basic.Phone, Email: basic.Email},
-			Seat:          model.Seat{SeatId: basic.SeatId, Name: basic.SeatName, Price: basic.Price, Category: basic.Category},
+			Seat:          model.Seat{SeatId: basic.SeatId, Name: basic.SeatName, Price: basic.Price, Category: basic.Category, Link: basic.Link},
 			CreatedAt:     basic.CreatedAt,
 			UpdatedAt:     basic.UpdatedAt,
 		}
@@ -196,13 +203,13 @@ func (t *TransactionRepository) UpdatePaymentStatus(orderId, vendor, confirmatio
 	return result
 }
 
-func (t *TransactionRepository) UpdatePaymentStatusByUser(userId uint64, confirmation string) *gorm.DB {
-	result := t.db.Model(&model.Transaction{}).Where("user_id = ?", userId).Update("confirmation", confirmation)
+func (t *TransactionRepository) UpdatePaymentStatusById(txId uint64, confirmation string) *gorm.DB {
+	result := t.db.Model(&model.Transaction{}).Where("transaction_id = ?", txId).Update("confirmation", confirmation)
 	return result
 }
 
-func (t *TransactionRepository) UpdateUserOrderId(userId uint64, orderId string) *gorm.DB {
-	result := t.db.Model(&model.Transaction{}).Where("user_id = ? AND order_id = ?", userId, "").Update("order_id", orderId)
+func (t *TransactionRepository) UpdateOrderIdById(txId uint64, orderId string) *gorm.DB {
+	result := t.db.Model(&model.Transaction{}).Where("transaction_id = ?", txId).Updates(model.Transaction{OrderId: orderId, CreatedAt: time.Now()})
 	return result
 }
 
@@ -213,6 +220,11 @@ func (t *TransactionRepository) InsertOne(tx *model.Transaction) *gorm.DB {
 
 func (t *TransactionRepository) SoftDeleteBySeatUser(seatId uint, userId uint64) *gorm.DB {
 	result := t.db.Where("seat_id = ? AND user_id = ?", seatId, userId).Delete(&model.Transaction{})
+	return result
+}
+
+func (t *TransactionRepository) SoftDeleteByUserConfirmation(userId uint64, confirmation string) *gorm.DB {
+	result := t.db.Where("user_id = ? AND confirmation = ?", userId, confirmation).Delete(&model.Transaction{})
 	return result
 }
 

@@ -13,16 +13,18 @@ import (
 )
 
 type TransactionService struct {
-	txRepo *repository.TransactionRepository
-	config *config.AppConfig
+	txRepo      *repository.TransactionRepository
+	seatService *SeatService
+	config      *config.AppConfig
 }
 
-func NewTransactionService(txRepo *repository.TransactionRepository, config *config.AppConfig) *TransactionService {
-	return &TransactionService{txRepo: txRepo, config: config}
+func NewTransactionService(txRepo *repository.TransactionRepository, searService *SeatService, config *config.AppConfig) *TransactionService {
+	return &TransactionService{txRepo: txRepo, seatService: searService, config: config}
 }
 
 func (s *TransactionService) CreateTx(userId uint64, seatIds []uint) error {
-	for _, seatId := range seatIds { //create tx for each seat
+	s.txRepo.SoftDeleteByUserConfirmation(userId, "reserved") //delete the previous failed reservation
+	for _, seatId := range seatIds {                          //create tx for each seat
 		newTx := model.Transaction{
 			OrderId:      "",
 			UserId:       userId,
@@ -30,7 +32,6 @@ func (s *TransactionService) CreateTx(userId uint64, seatIds []uint) error {
 			Vendor:       "no_vendor",
 			Confirmation: "reserved",
 		}
-		s.txRepo.SoftDeleteBySeatUser(seatId, userId)                  //delete the previous failed reservation
 		if result := s.txRepo.InsertOne(&newTx); result.Error != nil { //save the transaction
 			return result.Error
 		}
@@ -100,8 +101,8 @@ func (s *TransactionService) CleanUpGhostTransaction(transactions []model.Transa
 	var newTransaction []model.Transaction //cek apakah ada transaksi ngambang, jika ada buang dari slice dan update db
 	for _, tx := range transactions {
 		if time.Now().After(tx.CreatedAt.Add(s.config.TransactionMinute)) && tx.Confirmation != "settlement" { //if tx created_at + 15 < time now  => berarti transaction ngambang
-			s.txRepo.UpdatePaymentStatusByUser(tx.UserId, "not_continued") //update database
-			s.txRepo.SoftDeleteBySeatUser(tx.SeatId, tx.UserId)
+			s.txRepo.UpdatePaymentStatusById(tx.TransactionId, "not_continued") //update database
+			s.txRepo.SoftDeleteBySeatUser(tx.Seat.SeatId, tx.User.UserId)
 		} else {
 			newTransaction = append(newTransaction, tx)
 		}
@@ -117,10 +118,10 @@ func (s *TransactionService) SeatsBelongsToUser(userId uint64) ([]model.Seat, er
 		return seats, result.Error
 	}
 	if transactions = s.CleanUpGhostTransaction(transactions); len(transactions) < 1 {
-		return seats, errors.New("this user doesen`t have any transaction")
+		return seats, errors.New("this user does not have any transaction")
 	}
 	for _, tx := range transactions {
-		if tx.Confirmation == "reserved" {
+		if tx.Confirmation == "reserved" || tx.Confirmation == "pending" {
 			tx.Seat.Status = "reserved_by_me"
 		}
 		if tx.Confirmation == "settlement" {
@@ -137,8 +138,8 @@ func (s *TransactionService) PrepareTransactionData(userId uint64) (snap.Request
 	if txDetails = s.CleanUpGhostTransaction(txDetails); len(txDetails) < 1 { //clean up 'ghost' transaction that may be created by this user
 		return snap.Request{}, errors.New("cannot find any transaction for this user")
 	}
-	orderId := uuid.New().String()               //create order_id for the new midtrans transaction
-	s.txRepo.UpdateUserOrderId(userId, orderId)  //update order_id of this transaction in the database
+	orderId := uuid.New().String() //create order_id for the new midtrans transaction
+
 	customerDetails := midtrans.CustomerDetails{ //populate the midtrans request with the customer detail
 		FName: txDetails[0].User.Name,
 		LName: "",
@@ -148,17 +149,23 @@ func (s *TransactionService) PrepareTransactionData(userId uint64) (snap.Request
 	var grossAmt int64 //populate the item detail
 	var itemDetails []midtrans.ItemDetails
 	for _, tx := range txDetails {
+		s.txRepo.UpdateOrderIdById(tx.TransactionId, orderId)                          //update order_id of this transaction in the database and renew the created_at field
+		if err := s.seatService.UpdateStatus(tx.Seat.SeatId, "reserved"); err != nil { //renew the updated at field
+			return snap.Request{}, err
+		}
+
 		grossAmt += int64(tx.Seat.Price)
 		itemDetail := midtrans.ItemDetails{
-			ID:       strconv.FormatUint(uint64(tx.SeatId), 10),
+			ID:       strconv.FormatUint(uint64(tx.Seat.SeatId), 10),
 			Price:    int64(tx.Seat.Price),
 			Category: tx.Seat.Category,
 			Qty:      1,
 			Name:     tx.Seat.Name,
 		}
 		itemDetails = append(itemDetails, itemDetail)
+
 	}
-	var snapRequest snap.Request = snap.Request{ //create snap request data object
+	var snapRequest = snap.Request{ //create snap request data object
 		TransactionDetails: midtrans.TransactionDetails{
 			OrderID:  orderId,
 			GrossAmt: grossAmt,

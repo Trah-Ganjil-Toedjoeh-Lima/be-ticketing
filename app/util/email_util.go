@@ -47,7 +47,10 @@ func (u *EmailUtil) SendInfoEmail(data map[string]any, receiver string) error {
 	m.SetHeader("Subject", "INFO EMAIL")
 	m.SetBody("text/html", body.String())
 
-	port, _ := strconv.Atoi(emailConfig.MailPort) //send the mail
+	port, err := strconv.Atoi(emailConfig.MailPort) //send the mail
+	if err != nil {
+		return err
+	}
 	d := gomail.NewDialer(emailConfig.MailHost, port, emailConfig.MailUsername, emailConfig.MailPassword)
 	err = d.DialAndSend(m)
 	if err != nil {
@@ -90,7 +93,7 @@ func (u *EmailUtil) SendTicketEmail(data map[string]any, receiver string, attach
 		seatsCount := len(seatsName)
 		for i := 0; i < seatsCount; i++ { //This is you from the past: Do not touch this code. Somehow if I use for-range loop for
 			filename := seatsName[i] + ".png" //attaching the attachment map ( map["filename"] consist of filename as a key and []byte of e-ticket image as a value)
-			m.Attach( // this leads to random behaviour that makes the loop won't iterate the attachment variable inside m.Attach()
+			m.Attach(                         // this leads to random behaviour that makes the loop won't iterate the attachment variable inside m.Attach()
 				filename, //So, I use regular for loop instead. As a result I need to pass a slice of seatsName as an iterator
 				gomail.SetCopyFunc(func(writer io.Writer) error {
 					_, err = writer.Write(attachments[filename])
@@ -100,7 +103,11 @@ func (u *EmailUtil) SendTicketEmail(data map[string]any, receiver string, attach
 		}
 	}
 
-	port, _ := strconv.Atoi(emailConfig.MailPort) //send the mail
+	port, err := strconv.Atoi(emailConfig.MailPort) //send the mail
+	if err != nil {
+		u.log.BasicLog(err, "EmailUtil@SendTicketEmail: when about to sending an email")
+		return err
+	}
 	d := gomail.NewDialer(emailConfig.MailHost, port, emailConfig.MailUsername, emailConfig.MailPassword)
 	err = d.DialAndSend(m)
 	if err != nil {
@@ -139,7 +146,11 @@ func (u *EmailUtil) SentTotpEmail(data map[string]any, receiver string) error {
 	m.SetHeader("Subject", "TOTP EMAIL")
 	m.SetBody("text/html", body.String())
 
-	port, _ := strconv.Atoi(emailConfig.MailPort) //send the mail
+	port, err := strconv.Atoi(emailConfig.MailPort) //send the mail
+	if err != nil {
+		u.log.BasicLog(err, "EmailUtil@SendTicketEmail: when about to sending an email")
+		return err
+	}
 	d := gomail.NewDialer(emailConfig.MailHost, port, emailConfig.MailUsername, emailConfig.MailPassword)
 	err = d.DialAndSend(m)
 	if err != nil {

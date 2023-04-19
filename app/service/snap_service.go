@@ -10,18 +10,20 @@ type SnapService struct {
 	txService   *TransactionService
 	seatService *SeatService
 	txRepo      *repository.TransactionRepository
-	snapUtil    *util.SnapUtil
 	emailUtil   *util.EmailUtil
 	eticketUtil *util.ETicketUtil
 	log         *util.LogUtil
 }
 
-func NewSnapService(txService *TransactionService, seatService *SeatService, txRepo *repository.TransactionRepository, snapUtil *util.SnapUtil, emailUtil *util.EmailUtil, eticketUtil *util.ETicketUtil, log *util.LogUtil) *SnapService {
-	return &SnapService{txService: txService, seatService: seatService, txRepo: txRepo, snapUtil: snapUtil, emailUtil: emailUtil, eticketUtil: eticketUtil, log: log}
+func NewSnapService(txService *TransactionService, seatService *SeatService, txRepo *repository.TransactionRepository, emailUtil *util.EmailUtil, eticketUtil *util.ETicketUtil, log *util.LogUtil) *SnapService {
+	return &SnapService{txService: txService, seatService: seatService, txRepo: txRepo, emailUtil: emailUtil, eticketUtil: eticketUtil, log: log}
 }
 
 func (s *SnapService) HandleSettlement(message map[string]any) error {
-	transactions, _ := s.txService.GetByOrder(message["order_id"].(string))
+	transactions, err := s.txService.GetByOrder(message["order_id"].(string))
+	if err != nil {
+		return err
+	}
 
 	for _, tx := range transactions { //update seats availability
 		if err := s.seatService.UpdateStatus(tx.SeatId, "purchased"); err != nil {
@@ -36,14 +38,17 @@ func (s *SnapService) HandleSettlement(message map[string]any) error {
 }
 
 func (s *SnapService) HandleFailure(message map[string]any) error {
-	transactions, _ := s.txService.GetByOrder(message["order_id"].(string))
+	transactions, err := s.txService.GetByOrder(message["order_id"].(string))
+	if err != nil {
+		return err
+	}
 	for _, tx := range transactions {
-		if err := s.seatService.UpdateStatus(tx.SeatId, "available"); err != nil {
+		if err = s.seatService.UpdateStatus(tx.SeatId, "available"); err != nil {
 			return err
 		}
 	}
 
-	if err := s.txService.UpdatePaymentStatus(message["order_id"].(string), message["payment_type"].(string), message["transaction_status"].(string)); err != nil { //update tx status
+	if err = s.txService.UpdatePaymentStatus(message["order_id"].(string), message["payment_type"].(string), message["transaction_status"].(string)); err != nil { //update tx status
 		return err
 	}
 
@@ -64,7 +69,10 @@ func (s *SnapService) PrepareTxDetailsByMsg(message map[string]any) ([]model.Sea
 	var seats []model.Seat
 	var userName string
 	var userEmail string
-	transactions, _ := s.txService.GetDetailsByOrder(message["order_id"].(string))
+	transactions, err := s.txService.GetDetailsByOrder(message["order_id"].(string))
+	if err != nil {
+		s.log.BasicLog(err, "when about to preparing the transaction detail data")
+	}
 	for _, tx := range transactions {
 		seats = append(seats, tx.Seat)
 	}

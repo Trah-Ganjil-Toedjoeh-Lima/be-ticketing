@@ -78,10 +78,22 @@ func (r *ReservationController) GetSeatsInfo(c *gin.Context) {
 
 // ReserveSeats POST /seat_map
 func (r *ReservationController) ReserveSeats(c *gin.Context) {
-	contextData, _ := c.Get("accessDetails")              //get the details about the current user that make request from the context passed by user middleware
-	accessDetails, _ := contextData.(*util.AccessDetails) //type assertion
+	contextData, ok := c.Get("accessDetails") //get the details about the current user that make request from the context passed by user middleware
+	if !ok {
+		c.JSON(http.StatusNotFound, gin.H{"message": "error", "error": "cannot get access details"})
+		return
+	}
+	accessDetails, ok := contextData.(*util.AccessDetails) //type assertion
+	if !ok {
+		c.JSON(http.StatusNotFound, gin.H{"message": "error", "error": "cannot processing access details"})
+		return
+	}
 
-	user, _ := r.userService.GetById(accessDetails.UserId)
+	user, err := r.userService.GetById(accessDetails.UserId)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"message": "error", "error": err.Error()})
+		return
+	}
 	if reflect.ValueOf(user.Name).IsZero() || reflect.ValueOf(user.Phone).IsZero() { //check if user has fill their identity data
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"message": "fail",

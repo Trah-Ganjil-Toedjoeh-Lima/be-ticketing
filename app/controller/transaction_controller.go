@@ -11,21 +11,28 @@ import (
 )
 
 type TransactionController struct {
-	txService   *service.TransactionService
-	userService *service.UserService
-	snapUtil    *util.SnapUtil
-	log         *util.LogUtil
-	appConfig   *config.AppConfig
+	txService *service.TransactionService
+	snapUtil  *util.SnapUtil
+	log       *util.LogUtil
+	appConfig *config.AppConfig
 }
 
-func NewTransactionController(txService *service.TransactionService, userService *service.UserService, snapUtil *util.SnapUtil, log *util.LogUtil, appConfig *config.AppConfig) *TransactionController {
-	return &TransactionController{txService: txService, userService: userService, snapUtil: snapUtil, log: log, appConfig: appConfig}
+func NewTransactionController(txService *service.TransactionService, snapUtil *util.SnapUtil, log *util.LogUtil, appConfig *config.AppConfig) *TransactionController {
+	return &TransactionController{txService: txService, snapUtil: snapUtil, log: log, appConfig: appConfig}
 }
 
 // GetLatestTransactionDetails GET /checkout
 func (t *TransactionController) GetLatestTransactionDetails(c *gin.Context) {
-	contextData, _ := c.Get("accessDetails")              //get the transaction and user info details for this request. user id is obtained from the context passed by user_middleware
-	accessDetails, _ := contextData.(*util.AccessDetails) //type assertion
+	contextData, ok := c.Get("accessDetails") //get the transaction and user info details for this request. user id is obtained from the context passed by user_middleware
+	if !ok {
+		c.JSON(http.StatusNotFound, gin.H{"message": "error", "error": "cannot get access details"})
+		return
+	}
+	accessDetails, ok := contextData.(*util.AccessDetails) //type assertion
+	if !ok {
+		c.JSON(http.StatusNotFound, gin.H{"message": "error", "error": "cannot get process details"})
+		return
+	}
 	txDetails, err := t.txService.GetDetailsByUserConfirmation(accessDetails.UserId, "reserved")
 	if err != nil {
 		t.log.ControllerResponseLog(err, "TransactionController@GetLatestTransactionDetails", c.ClientIP(), contextData.(*util.AccessDetails).UserId)
@@ -45,22 +52,39 @@ func (t *TransactionController) GetLatestTransactionDetails(c *gin.Context) {
 		seatResponses = append(seatResponses, seatResponse)
 	}
 
+	var midtransClientKey string
+	if t.appConfig.MidtransIsProduction == false {
+		midtransClientKey = t.appConfig.ClientKeySandbox
+	} else {
+		midtransClientKey = t.appConfig.ClientKeyProduction
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"message": "success",
 		"data": gin.H{
-			"seats":      seatResponses,
-			"user_name":  txDetails[0].User.Name,
-			"user_email": txDetails[0].User.Email,
-			"user_phone": txDetails[0].User.Phone,
+			"seats":               seatResponses,
+			"user_name":           txDetails[0].User.Name,
+			"user_email":          txDetails[0].User.Email,
+			"user_phone":          txDetails[0].User.Phone,
+			"midtrans_client_key": midtransClientKey,
 		},
 	})
+
 	return
 }
 
 // InitiateTransaction POST /checkout
 func (t *TransactionController) InitiateTransaction(c *gin.Context) {
-	contextData, _ := c.Get("accessDetails")                                     //get the details about the current user that make request from the context passed by user middleware
-	accessDetails, _ := contextData.(*util.AccessDetails)                        //type assertion
+	contextData, ok := c.Get("accessDetails") //get the details about the current user that make request from the context passed by user middleware
+	if !ok {
+		c.JSON(http.StatusNotFound, gin.H{"message": "error", "error": "cannot get access details"})
+		return
+	}
+	accessDetails, ok := contextData.(*util.AccessDetails) //type assertion
+	if !ok {
+		c.JSON(http.StatusNotFound, gin.H{"message": "error", "error": "cannot get process details"})
+		return
+	}
 	snapRequest, err := t.txService.PrepareTransactionData(accessDetails.UserId) //prepare snap request
 	if err != nil {
 		t.log.ControllerResponseLog(err, "TransactionController@InitiateTransaction", c.ClientIP(), contextData.(*util.AccessDetails).UserId)
