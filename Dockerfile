@@ -7,6 +7,7 @@ RUN apt install --no-install-recommends -y libvips-dev
 
 WORKDIR /go/src
 COPY . .
+RUN go mod tidy
 RUN go mod download -x
 
 RUN CGO_ENABLED=1 go build -o ./bin/app ./cmd/app/main.go
