@@ -22,6 +22,7 @@ func (g *ConfigController) GetAppConfig(c *gin.Context) {
 	filteredConfig["AppName"] = g.config.AppName
 	filteredConfig["IsProduction"] = strconv.FormatBool(g.config.IsProduction)
 	filteredConfig["MidtransIsProduction"] = strconv.FormatBool(g.config.MidtransIsProduction)
+        filteredConfig["IsOpenGate"] = strconv.FormatBool(g.config.IsOpenGate)
 	filteredConfig["QrScanBehaviour"] = g.config.QrScanBehaviour
 	filteredConfig["AppUrl"] = g.config.AppUrl
 	filteredConfig["AppPort"] = g.config.AppPort
