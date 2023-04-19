@@ -2,3 +2,4 @@
 /.idea
 /.infra/dbdata
 /.infra/esdata
+/storage/ticket/*
