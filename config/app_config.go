@@ -1,13 +1,23 @@
 package config
 
 import (
+	"context"
 	"log"
 	"os"
 	"strconv"
 	"time"
 
+	vault "github.com/hashicorp/vault/api"
 	"github.com/joho/godotenv"
 )
+
+type VaultConfig struct {
+	VaultHost  string
+	VaultPort  string
+	VaultAuth  string
+	VaultToken string
+	VaultPath  string
+}
 
 type EmailConfig struct {
 	MailMailer      string
@@ -76,8 +86,8 @@ type AppConfig struct {
 }
 
 func NewAppConfig() *AppConfig {
-	midtransIsProduction, _ := strconv.ParseBool(getEnv("MIDTRANS_IS_PRODUCTION", "false"))
-	isProduction, _ := strconv.ParseBool(getEnv("IS_PRODUCTION", "false"))
+	midtransIsProduction, _ := strconv.ParseBool(getEnv("MIDTRANS_IS_PRODUCTION", "0"))
+	isProduction, _ := strconv.ParseBool(getEnv("IS_PRODUCTION", "0"))
 
 	email1 := EmailConfig{
 		getEnv("MAIL_MAILER_1", "smtp"),
@@ -128,7 +138,7 @@ func NewAppConfig() *AppConfig {
 		IsProduction:   isProduction,
 		AppUrl:         getEnv("APP_URL", "127.0.0.1"),
 		AppPort:        getEnv("APP_PORT", "8080"),
-		EndpointPrefix: getEnv("ENDPOINT_PREFIX", "/api/v1"),
+		EndpointPrefix: getEnv("ENDPOINT_PREFIX", "/api/v1/"),
 
 		DBHost:                    getEnv("DB_HOST", "localhost"),
 		DBUser:                    getEnv("DB_USER", "root"),
@@ -180,20 +190,76 @@ func NewAppConfig() *AppConfig {
 	return &appConfig
 }
 
-func getEnv(key, fallback string) string {
-	value := os.Getenv(key)
+func getEnv(key string, fallback string) string {
 
-	if value != "" {
-		return value
+	ch := make(chan string)
+	go getVaultEnv(key, ch)
+	vaultVal := <-ch
+
+	var fallbackVal string
+	//fallbackdotEnv := getdotEnv(key)
+	fallbackosEnv := os.Getenv(key)
+	if fallbackosEnv != "" {
+		fallbackVal = fallbackosEnv
 	} else {
-		err := godotenv.Load()
-		if err != nil {
-			log.Printf("Error on loading .env file")
-		}
-		if valuedotenv, ok := os.LookupEnv(key); ok {
-			return valuedotenv
-		} else {
-			return fallback
-		}
+		fallbackVal = fallback
 	}
+
+	if vaultVal != "error_failed_to_get_key" {
+		log.Printf("Vault key %s found", key)
+		return vaultVal
+	} else if fallbackVal != "" {
+		log.Printf("Vault key %s not found", key)
+		return fallbackVal
+	} else {
+		log.Fatalf("Can't set key %s", key)
+		return "error_failed_to_get_key"
+	}
+}
+
+func getVaultEnv(key string, ch chan string) {
+	vaultConfig := VaultConfig{
+		os.Getenv("VAULT_HOST"),
+		os.Getenv("VAULT_PORT"),
+		os.Getenv("VAULT_AUTH"),
+		os.Getenv("VAULT_TOKEN"),
+		os.Getenv("VAULT_PATH"),
+	}
+
+	config := vault.DefaultConfig()
+
+	config.Address = "http://" + vaultConfig.VaultHost + ":" + vaultConfig.VaultPort
+
+	client, err := vault.NewClient(config)
+	if err != nil {
+		log.Printf("unable to initialize Vault client: %v", err)
+		ch <- "error_failed_to_get_key"
+	}
+
+	// Authenticate
+	client.SetToken(vaultConfig.VaultToken)
+
+	// Read a secret from the default mount path for KV v2 in dev mode, "secret"
+	secret, err := client.KVv2("kv").Get(context.Background(), vaultConfig.VaultPath)
+	if err != nil {
+		log.Printf("unable to read secret: %v", err)
+		ch <- "error_failed_to_get_key"
+	}
+
+	value, ok := secret.Data[key].(string)
+	if !ok {
+		log.Printf("failed to get key %s", key)
+		ch <- "error_failed_to_get_key"
+	} else {
+		log.Printf("Success get env %s from vault", key)
+		ch <- value
+	}
+}
+
+func getdotEnv(key string) string {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatalf("Error loading .env file")
+	}
+	return os.Getenv(key)
 }

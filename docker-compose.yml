@@ -22,6 +22,7 @@ services:
       - "traefik.http.routers.gmco-be-https.middlewares=cors-header@docker"
     networks:
       - gateway_ingress
+    read_only: true
 
 networks:
   gateway_ingress:

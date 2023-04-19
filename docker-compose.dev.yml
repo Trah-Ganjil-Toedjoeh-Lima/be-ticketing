@@ -36,6 +36,7 @@ services:
       - ./storage/:/ticketing-gmcgo/storage/
       - ./resource/:/ticketing-gmcgo/resource/
       - ./.env:/ticketing-gmcgo/.env
+    read_only: true
     ports:
       - "8080:8080"
     networks:
@@ -43,15 +44,21 @@ services:
     depends_on:
       - db
       - cache
-      - logstash
+      # - logstash
       - minio
       - proxy
     restart: unless-stopped
-    logging:  #use this if you want sent the container logs (from the stdout) to the logstash service directly
-      driver: gelf
-      options:
-        gelf-address: "udp://localhost:12201"
-        tag: "application"
+    # logging:  #use this if you want sent the container logs (from the stdout) to the logstash service directly
+    #   driver: gelf
+    #   options:
+    #     gelf-address: "udp://localhost:12201"
+    #     tag: "application"
+    environment: 
+      - VAULT_HOST=hashicorp-vault
+      - VAULT_PORT=8200
+      - VAULT_AUTH=token
+      - VAULT_TOKEN=hvs.CAESIGhe_q8PV-0d3EtfP9Dln93d_pkYKp6uBnPccOE0u8L0Gh4KHGh2cy5kaUFEQkZPR21wWGh5bXdXbDF3cGlGdTY
+      - VAULT_PATH=gmcgo_be
 
   minio:
     container_name: gmcgo-minio
@@ -75,111 +82,29 @@ services:
       - "--providers.docker"
     ports:
       - "80:80"
-      - "8000:8080"
+      - "8088:8080"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - gmcgo-network
 
-  # The 'setup' service runs a one-off script which initializes users inside
-  # Elasticsearch — such as 'logstash_internal' and 'kibana_system' — with the
-  # values of the passwords defined in the '.env' file.
-  #
-  # This task is only performed during the *initial* startup of the stack. On all
-  # subsequent runs, the service simply returns immediately, without performing
-  # any modification to existing users.
-  setup:
-    build:
-      context: .infra/setup/
-      args:
-        ELASTIC_VERSION: ${ELASTIC_VERSION}
-    init: true
+  vault:
+    image: hashicorp/vault:latest
+    container_name: hashicorp-vault
     volumes:
-      - ./.infra/setup/entrypoint.sh:/entrypoint.sh:ro,Z
-      - ./.infra/setup/lib.sh:/lib.sh:ro,Z
-      - ./.infra/setup/roles:/roles:ro,Z
-      - setup:/state:Z
-    environment:
-      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD:-}
-      LOGSTASH_INTERNAL_PASSWORD: ${LOGSTASH_INTERNAL_PASSWORD:-}
-      KIBANA_SYSTEM_PASSWORD: ${KIBANA_SYSTEM_PASSWORD:-}
-      METRICBEAT_INTERNAL_PASSWORD: ${METRICBEAT_INTERNAL_PASSWORD:-}
-      FILEBEAT_INTERNAL_PASSWORD: ${FILEBEAT_INTERNAL_PASSWORD:-}
-      HEARTBEAT_INTERNAL_PASSWORD: ${HEARTBEAT_INTERNAL_PASSWORD:-}
-      MONITORING_INTERNAL_PASSWORD: ${MONITORING_INTERNAL_PASSWORD:-}
-      BEATS_SYSTEM_PASSWORD: ${BEATS_SYSTEM_PASSWORD:-}
-    networks:
-      - gmcgo-network
-    depends_on:
-      - elasticsearch
-
-  elasticsearch:
-    build:
-      context: .infra/elasticsearch/
-      args:
-        ELASTIC_VERSION: ${ELASTIC_VERSION}
-    volumes:
-      - ./.infra/elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro,Z
-      - elasticsearch:/usr/share/elasticsearch/data:Z
+      - ./.infra/vault/config:/vault/config
+      - ./.infra/vault/file:/vault/file
     ports:
-      - 9200:9200
-      - 9300:9300
+      - 8200:8200
     environment:
-      node.name: elasticsearch
-      ES_JAVA_OPTS: -Xms512m -Xmx512m
-      # Bootstrap password.
-      # Used to initialize the keystore during the initial startup of
-      # Elasticsearch. Ignored on subsequent runs.
-      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD:-}
-      # Use single node discovery in order to disable production mode and avoid bootstrap checks.
-      # see: https://www.elastic.co/guide/en/elasticsearch/reference/current/bootstrap-checks.html
-      discovery.type: single-node
+      - VAULT_ADDR=http://0.0.0.0:8200
+      - VAULT_API_ADDR=http://0.0.0.0:8200
+      - VAULT_ADDRESS=http://0.0.0.0:8200
+    cap_add:
+      - IPC_LOCK
+    command: vault server -config=/vault/config/vault.json
     networks:
       - gmcgo-network
-    restart: unless-stopped
-
-  logstash:
-    container_name: gmcgo-logstash
-    build:
-      context: .infra/logstash/
-      args:
-        ELASTIC_VERSION: ${ELASTIC_VERSION}
-    volumes:
-      - ./.infra/logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro,Z
-      - ./.infra/logstash/pipeline:/usr/share/logstash/pipeline:ro,Z
-    ports:
-      - 5044:5044
-      - 12201:12201/udp
-      - 9600:9600
-    environment:
-      LS_JAVA_OPTS: -Xms256m -Xmx256m
-      LOGSTASH_INTERNAL_PASSWORD: ${LOGSTASH_INTERNAL_PASSWORD:-}
-    networks:
-      - gmcgo-network
-    depends_on:
-      - elasticsearch
-    restart: unless-stopped
-
-  kibana:
-    container_name: gmcgo-kibana
-    labels:
-      - "traefik.http.routers.gmcgo-kibana.rule=Host(`kibana.gmcgo.localhost`)"
-    build:
-      context: .infra/kibana/
-      args:
-        ELASTIC_VERSION: ${ELASTIC_VERSION}
-    volumes:
-      - ./.infra/kibana/config/kibana.yml:/usr/share/kibana/config/kibana.yml:ro,Z
-    ports:
-      - 5601:5601
-    environment:
-      KIBANA_SYSTEM_PASSWORD: ${KIBANA_SYSTEM_PASSWORD:-}
-    networks:
-      - gmcgo-network
-    depends_on:
-      - elasticsearch
-      - proxy
-    restart: unless-stopped
 
 networks:
   gmcgo-network:
