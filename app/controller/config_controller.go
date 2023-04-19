@@ -5,6 +5,7 @@ import (
 	"github.com/frchandra/ticketing-gmcgo/config"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"strconv"
 )
 
 type ConfigController struct {
@@ -17,8 +18,20 @@ func NewConfigController(config *config.AppConfig, log *util.LogUtil) *ConfigCon
 }
 
 func (g *ConfigController) GetAppConfig(c *gin.Context) {
+	filteredConfig := make(map[string]string, 20)
+	filteredConfig["AppName"] = g.config.AppName
+	filteredConfig["IsProduction"] = strconv.FormatBool(g.config.IsProduction)
+	filteredConfig["MidtransIsProduction"] = strconv.FormatBool(g.config.MidtransIsProduction)
+	filteredConfig["QrScanBehaviour"] = g.config.QrScanBehaviour
+	filteredConfig["AppUrl"] = g.config.AppUrl
+	filteredConfig["AppPort"] = g.config.AppPort
+	filteredConfig["AccessMinute"] = g.config.AccessMinute.String()
+	filteredConfig["RefreshMinute"] = g.config.RefreshMinute.String()
+	filteredConfig["TransactionMinute"] = g.config.TransactionMinute.String()
+	filteredConfig["TotpPeriod"] = strconv.FormatUint(uint64(g.config.TotpPeriod), 10)
+
 	c.JSON(http.StatusOK, gin.H{
-		"app_config": g.config,
+		"app_config": filteredConfig,
 	})
 	return
 }
