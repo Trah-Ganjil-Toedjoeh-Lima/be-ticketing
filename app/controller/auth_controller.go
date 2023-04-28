@@ -133,7 +133,6 @@ func (u *AuthController) RegisterByEmail(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"message":             "success",
 			"totp_token":          totpToken,
-			"totp_secret":         totpSecret.Secret(),
 			"is_new_registration": true,
 		})
 		return

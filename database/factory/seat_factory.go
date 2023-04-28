@@ -16,17 +16,19 @@ func NewSeatFactory(db *gorm.DB) *SeatFactory {
 }
 
 func (f *SeatFactory) RunFactory() error {
-	red := "red"
-	pink := "pink"
-	yellow := "yellow"
-	blue := "blue"
-	green := "green"
+	yellow := "harmoni"
+	green := "serenada"
+	red := "irama"
+	pink := "tala"
+	blue := "sekar"
+	brown := "gita"
 
-	redPrice := 120000
 	yellowPrice := 170000
 	greenPrice := 145000
+	redPrice := 120000
 	pinkPrice := 85000
-	bluePrice := 60000
+	bluePrice := 65000
+	brownPrice := 50000
 
 	// ROW A
 	rowName := "A"
@@ -77,9 +79,9 @@ func (f *SeatFactory) RunFactory() error {
 	for j := 1; j <= 46; j++ { //column
 		name := rowName + strconv.Itoa(j)
 		var category string
-		if j <= 15 {
+		if j <= 13 {
 			category = pink
-		} else if j >= 16 && j <= 33 {
+		} else if j >= 14 && j <= 31 {
 			category = red
 		} else {
 			category = pink
@@ -103,9 +105,9 @@ func (f *SeatFactory) RunFactory() error {
 	for j := 1; j <= 50; j++ { //column
 		name := rowName + strconv.Itoa(j)
 		var category string
-		if j <= 15 {
+		if j <= 14 {
 			category = pink
-		} else if j >= 16 && j <= 36 {
+		} else if j >= 15 && j <= 35 {
 			category = red
 		} else {
 			category = pink
@@ -207,9 +209,9 @@ func (f *SeatFactory) RunFactory() error {
 	for j := 1; j <= 57; j++ { //column
 		name := rowName + strconv.Itoa(j)
 		var category string
-		if j <= 16 {
+		if j <= 15 {
 			category = pink
-		} else if j >= 17 && j <= 42 {
+		} else if j >= 16 && j <= 41 {
 			category = yellow
 		} else {
 			category = pink
@@ -230,12 +232,12 @@ func (f *SeatFactory) RunFactory() error {
 	}
 	// ROW I
 	rowName = "I"
-	for j := 1; j <= 56; j++ { //column
+	for j := 1; j <= 57; j++ { //column
 		name := rowName + strconv.Itoa(j)
 		var category string
-		if j <= 15 {
+		if j <= 14 {
 			category = pink
-		} else if j >= 16 && j <= 43 {
+		} else if j >= 15 && j <= 42 {
 			category = yellow
 		} else {
 			category = pink
@@ -259,9 +261,9 @@ func (f *SeatFactory) RunFactory() error {
 	for j := 1; j <= 55; j++ { //column
 		name := rowName + strconv.Itoa(j)
 		var category string
-		if j <= 14 {
+		if j <= 13 {
 			category = pink
-		} else if j >= 15 && j <= 42 {
+		} else if j >= 14 && j <= 41 {
 			category = yellow
 		} else {
 			category = pink
@@ -389,9 +391,9 @@ func (f *SeatFactory) RunFactory() error {
 	for j := 1; j <= 54; j++ { //column
 		name := rowName + strconv.Itoa(j)
 		var category string
-		if j <= 10 {
+		if j <= 9 {
 			category = blue
-		} else if j >= 11 && j <= 45 {
+		} else if j >= 10 && j <= 44 {
 			category = green
 		} else {
 			category = blue
@@ -438,7 +440,7 @@ func (f *SeatFactory) RunFactory() error {
 	}
 	// ROW Q
 	rowName = "Q"
-	for j := 1; j <= 53; j++ { //column
+	for j := 1; j <= 52; j++ { //column
 		name := rowName + strconv.Itoa(j)
 		var category string
 		if j <= 8 {
@@ -464,7 +466,7 @@ func (f *SeatFactory) RunFactory() error {
 	}
 	// ROW R
 	rowName = "R"
-	for j := 1; j <= 53; j++ { //column
+	for j := 1; j <= 52; j++ { //column
 		name := rowName + strconv.Itoa(j)
 		var category string
 		if j <= 7 {
@@ -516,12 +518,12 @@ func (f *SeatFactory) RunFactory() error {
 	}
 	// ROW T
 	rowName = "T"
-	for j := 1; j <= 7; j++ { //column
+	for j := 1; j <= 62; j++ { //column
 		name := rowName + strconv.Itoa(j)
 		seat := &model.Seat{
 			Name:     name,
 			Price:    0,
-			Category: blue,
+			Category: brown,
 			Link:     uuid.New().String(),
 			Status:   "available",
 			Row:      rowName,
@@ -539,25 +541,7 @@ func (f *SeatFactory) RunFactory() error {
 		seat := &model.Seat{
 			Name:     name,
 			Price:    0,
-			Category: pink,
-			Link:     uuid.New().String(),
-			Status:   "available",
-			Row:      rowName,
-			Column:   uint(j),
-		}
-		err := f.db.Debug().Create(seat).Error
-		if err != nil {
-			return err
-		}
-	}
-	// ROW V
-	rowName = "V"
-	for j := 1; j <= 62; j++ { //column
-		name := rowName + strconv.Itoa(j)
-		seat := &model.Seat{
-			Name:     name,
-			Price:    0,
-			Category: pink,
+			Category: brown,
 			Link:     uuid.New().String(),
 			Status:   "available",
 			Row:      rowName,
@@ -572,18 +556,18 @@ func (f *SeatFactory) RunFactory() error {
 	//
 	// SET PRICE
 	//
-	// RED
-	err := f.db.Model(model.Seat{}).Where("category = ?", red).Update("price", redPrice).Error
-	if err != nil {
-		return err
-	}
 	// YELLOW
-	err = f.db.Model(model.Seat{}).Where("category = ?", yellow).Update("price", yellowPrice).Error
+	err := f.db.Model(model.Seat{}).Where("category = ?", yellow).Update("price", yellowPrice).Error
 	if err != nil {
 		return err
 	}
 	// GREEN
 	err = f.db.Model(model.Seat{}).Where("category = ?", green).Update("price", greenPrice).Error
+	if err != nil {
+		return err
+	}
+	// RED
+	err = f.db.Model(model.Seat{}).Where("category = ?", red).Update("price", redPrice).Error
 	if err != nil {
 		return err
 	}
@@ -594,6 +578,11 @@ func (f *SeatFactory) RunFactory() error {
 	}
 	// BLUE
 	err = f.db.Model(model.Seat{}).Where("category = ?", blue).Update("price", bluePrice).Error
+	if err != nil {
+		return err
+	}
+	// BROWN
+	err = f.db.Model(model.Seat{}).Where("category = ?", brown).Update("price", brownPrice).Error
 	if err != nil {
 		return err
 	}
