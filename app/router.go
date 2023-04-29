@@ -81,6 +81,8 @@ func NewRouter(
 	admin.GET("/get_app_config", gateController.GetAppConfig)
 	admin.GET("/seats", seatController.AllDetails)
 
+	admin.GET("/healthAdmin", homeController.HealthCheck)
+
 	//public.POST("/user/register", authController.Register) //This route is no longer needed for current GMCO's ticketing case,
 	//public.POST("/user/sign_in", authController.SignIn) //but the code implementation in the controller is still remain in case of future use
 
