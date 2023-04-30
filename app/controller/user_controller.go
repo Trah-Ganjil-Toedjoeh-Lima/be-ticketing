@@ -5,6 +5,7 @@ import (
 	"github.com/frchandra/ticketing-gmcgo/app/service"
 	"github.com/frchandra/ticketing-gmcgo/app/util"
 	"github.com/frchandra/ticketing-gmcgo/app/validation"
+	"github.com/frchandra/ticketing-gmcgo/config"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -12,10 +13,11 @@ import (
 type UserController struct {
 	userService *service.UserService
 	txService   *service.TransactionService
+	config      *config.AppConfig
 }
 
-func NewUserController(userService *service.UserService, txService *service.TransactionService) *UserController {
-	return &UserController{userService: userService, txService: txService}
+func NewUserController(userService *service.UserService, txService *service.TransactionService, config *config.AppConfig) *UserController {
+	return &UserController{userService: userService, txService: txService, config: config}
 }
 
 // UpdateInfo PATCH /user
@@ -64,14 +66,11 @@ func (u *UserController) UpdateInfo(c *gin.Context) {
 	})
 }
 
-// CurrentUser GET /user
+// CurrentUser GET /user/profile
 func (u *UserController) CurrentUser(c *gin.Context) {
 	contextData, isExist := c.Get("accessDetails") //get the details about the current user that make request from the context passed by user middleware
 	if isExist == false {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "fail",
-			"error":   "cannot get access details",
-		})
+		c.JSON(http.StatusBadRequest, gin.H{"message": "fail", "error": "cannot get access details"})
 		return
 	}
 	accessDetails, ok := contextData.(*util.AccessDetails)
@@ -82,15 +81,21 @@ func (u *UserController) CurrentUser(c *gin.Context) {
 
 	user, err := u.userService.GetById(accessDetails.UserId) //get the user data given the user id from the token
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{
-			"message": "fail",
-			"error":   err.Error(),
-		})
+		c.JSON(http.StatusNotFound, gin.H{"message": "fail", "error": err.Error()})
 		return
 	}
+
+	var isAdmin bool
+	if user.Name == u.config.AdminName && user.Phone == u.config.AdminPhone && user.Email == u.config.AdminEmail {
+		isAdmin = true
+	} else {
+		isAdmin = false
+	}
+
 	c.JSON(http.StatusOK, gin.H{
-		"message": "success",
-		"data":    user,
+		"message":  "success",
+		"data":     user,
+		"is_admin": isAdmin,
 	})
 	return
 }

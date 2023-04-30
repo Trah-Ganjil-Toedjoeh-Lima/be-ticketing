@@ -40,7 +40,7 @@ func InitializeServer() *gin.Engine {
 	seatController := controller.NewSeatController(seatService, transactionService, logUtil)
 	scanQrMiddleware := middleware.NewScanQrMiddleware(tokenUtil, logger, appConfig, userService, seatController)
 	homeController := controller.NewHomeController(appConfig)
-	userController := controller.NewUserController(userService, transactionService)
+	userController := controller.NewUserController(userService, transactionService, appConfig)
 	emailUtil := util.NewEmailUtil(appConfig, logUtil)
 	authController := controller.NewAuthController(userService, tokenUtil, logUtil, emailUtil, appConfig)
 	reservationService := service.NewReservationService(appConfig, transactionService)
