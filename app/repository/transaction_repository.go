@@ -122,7 +122,7 @@ func (t *TransactionRepository) GetDetailsByUser(transactions *[]model.Transacti
 	return result
 }
 
-func (t *TransactionRepository) GetDetailsByUserConfirmation(transactions *[]model.Transaction, userId uint64, confirmation []string) *gorm.DB {
+func (t *TransactionRepository) GetDetailsByUserConfirmation(transactions *[]model.Transaction, userId uint64, confirmations []string) *gorm.DB {
 	var basics []transactionFields
 	result := t.db.Table("transactions").Select(
 		"transactions.transaction_id",
@@ -142,9 +142,11 @@ func (t *TransactionRepository) GetDetailsByUserConfirmation(transactions *[]mod
 		Joins("inner join seats on seats.seat_id = transactions.seat_id").
 		Where("transactions.deleted_at IS NULL").
 		Where("transactions.user_id = ?", userId).
-		Where("transactions.confirmation = ?", confirmation[0]).
-		Or("transactions.confirmation = ?", confirmation[1]).
-		Order("transaction_id").
+		Where("transactions.confirmation = ?", confirmations[0])
+	for _, confirmation := range confirmations {
+		result.Or("transactions.confirmation = ?", confirmation)
+	}
+	result.Order("transaction_id").
 		Scan(&basics)
 
 	var transactionsBuff []model.Transaction
