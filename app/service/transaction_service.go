@@ -118,9 +118,9 @@ func (s *TransactionService) CleanUpGhostTransaction(transactions []model.Transa
 		if time.Now().After(tx.CreatedAt.Add(s.config.TransactionMinute)) && tx.Confirmation != "settlement" { //if tx created_at + 15 < time now  => berarti transaction ngambang
 			s.txRepo.UpdatePaymentStatusById(tx.TransactionId, "not_continued") //update database
 			if reflect.ValueOf(tx.SeatId).IsZero() && reflect.ValueOf(tx.UserId).IsZero() {
-				s.txRepo.SoftDeleteBySeatUser(tx.SeatId, tx.UserId)
-			} else {
 				s.txRepo.SoftDeleteBySeatUser(tx.Seat.SeatId, tx.User.UserId)
+			} else {
+				s.txRepo.SoftDeleteBySeatUser(tx.SeatId, tx.UserId)
 			}
 		} else {
 			newTransaction = append(newTransaction, tx)
