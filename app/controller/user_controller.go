@@ -116,7 +116,7 @@ func (u *UserController) ShowMyTickets(c *gin.Context) {
 		return
 	}
 
-	transactions, err := u.txService.GetDetailsByUserConfirmation(accessDetails.UserId, "settlement")
+	transactions, err := u.txService.GetDetailsByUserConfirmation(accessDetails.UserId, []string{"settlement"})
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
 			"message": "fail",

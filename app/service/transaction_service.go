@@ -80,7 +80,7 @@ func (s *TransactionService) GetByUser(userId uint64) ([]model.Transaction, erro
 	return transactions, nil
 }
 
-func (s *TransactionService) GetDetailsByUserConfirmation(userId uint64, confirmation string) ([]model.Transaction, error) {
+func (s *TransactionService) GetDetailsByUserConfirmation(userId uint64, confirmation []string) ([]model.Transaction, error) {
 	var transactions []model.Transaction //get user's transaction
 	if result := s.txRepo.GetDetailsByUserConfirmation(&transactions, userId, confirmation); result.Error != nil {
 		return transactions, result.Error
@@ -153,8 +153,8 @@ func (s *TransactionService) SeatsBelongsToUser(userId uint64) ([]model.Seat, er
 
 func (s *TransactionService) PrepareTransactionData(userId uint64) (snap.Request, error) {
 	var txDetails []model.Transaction
-	s.txRepo.GetDetailsByUserConfirmation(&txDetails, userId, "reserved")     //get user's transaction
-	if txDetails = s.CleanUpGhostTransaction(txDetails); len(txDetails) < 1 { //clean up 'ghost' transaction that may be created by this user
+	s.txRepo.GetDetailsByUserConfirmation(&txDetails, userId, []string{"reserved", "pending"}) //get user's transaction
+	if txDetails = s.CleanUpGhostTransaction(txDetails); len(txDetails) < 1 {                  //clean up 'ghost' transaction that may be created by this user
 		return snap.Request{}, errors.New("cannot find any transaction for this user")
 	}
 	orderId := uuid.New().String() //create order_id for the new midtrans transaction
