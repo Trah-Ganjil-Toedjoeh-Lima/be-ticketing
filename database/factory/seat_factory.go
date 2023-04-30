@@ -79,9 +79,9 @@ func (f *SeatFactory) RunFactory() error {
 	for j := 1; j <= 46; j++ { //column
 		name := rowName + strconv.Itoa(j)
 		var category string
-		if j <= 13 {
+		if j <= 15 {
 			category = pink
-		} else if j >= 14 && j <= 31 {
+		} else if j >= 16 && j <= 33 {
 			category = red
 		} else {
 			category = pink
@@ -105,9 +105,9 @@ func (f *SeatFactory) RunFactory() error {
 	for j := 1; j <= 50; j++ { //column
 		name := rowName + strconv.Itoa(j)
 		var category string
-		if j <= 14 {
+		if j <= 15 {
 			category = pink
-		} else if j >= 15 && j <= 35 {
+		} else if j >= 16 && j <= 36 {
 			category = red
 		} else {
 			category = pink
@@ -209,9 +209,9 @@ func (f *SeatFactory) RunFactory() error {
 	for j := 1; j <= 57; j++ { //column
 		name := rowName + strconv.Itoa(j)
 		var category string
-		if j <= 15 {
+		if j <= 16 {
 			category = pink
-		} else if j >= 16 && j <= 41 {
+		} else if j >= 17 && j <= 42 {
 			category = yellow
 		} else {
 			category = pink
@@ -235,9 +235,9 @@ func (f *SeatFactory) RunFactory() error {
 	for j := 1; j <= 57; j++ { //column
 		name := rowName + strconv.Itoa(j)
 		var category string
-		if j <= 14 {
+		if j <= 15 {
 			category = pink
-		} else if j >= 15 && j <= 42 {
+		} else if j >= 16 && j <= 43 {
 			category = yellow
 		} else {
 			category = pink
@@ -261,9 +261,9 @@ func (f *SeatFactory) RunFactory() error {
 	for j := 1; j <= 55; j++ { //column
 		name := rowName + strconv.Itoa(j)
 		var category string
-		if j <= 13 {
+		if j <= 14 {
 			category = pink
-		} else if j >= 14 && j <= 41 {
+		} else if j >= 15 && j <= 42 {
 			category = yellow
 		} else {
 			category = pink
@@ -391,9 +391,9 @@ func (f *SeatFactory) RunFactory() error {
 	for j := 1; j <= 54; j++ { //column
 		name := rowName + strconv.Itoa(j)
 		var category string
-		if j <= 9 {
+		if j <= 10 {
 			category = blue
-		} else if j >= 10 && j <= 44 {
+		} else if j >= 11 && j <= 45 {
 			category = green
 		} else {
 			category = blue
@@ -542,6 +542,25 @@ func (f *SeatFactory) RunFactory() error {
 			Name:     name,
 			Price:    0,
 			Category: brown,
+			Link:     uuid.New().String(),
+			Status:   "available",
+			Row:      rowName,
+			Column:   uint(j),
+		}
+		err := f.db.Debug().Create(seat).Error
+		if err != nil {
+			return err
+		}
+	}
+
+	// ROW Z (DUMMY)
+	rowName = "Z"
+	for j := 1; j <= 10; j++ { //column
+		name := rowName + strconv.Itoa(j)
+		seat := &model.Seat{
+			Name:     name,
+			Price:    6000,
+			Category: "dummy",
 			Link:     uuid.New().String(),
 			Status:   "available",
 			Row:      rowName,
