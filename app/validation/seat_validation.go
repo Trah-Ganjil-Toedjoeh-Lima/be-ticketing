@@ -14,6 +14,7 @@ type BasicSeatResponse struct {
 	Name     string `json:"name"`
 	Price    uint   `json:"price"`
 	Category string `json:"category"`
+	Link     string `json:"link"`
 }
 
 type ReservationRequest struct {

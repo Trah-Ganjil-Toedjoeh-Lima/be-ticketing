@@ -139,6 +139,7 @@ func (u *UserController) ShowMyTickets(c *gin.Context) {
 			Name:     transaction.Seat.Name,
 			Price:    transaction.Seat.Price,
 			Category: transaction.Seat.Category,
+			Link:     transaction.Seat.Link,
 		}
 		seatsResponse = append(seatsResponse, seatResponse)
 	}

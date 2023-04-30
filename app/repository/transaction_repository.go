@@ -134,6 +134,7 @@ func (t *TransactionRepository) GetDetailsByUserConfirmation(transactions *[]mod
 		"seats.name AS seat_name",
 		"seats.price",
 		"seats.category",
+		"seats.link",
 		"transactions.confirmation",
 		"transactions.created_at",
 		"transactions.updated_at").
@@ -151,7 +152,7 @@ func (t *TransactionRepository) GetDetailsByUserConfirmation(transactions *[]mod
 		transactionBuff = model.Transaction{
 			TransactionId: basic.TransactionId,
 			User:          model.User{UserId: basic.UserId, Name: basic.UserName, Phone: basic.Phone, Email: basic.Email},
-			Seat:          model.Seat{SeatId: basic.SeatId, Name: basic.SeatName, Price: basic.Price, Category: basic.Category},
+			Seat:          model.Seat{SeatId: basic.SeatId, Name: basic.SeatName, Price: basic.Price, Category: basic.Category, Link: basic.Link},
 			Confirmation:  basic.Confirmation,
 			CreatedAt:     basic.CreatedAt,
 			UpdatedAt:     basic.UpdatedAt,
