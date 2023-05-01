@@ -80,7 +80,7 @@ func (e *ETicketUtil) GenerateETicket(seatName, seatLink, seatCategory string) (
 	}
 
 	bucketName := e.config.MinioTicketsBucket // Upload the file with to minio
-	objectName := seatName + ".png"
+	objectName := seatName + "_" + seatLink + ".png"
 	fileBuffer := bytes.NewReader(eticket)
 	fileSize := fileBuffer.Size()
 	contentType := "png"

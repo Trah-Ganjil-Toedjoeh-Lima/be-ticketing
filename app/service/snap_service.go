@@ -105,7 +105,7 @@ func (s *SnapService) SendTicketEmail(seats []model.Seat, receiverName, receiver
 		if err != nil {
 			return err
 		}
-		attachments[seat.Name+".png"] = ticket
+		attachments[seat.Name+"_"+seat.Link+".png"] = ticket
 		seatsName = append(seatsName, seat.Name)
 	}
 
