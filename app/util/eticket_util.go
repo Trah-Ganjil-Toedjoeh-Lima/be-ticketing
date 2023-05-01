@@ -83,7 +83,7 @@ func (e *ETicketUtil) GenerateETicket(seatName, seatLink, seatCategory string) (
 	objectName := seatName + "_" + seatLink + ".png"
 	fileBuffer := bytes.NewReader(eticket)
 	fileSize := fileBuffer.Size()
-	contentType := "png"
+	contentType := "image/png"
 
 	_, err = e.minio.PutObject(context.Background(), bucketName, objectName, fileBuffer, fileSize, minio.PutObjectOptions{ContentType: contentType})
 	if err != nil {
