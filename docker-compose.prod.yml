@@ -1,0 +1,29 @@
+version: '3'
+
+services:
+  gmco-ticketing-be:
+    image: trahganjil/gmco-ticketing-be:${DOCKER_TAG}
+    restart: unless-stopped
+    container_name: gmco_be
+    env_file:
+      - .env
+    ports:
+      - "127.0.0.1:5001:5000"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.gmco-be-http.rule=Host(`api.gmco-event.com`)"
+      - "traefik.http.routers.gmco-be-http.entrypoints=web"
+      - "traefik.http.routers.gmco-be-http.middlewares=redirect-to-https@docker"
+      - "traefik.http.routers.gmco-be-http.service=noop@internal"
+      - "traefik.http.routers.gmco-be-https.rule=Host(`api.gmco-event.com`)"
+      - "traefik.http.routers.gmco-be-https.entrypoints=websecure"
+      - "traefik.http.routers.gmco-be-https.tls=true"
+      - "traefik.http.routers.gmco-be-https.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.gmco-be-https.middlewares=cors-header@docker"
+    networks:
+      - gateway_ingress
+    read_only: true
+
+networks:
+  gateway_ingress:
+    external: true
