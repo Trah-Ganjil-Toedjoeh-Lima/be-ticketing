@@ -22,7 +22,8 @@ func (g *ConfigController) GetAppConfig(c *gin.Context) {
 	filteredConfig["AppName"] = g.config.AppName
 	filteredConfig["IsProduction"] = strconv.FormatBool(g.config.IsProduction)
 	filteredConfig["MidtransIsProduction"] = strconv.FormatBool(g.config.MidtransIsProduction)
-        filteredConfig["IsOpenGate"] = strconv.FormatBool(g.config.IsOpenGate)
+	filteredConfig["IsOpenGate"] = strconv.FormatBool(g.config.IsOpenGate)
+	filteredConfig["IsOpenAuth"] = strconv.FormatBool(g.config.IsOpenAuth)
 	filteredConfig["QrScanBehaviour"] = g.config.QrScanBehaviour
 	filteredConfig["AppUrl"] = g.config.AppUrl
 	filteredConfig["AppPort"] = g.config.AppPort
@@ -45,6 +46,18 @@ func (g *ConfigController) OpenGate(c *gin.Context) {
 
 func (g *ConfigController) CloseGate(c *gin.Context) {
 	g.config.IsOpenGate = false
+	c.Status(http.StatusOK)
+	return
+}
+
+func (g *ConfigController) OpenAuth(c *gin.Context) {
+	g.config.IsOpenAuth = true
+	c.Status(http.StatusOK)
+	return
+}
+
+func (g *ConfigController) CloseAuth(c *gin.Context) {
+	g.config.IsOpenAuth = false
 	c.Status(http.StatusOK)
 	return
 }

@@ -83,12 +83,16 @@ type AppConfig struct {
 	AdminPhone string
 
 	IsOpenGate      bool
+	IsOpenAuth      bool
 	QrScanBehaviour string
 }
 
 func NewAppConfig() *AppConfig {
 	midtransIsProduction, _ := strconv.ParseBool(getEnv("MIDTRANS_IS_PRODUCTION", "0"))
 	isProduction, _ := strconv.ParseBool(getEnv("IS_PRODUCTION", "0"))
+
+	isOpenGate, _ := strconv.ParseBool(getEnv("IS_OPEN_GATE", "true"))
+	isOpenAuth, _ := strconv.ParseBool(getEnv("IS_OPEN_AUTH", "true"))
 
 	email1 := EmailConfig{
 		getEnv("MAIL_MAILER_1", "smtp"),
@@ -185,7 +189,8 @@ func NewAppConfig() *AppConfig {
 		AdminEmail: getEnv("ADMIN_EMAIL", ""),
 		AdminPhone: getEnv("ADMIN_PHONE", ""),
 
-		IsOpenGate:      true,
+		IsOpenGate:      isOpenGate,
+		IsOpenAuth:      isOpenAuth,
 		QrScanBehaviour: "default", //open_gate, ticket_exchanging, default
 	}
 	return &appConfig

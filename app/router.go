@@ -41,16 +41,16 @@ func NewRouter(
 	//User Standard Auth Routes (scope: public)
 	auth := router.Group(config.EndpointPrefix + "user")
 	auth.POST("/refresh", authController.RefreshToken)
-	auth.POST("/register_email", authController.RegisterByEmail)
-	auth.POST("/otp", authController.VerifyOtp)
 	auth.POST("/login", authController.Login)
+	auth.Use(gateMiddleware.HandleAuthAccess).POST("/register_email", authController.RegisterByEmail)
+	auth.Use(gateMiddleware.HandleAuthAccess).POST("/otp", authController.VerifyOtp)
 
 	//Post Ticketing (scope: public and admin in some cases)
 	qr := router.Group(config.EndpointPrefix).Use(qrMiddleware.HandleScanQr)
 	qr.GET("seat/:link", seatController.InfoByLink)
 
 	//Pre Ticketing (scope: public)
-	seatMap := router.Group(config.EndpointPrefix).Use(gateMiddleware.HandleAccess)
+	seatMap := router.Group(config.EndpointPrefix).Use(gateMiddleware.HandleTransactionAccess)
 	seatMap.GET("seat_map", reservationController.GetSeatsInfo)
 
 	//User data (scope: buyer user)
@@ -61,7 +61,7 @@ func NewRouter(
 	user.PATCH("/profile", userController.UpdateInfo)
 
 	//Ticketing routes (scope: buyer user)
-	userTicketing := router.Group(config.EndpointPrefix).Use(gateMiddleware.HandleAccess).Use(userMiddleware.UserAccess)
+	userTicketing := router.Group(config.EndpointPrefix).Use(gateMiddleware.HandleTransactionAccess).Use(userMiddleware.UserAccess)
 	userTicketing.POST("seat_map", reservationController.ReserveSeats)
 	userTicketing.GET("checkout", txController.GetLatestTransactionDetails)
 	userTicketing.DELETE("checkout", txController.DeleteLatestTransaction)
@@ -73,6 +73,9 @@ func NewRouter(
 
 	admin.POST("/open_the_gate", gateController.OpenGate)
 	admin.POST("/close_the_gate", gateController.CloseGate)
+
+	admin.POST("/open_the_auth", gateController.OpenAuth)
+	admin.POST("/close_the_auth", gateController.CloseAuth)
 
 	admin.POST("/set_to_production", gateController.SetToProduction)
 	admin.POST("/set_to_sandbox", gateController.SetToSandbox)
