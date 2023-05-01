@@ -1,10 +1,10 @@
 version: '3'
 
 services:
-  gmco-ticketing-be:
+  gmco-ticketing-be-prod:
     image: trahganjil/gmco-ticketing-be:${DOCKER_TAG}
     restart: unless-stopped
-    container_name: gmco_be
+    container_name: gmco_be_prod
     env_file:
       - .env
     ports:
