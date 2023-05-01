@@ -20,7 +20,7 @@ jobs:
 
   deploy-prod:
     runs-on: self-hosted
-    needs: build
+    needs: build-prod
     steps:
     - name: Run Docker Container
       run: export DOCKER_TAG=$(git rev-parse --short HEAD) && cp ~/projects/vault/.env.production .env && docker compose -f docker-compose.prod.yml up -d
