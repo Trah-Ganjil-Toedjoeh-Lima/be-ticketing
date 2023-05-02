@@ -23,12 +23,12 @@ func (f *SeatFactory) RunFactory() error {
 	blue := "sekar"
 	brown := "gita"
 
-	yellowPrice := 170000
-	greenPrice := 145000
-	redPrice := 120000
-	pinkPrice := 85000
-	bluePrice := 65000
-	brownPrice := 50000
+	yellowPrice := 175000
+	greenPrice := 150000
+	redPrice := 125000
+	pinkPrice := 90000
+	bluePrice := 70000
+	brownPrice := 55000
 
 	// ROW A
 	rowName := "A"
@@ -604,6 +604,22 @@ func (f *SeatFactory) RunFactory() error {
 	err = f.db.Model(model.Seat{}).Where("category = ?", brown).Update("price", brownPrice).Error
 	if err != nil {
 		return err
+	}
+
+	//UPDATE NOT FOR SALE
+	//ROW F
+	for j := 18; j <= 41; j++ {
+		err = f.db.Model(model.Seat{}).Where("row = ?", "F").Where("seats.column = ?", j).Update("status", "not_for_sale").Error
+		if err != nil {
+			return err
+		}
+	}
+	//ROW G
+	for j := 18; j <= 41; j++ {
+		err = f.db.Model(model.Seat{}).Where("row = ?", "G").Where("seats.column = ?", j).Update("status", "not_for_sale").Error
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
