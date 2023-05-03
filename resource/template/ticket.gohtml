@@ -9,31 +9,32 @@
 </head>
 <body>
 
-    <h3>Halo {{ .Name }}</h3>
-    <p>Pesanan Berhasil. Anda telah mendapatkan tiket konser "Grand Concert GMCO Anjangsana Simfoni" pada: </p>
-    <ul>
-        <li>Hari/Tanggal: Sabtu, 27 Mei 2023</li>
-        <li>Waktu: 17:00 (Open Gate) 18:30 (Start Show)</li>
-        <li>Venue: Auditorium Driyarkara Universitas Sanata Dharma, Yogyakarta</li>
-    </ul>
-    <p>
-        Penonton diwajibkan untuk menunjukkan QR Code yang terdapat pada e-mail ini untuk ditukarkan dengan tiket. Waktu dan tempat penukaran QR Code menjadi tiket akan kami informasikan kambali melalui media sosial Gadjah Mada Chamber Orchestra.
-    </p>
-    <p>
-        Setiap pembeli tiket dilarang menyebarluaskan QR Code yang telah didapatkan untuk menghindari adanya duplikasi oleh pihak yang tidak bertanggung jawab. Apabila terjadi duplikasi pada QR Code, hanya QR Code yang terverifikasi pertama (pada saat penukaran tiket) yang dianggap valid. QR Code yang sudah diterima pembeli menjadi tanggung jawab pembeli yang bersangkutan sepenuhnya, pihak GMCO Live tidak bertanggung jawab atas segala kerugian yang ditimbulkan akibat kelalaian pembeli.
-    </p>
-    <p>
-        Ikuti selalu media sosial Gadjah Mada Chamber Orchestra untuk mendapatkan infromasi terbaru dari kami
-    </p>
-    <br>
-    <p>Terima kasih atas dukungan anda. Enjoy the Show!</p>
+<h3>Halo {{ .Name }}</h3>
+<p>Pesanan Berhasil. Anda telah mendapatkan tiket konser "Grand Concert GMCO Anjangsana Simfoni" yang diadakan pada: </p>
+<ul>
+    <li>Hari/Tanggal: Sabtu, 27 Mei 2023</li>
+    <li>Waktu: 17:00 (Open Gate) 19:00 (Close Gate)</li>
+    <li>Venue: Auditorium Driyarkara Universitas Sanata Dharma, Yogyakarta</li>
+</ul>
+<p>
+    Penonton diwajibkan untuk menunjukkan e-Ticket yang terdapat pada e-mail ini untuk ditukarkan dengan tiket. Waktu dan tempat penukaran e-Ticket menjadi tiket akan kami informasikan kambali melalui media sosial Gadjah Mada Chamber Orchestra.
+</p>
+<p>
+    Setiap pembeli tiket dilarang menyebarluaskan e-Ticket yang telah didapatkan untuk menghindari adanya duplikasi oleh pihak yang tidak bertanggung jawab. Apabila terjadi duplikasi pada e-Ticket, hanya e-Ticket yang terverifikasi pertama (pada saat penukaran tiket) yang dianggap valid. e-Ticket yang sudah diterima pembeli menjadi tanggung jawab pembeli yang bersangkutan sepenuhnya, pihak GMCO tidak bertanggung jawab atas segala kerugian yang ditimbulkan akibat kelalaian pembeli.
+</p>
+<p>
+    Ikuti selalu media sosial Gadjah Mada Chamber Orchestra <a href="https://linktr.ee/gmco.ugm">@gmco_ugm</a> untuk mendapatkan infromasi terbaru dari kami
+</p>
 
-    <h3>e-ticket:</h3>
-    <ul>
-        {{range $index, $element := .Seats}}
-            <li>{{$element}}</li>
-        {{end}}
-    </ul>
+<br>
+<p>Terima kasih atas dukungan anda. Enjoy the Show!</p>
+
+<h3>e-Tickets:</h3>
+<ul>
+    {{range $index, $element := .Seats}}
+        <li>{{$element}}</li>
+    {{end}}
+</ul>
 
 </body>
 </html>
