@@ -124,7 +124,7 @@ func (u *AuthController) RegisterByEmail(c *gin.Context) {
 
 		go func() { //send the totp to the registered email
 			data := map[string]any{"Totp": totpToken}
-			if err = u.emailUtil.SentTotpEmail(data, inputData.Email); err != nil {
+			if err = u.emailUtil.SendTotpEmail(data, inputData.Email); err != nil {
 				u.log.BasicLog(err, "When sending totp")
 				return
 			}
@@ -149,7 +149,7 @@ func (u *AuthController) RegisterByEmail(c *gin.Context) {
 
 	go func() { //send the totp to the registered email
 		data := map[string]any{"Totp": totpToken}
-		if err = u.emailUtil.SentTotpEmail(data, inputData.Email); err != nil {
+		if err = u.emailUtil.SendTotpEmail(data, inputData.Email); err != nil {
 			u.log.BasicLog(err, "When sending totp")
 			return
 		}

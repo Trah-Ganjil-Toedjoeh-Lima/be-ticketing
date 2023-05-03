@@ -71,9 +71,7 @@ type AppConfig struct {
 	ClientKeyProduction  string
 	ServerKeyProduction  string
 
-	Email1 EmailConfig
-	Email2 EmailConfig
-	Email3 EmailConfig
+	Emails []EmailConfig
 
 	TransactionMinute time.Duration
 	TotpPeriod        uint
@@ -94,37 +92,47 @@ func NewAppConfig() *AppConfig {
 	isOpenGate, _ := strconv.ParseBool(getEnv("IS_OPEN_GATE", "true"))
 	isOpenAuth, _ := strconv.ParseBool(getEnv("IS_OPEN_AUTH", "true"))
 
-	email1 := EmailConfig{
-		getEnv("MAIL_MAILER_1", "smtp"),
-		getEnv("MAIL_HOST_1", "smtp.gmail.com"),
-		getEnv("MAIL_PORT_1", "465"),
-		getEnv("MAIL_USERNAME_1", ""),
-		getEnv("MAIL_PASSWORD_1", ""),
-		getEnv("MAIL_ENCRYPTION_1", "ssl"),
-		getEnv("MAIL_FROM_ADDRESS_1", ""),
-		getEnv("MAIL_FROM_NAME_1", "gmco"),
-	}
-
-	email2 := EmailConfig{
-		getEnv("MAIL_MAILER_2", "smtp"),
-		getEnv("MAIL_HOST_2", "smtp.gmail.com"),
-		getEnv("MAIL_PORT_2", "465"),
-		getEnv("MAIL_USERNAME_2", ""),
-		getEnv("MAIL_PASSWORD_2", ""),
-		getEnv("MAIL_ENCRYPTION_2", "ssl"),
-		getEnv("MAIL_FROM_ADDRESS_2", ""),
-		getEnv("MAIL_FROM_NAME_2", "gmco"),
-	}
-
-	email3 := EmailConfig{
-		getEnv("MAIL_MAILER_3", "smtp"),
-		getEnv("MAIL_HOST_3", "smtp.gmail.com"),
-		getEnv("MAIL_PORT_3", "465"),
-		getEnv("MAIL_USERNAME_3", ""),
-		getEnv("MAIL_PASSWORD_3", ""),
-		getEnv("MAIL_ENCRYPTION_3", "ssl"),
-		getEnv("MAIL_FROM_ADDRESS_3", ""),
-		getEnv("MAIL_FROM_NAME_3", "gmco"),
+	emails := []EmailConfig{
+		EmailConfig{
+			getEnv("MAIL_MAILER_1", "smtp"),
+			getEnv("MAIL_HOST_1", "smtp.gmail.com"),
+			getEnv("MAIL_PORT_1", "465"),
+			getEnv("MAIL_USERNAME_1", ""),
+			getEnv("MAIL_PASSWORD_1", ""),
+			getEnv("MAIL_ENCRYPTION_1", "ssl"),
+			getEnv("MAIL_FROM_ADDRESS_1", ""),
+			getEnv("MAIL_FROM_NAME_1", "gmco"),
+		},
+		EmailConfig{
+			getEnv("MAIL_MAILER_2", "smtp"),
+			getEnv("MAIL_HOST_2", "smtp.gmail.com"),
+			getEnv("MAIL_PORT_2", "465"),
+			getEnv("MAIL_USERNAME_2", ""),
+			getEnv("MAIL_PASSWORD_2", ""),
+			getEnv("MAIL_ENCRYPTION_2", "ssl"),
+			getEnv("MAIL_FROM_ADDRESS_2", ""),
+			getEnv("MAIL_FROM_NAME_2", "gmco"),
+		},
+		EmailConfig{
+			getEnv("MAIL_MAILER_3", "smtp"),
+			getEnv("MAIL_HOST_3", "smtp.gmail.com"),
+			getEnv("MAIL_PORT_3", "465"),
+			getEnv("MAIL_USERNAME_3", ""),
+			getEnv("MAIL_PASSWORD_3", ""),
+			getEnv("MAIL_ENCRYPTION_3", "ssl"),
+			getEnv("MAIL_FROM_ADDRESS_3", ""),
+			getEnv("MAIL_FROM_NAME_3", "gmco"),
+		},
+		EmailConfig{
+			getEnv("MAIL_MAILER_4", "smtp"),
+			getEnv("MAIL_HOST_4", "smtp.gmail.com"),
+			getEnv("MAIL_PORT_4", "465"),
+			getEnv("MAIL_USERNAME_4", ""),
+			getEnv("MAIL_PASSWORD_4", ""),
+			getEnv("MAIL_ENCRYPTION_4", "ssl"),
+			getEnv("MAIL_FROM_ADDRESS_4", ""),
+			getEnv("MAIL_FROM_NAME_4", "gmco"),
+		},
 	}
 
 	minioSecure, _ := strconv.ParseBool(getEnv("MINIO_SECURE", "false"))
@@ -178,9 +186,7 @@ func NewAppConfig() *AppConfig {
 		ClientKeyProduction:  getEnv("CLIENT_KEY_PRODUCTION", ""),
 		ServerKeyProduction:  getEnv("SERVER_KEY_PRODUCTION", ""),
 
-		Email1: email1,
-		Email2: email2,
-		Email3: email3,
+		Emails: emails,
 
 		TransactionMinute: transactionMinute,
 		TotpPeriod:        uint(totpPeriodSecond.Seconds()),
@@ -204,8 +210,6 @@ func getEnv(key string, fallback string) string {
 	go getdotEnv(key, chdotEnv)
 	vaultVal := <-chVault
 	fallbackdotEnv := <-chdotEnv
-	//close(chVault)
-	//close(chdotEnv)
 
 	fallbackosEnv := os.Getenv(key)
 
@@ -219,10 +223,10 @@ func getEnv(key string, fallback string) string {
 	}
 
 	if vaultVal != "error_failed_to_get_key" {
-		log.Printf("getEnv: Vault key %s found", key)
+		//log.Printf("getEnv: Vault key %s found", key)
 		return vaultVal
 	} else if fallbackVal != "" {
-		log.Printf("getEnv: Vault key %s using fallback", key)
+		//log.Printf("getEnv: Vault key %s using fallback", key)
 		return fallbackVal
 	} else {
 		log.Fatalf("getEnv: Can't set key %s", key)
@@ -241,24 +245,24 @@ func getVaultEnv(key string, ch chan string) int {
 
 	var vaultURL string
 	if vaultConfig.VaultHost == "" || vaultConfig.VaultPort == "" || vaultConfig.VaultAuth == "" || vaultConfig.VaultToken == "" || vaultConfig.VaultPath == "" {
-		log.Printf("getVault: Vault config not found")
+		//log.Printf("getVault: Vault config not found")
 		ch <- "error_failed_to_get_key"
 		return 1
 	} else {
 		vaultURL = "http://" + vaultConfig.VaultHost + ":" + vaultConfig.VaultPort
-		start := time.Now()
+		//start := time.Now()
 
 		resp, err := http.Get(vaultURL)
 		if err != nil {
-			log.Printf("getVault: unable to connect to Vault: %v", err)
+			//log.Printf("getVault: unable to connect to Vault: %v", err)
 			ch <- "error_failed_to_get_key"
 			return 1
 		}
 
 		defer resp.Body.Close()
-		elapsed := time.Since(start)
+		//elapsed := time.Since(start)
 
-		log.Printf("getVault: HTTP GET request to %s took %s\n", vaultURL, elapsed)
+		//log.Printf("getVault: HTTP GET request to %s took %s\n", vaultURL, elapsed)
 	}
 
 	config := vault.DefaultConfig()
@@ -267,7 +271,7 @@ func getVaultEnv(key string, ch chan string) int {
 
 	client, err := vault.NewClient(config)
 	if err != nil {
-		log.Printf("getVault: unable to initialize Vault client: %v", err)
+		//log.Printf("getVault: unable to initialize Vault client: %v", err)
 		ch <- "error_failed_to_get_key"
 		return 1
 	}
@@ -278,18 +282,18 @@ func getVaultEnv(key string, ch chan string) int {
 	// Read a secret from the default mount path for KV v2 in dev mode, "secret"
 	secret, err := client.KVv2("kv").Get(context.Background(), vaultConfig.VaultPath)
 	if err != nil {
-		log.Printf("getVault: unable to read secret %v", err)
+		//log.Printf("getVault: unable to read secret %v", err)
 		ch <- "error_failed_to_get_key"
 		return 1
 	}
 
 	value, ok := secret.Data[key].(string)
 	if !ok {
-		log.Printf("getVault: failed to get key %s", key)
+		//log.Printf("getVault: failed to get key %s", key)
 		ch <- "error_failed_to_get_key"
 		return 1
 	} else {
-		log.Printf("getVault: Success get env %s from vault", key)
+		//log.Printf("getVault: Success get env %s from vault", key)
 		ch <- value
 		return 0
 	}
@@ -298,14 +302,14 @@ func getVaultEnv(key string, ch chan string) int {
 func getdotEnv(key string, chdotEnv chan string) {
 	err := godotenv.Load()
 	if err != nil {
-		log.Printf("getdotEnv: Error loading .env file")
+		//log.Printf("getdotEnv: Error loading .env file")
 	}
 
 	if valuedotenv, ok := os.LookupEnv(key); ok {
-		log.Printf("getdotEnv: Success get env %s from .env", key)
+		//log.Printf("getdotEnv: Success get env %s from .env", key)
 		chdotEnv <- valuedotenv
 	} else {
-		log.Printf("getdotEnv: Failed to get env %s from .env", key)
+		//log.Printf("getdotEnv: Failed to get env %s from .env", key)
 		chdotEnv <- "error_failed_to_get_key"
 	}
 }

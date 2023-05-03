@@ -29,17 +29,22 @@ func main() {
 	}
 
 	var seatsName = []string{"H31", "H32", "H33"}
-	var attachments map[string][]byte = make(map[string][]byte)
+	var attachments = make(map[string][]byte)
 
 	for i := 31; i <= 33; i++ {
 		ticket, _ := ticketUtil.GenerateETicket("H"+strconv.Itoa(i), "H"+strconv.Itoa(i), "DIAMOND")
 		attachments["H"+strconv.Itoa(i)+".png"] = ticket
 	}
 
-	err := mailer.SendTicketEmail(data, reciever, attachments, seatsName)
+	var err error
+
+	err = mailer.SendTicketEmail(data, reciever, attachments, seatsName)
+
 	if err != nil {
-		panic(err)
+		fmt.Println("tetap gagal")
 	}
+	return
+
 }
 
 func newMinio() *minio.Client {

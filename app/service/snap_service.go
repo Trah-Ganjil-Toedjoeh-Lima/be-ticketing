@@ -81,21 +81,6 @@ func (s *SnapService) PrepareTxDetailsByMsg(message map[string]any) ([]model.Sea
 	return seats, userName, userEmail
 }
 
-func (s *SnapService) SendInfoEmail(seats []model.Seat, receiverName, receiverEmail string) error {
-	var seatsName []string
-	for _, seat := range seats {
-		seatsName = append(seatsName, seat.Name)
-	}
-	data := map[string]any{
-		"Name":  receiverName,
-		"Seats": seatsName,
-	}
-	if err := s.emailUtil.SendInfoEmail(data, receiverEmail); err != nil {
-		return err
-	}
-	return nil
-}
-
 func (s *SnapService) SendTicketEmail(seats []model.Seat, receiverName, receiverEmail string) error {
 	var attachments = make(map[string][]byte)
 	var seatsName []string
