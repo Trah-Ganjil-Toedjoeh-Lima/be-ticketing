@@ -52,14 +52,15 @@ func (u *EmailUtil) SendTicketEmail(data map[string]any, receiver string, attach
 	}
 
 	rand.Seed(time.Now().UnixNano()) //sending the email, if fail try multiple times
-	index := rand.Intn(4)
-	for i := 0; i < 5; i++ {
+	emailCount := len(u.config.Emails)
+	index := rand.Intn(emailCount)
+	for i := 0; i < emailCount+1; i++ {
 		err = u.SendEmail(message, u.config.Emails[index])
 		if err == nil {
 			break
 		}
 		u.log.Logrus.WithField("occurrence", "sending e-ticket email").WithField("receiver", receiver).WithField("seats_name", seatsName).Error(err)
-		index = ((index-1)%4 + 4) % 4 //modulus with positive remainder
+		index = ((index-1)%emailCount + emailCount) % emailCount //modulus with positive remainder
 	}
 
 	if err != nil {
@@ -87,14 +88,15 @@ func (u *EmailUtil) SendTotpEmail(data map[string]any, receiver string) error {
 	message.SetBody("text/html", body.String())
 
 	rand.Seed(time.Now().UnixNano()) //sending the email, if fail try multiple times
-	index := rand.Intn(4)
-	for i := 0; i < 5; i++ {
+	emailCount := len(u.config.Emails)
+	index := rand.Intn(emailCount)
+	for i := 0; i < emailCount+1; i++ {
 		err = u.SendEmail(message, u.config.Emails[index])
 		if err == nil {
 			break
 		}
 		u.log.Logrus.WithField("occurrence", "sending totp email").WithField("receiver", receiver).Error(err)
-		index = ((index-1)%4 + 4) % 4 //modulus with positive remainder
+		index = ((index-1)%emailCount + emailCount) % emailCount //modulus with positive remainder
 	}
 
 	if err != nil {
