@@ -123,16 +123,16 @@ func NewAppConfig() *AppConfig {
 			getEnv("MAIL_FROM_ADDRESS_3", ""),
 			getEnv("MAIL_FROM_NAME_3", "gmco"),
 		},
-		EmailConfig{
-			getEnv("MAIL_MAILER_4", "smtp"),
-			getEnv("MAIL_HOST_4", "smtp.gmail.com"),
-			getEnv("MAIL_PORT_4", "465"),
-			getEnv("MAIL_USERNAME_4", ""),
-			getEnv("MAIL_PASSWORD_4", ""),
-			getEnv("MAIL_ENCRYPTION_4", "ssl"),
-			getEnv("MAIL_FROM_ADDRESS_4", ""),
-			getEnv("MAIL_FROM_NAME_4", "gmco"),
-		},
+		// EmailConfig{
+		// 	getEnv("MAIL_MAILER_4", "smtp"),
+		// 	getEnv("MAIL_HOST_4", "smtp.gmail.com"),
+		// 	getEnv("MAIL_PORT_4", "465"),
+		// 	getEnv("MAIL_USERNAME_4", ""),
+		// 	getEnv("MAIL_PASSWORD_4", ""),
+		// 	getEnv("MAIL_ENCRYPTION_4", "ssl"),
+		// 	getEnv("MAIL_FROM_ADDRESS_4", ""),
+		// 	getEnv("MAIL_FROM_NAME_4", "gmco"),
+		// },
 	}
 
 	minioSecure, _ := strconv.ParseBool(getEnv("MINIO_SECURE", "false"))

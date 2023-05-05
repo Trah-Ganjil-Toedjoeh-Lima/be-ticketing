@@ -2,13 +2,14 @@ package util
 
 import (
 	"bytes"
-	"github.com/frchandra/ticketing-gmcgo/config"
-	"gopkg.in/gomail.v2"
 	"html/template"
 	"io"
 	"math/rand"
 	"strconv"
 	"time"
+
+	"github.com/frchandra/ticketing-gmcgo/config"
+	"gopkg.in/gomail.v2"
 )
 
 type EmailUtil struct {
