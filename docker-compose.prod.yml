@@ -20,6 +20,11 @@ services:
       - "traefik.http.routers.gmco-be-prod-https.tls=true"
       - "traefik.http.routers.gmco-be-prod-https.tls.certresolver=letsencrypt"
       - "traefik.http.routers.gmco-be-prod-https.middlewares=cors-header@docker"
+      - "traefik.http.middlewares.cors-headers.headers.accesscontrolallowmethods=GET,OPTIONS,PUT,DELETE,HEAD,OPTIONS"
+      - "traefik.http.middlewares.cors-headers.headers.accesscontrolalloworiginlist=*"
+      - "traefik.http.middlewares.cors-headers.headers.accesscontrolmaxage=100"
+      - "traefik.http.middlewares.cors-headers.headers.addvaryheader=true"
+      - "traefik.http.middlewares.cors-headers.headers.accesscontrolallowcredentials=true"
     networks:
       - gateway_ingress
     read_only: true
