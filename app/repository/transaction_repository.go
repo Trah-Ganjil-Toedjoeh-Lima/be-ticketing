@@ -26,7 +26,6 @@ func (t *TransactionRepository) GetBySeatTxn(txn *gorm.DB, transaction *model.Tr
 
 type transactionFields struct {
 	TransactionId uint64
-	OrderId       string
 	UserId        uint64
 	UserName      string
 	Email         string
@@ -127,7 +126,6 @@ func (t *TransactionRepository) GetDetailsByUserConfirmation(transactions *[]mod
 	var basics []transactionFields
 	result := t.db.Table("transactions").Select(
 		"transactions.transaction_id",
-		"transactions.order_id",
 		"users.user_id",
 		"users.name AS user_name",
 		"users.email",
@@ -153,7 +151,6 @@ func (t *TransactionRepository) GetDetailsByUserConfirmation(transactions *[]mod
 	for _, basic := range basics {
 		transactionBuff = model.Transaction{
 			TransactionId: basic.TransactionId,
-			OrderId:       basic.OrderId,
 			User:          model.User{UserId: basic.UserId, Name: basic.UserName, Phone: basic.Phone, Email: basic.Email},
 			Seat:          model.Seat{SeatId: basic.SeatId, Name: basic.SeatName, Price: basic.Price, Category: basic.Category, Link: basic.Link},
 			Confirmation:  basic.Confirmation,
