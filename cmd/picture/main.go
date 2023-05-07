@@ -14,9 +14,9 @@ import (
 )
 
 func main() {
-	seatName := "H44" //creating base qrcode
-	url := config.NewAppConfig().AppUrl + config.NewAppConfig().AppPort
-	generatedQrImage, err := qrcode.Encode(url, qrcode.Medium, 256)
+	seatName := "D33" //creating base qrcode
+
+	generatedQrImage, err := qrcode.Encode("https://gmco-event.com/ticket/8fab0ff0-c1c3-4fe7-988e-a2fe2325e086", qrcode.Medium, 256)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
@@ -43,7 +43,7 @@ func main() {
 	categoryText := bimg.Watermark{
 		Top:         417,
 		Left:        220,
-		Text:        "DIAMOND",
+		Text:        "IRAMA",
 		Opacity:     1,
 		Width:       100,
 		DPI:         100,
