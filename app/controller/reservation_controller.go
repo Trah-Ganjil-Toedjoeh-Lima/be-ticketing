@@ -44,7 +44,7 @@ func (r *ReservationController) GetSeatsInfo(c *gin.Context) {
 	for _, seat := range seats {
 		seatsResponse[seat.SeatId-1].SeatId = seat.SeatId
 		seatsResponse[seat.SeatId-1].Name = seat.Name
-		if (seat.Status != "purchased" && seat.Status != "not_for_sale") && time.Now().After(seat.UpdatedAt.Add(r.config.TransactionMinute)) { //overwrite the response with timestamp logic
+		if seat.Status != "purchased" && time.Now().After(seat.UpdatedAt.Add(r.config.TransactionMinute)) { //overwrite the response with timestamp logic
 			seat.Status = "available"
 		}
 		seatsResponse[seat.SeatId-1].Status = seat.Status
