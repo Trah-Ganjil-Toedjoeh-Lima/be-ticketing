@@ -157,7 +157,13 @@ func (s *TransactionService) PrepareTransactionData(userId uint64) (snap.Request
 	if txDetails = s.CleanUpGhostTransaction(txDetails); len(txDetails) < 1 {                  //clean up 'ghost' transaction that may be created by this user
 		return snap.Request{}, errors.New("cannot find any transaction for this user")
 	}
-	orderId := uuid.New().String() //create order_id for the new midtrans transaction
+
+	var orderId string
+	if reflect.ValueOf(txDetails[0].OrderId).IsZero() {
+		orderId = uuid.New().String() //create order_id for the new midtrans transaction
+	} else {
+		orderId = txDetails[0].OrderId
+	}
 
 	customerDetails := midtrans.CustomerDetails{ //populate the midtrans request with the customer detail
 		FName: txDetails[0].User.Name,
