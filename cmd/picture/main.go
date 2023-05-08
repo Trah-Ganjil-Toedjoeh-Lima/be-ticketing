@@ -14,9 +14,9 @@ import (
 )
 
 func main() {
-	seatName := "D33" //creating base qrcode
+	seatName := "D13" //creating base qrcode
 
-	generatedQrImage, err := qrcode.Encode("https://gmco-event.com/ticket/8fab0ff0-c1c3-4fe7-988e-a2fe2325e086", qrcode.Medium, 256)
+	generatedQrImage, err := qrcode.Encode("https://gmco-event.com/ticket/d4c1cf63-1ee1-43f6-b372-5a37f58f9af2", qrcode.Medium, 256)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
