@@ -131,7 +131,7 @@ func (t *TransactionController) DeleteLatestTransaction(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"message": "error", "error": "cannot get process details"})
 		return
 	}
-	txDetails, err := t.txService.GetDetailsByUserConfirmation(accessDetails.UserId, []string{"reserved", "pending"})
+	txDetails, err := t.txService.GetDetailsByUserConfirmation(accessDetails.UserId, []string{"reserved"})
 	if err != nil {
 		t.log.ControllerResponseLog(err, "TransactionController@GetLatestTransactionDetails", c.ClientIP(), contextData.(*util.AccessDetails).UserId)
 		util.GinResponseError(c, http.StatusNotFound, "something went wrong", "error when getting the data")

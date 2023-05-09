@@ -58,6 +58,7 @@ func (t *TransactionRepository) GetBasicsByLink(transaction *model.Transaction, 
 		Joins("inner join users on users.user_id = transactions.user_id").
 		Joins("inner join seats on seats.seat_id = transactions.seat_id").
 		Where("transactions.deleted_at IS NULL").
+		Where("transactions.status = ?", "settlement").
 		Where("seats.link = ?", link).
 		Order("transaction_id").
 		Limit(1).
