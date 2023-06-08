@@ -5,17 +5,19 @@ services:
     image: trahganjil/gmco-ticketing-be:${DOCKER_TAG}
     restart: unless-stopped
     container_name: gmco_be_prod
-    env_file:
-      - .env
+    volumes:
+      - ./storage/:/ticketing-gmcgo/storage/
+      - ./resource/:/ticketing-gmcgo/resource/
+      - ./.env:/ticketing-gmcgo/.env
     ports:
       - "127.0.0.1:5001:5000"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.gmco-be-prod-http.rule=Host(`api.gmco-event.com`)"
+      - "traefik.http.routers.gmco-be-prod-http.rule=Host(`beban-iai.bekisar.net`)"
       - "traefik.http.routers.gmco-be-prod-http.entrypoints=web"
       - "traefik.http.routers.gmco-be-prod-http.middlewares=redirect-to-https@docker"
       - "traefik.http.routers.gmco-be-prod-http.service=noop@internal"
-      - "traefik.http.routers.gmco-be-prod-https.rule=Host(`api.gmco-event.com`)"
+      - "traefik.http.routers.gmco-be-prod-https.rule=Host(`beban-iai.bekisar.net`)"
       - "traefik.http.routers.gmco-be-prod-https.entrypoints=websecure"
       - "traefik.http.routers.gmco-be-prod-https.tls=true"
       - "traefik.http.routers.gmco-be-prod-https.tls.certresolver=letsencrypt"
