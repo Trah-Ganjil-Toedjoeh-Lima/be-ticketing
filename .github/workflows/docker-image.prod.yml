@@ -26,22 +26,10 @@ jobs:
       run: export DOCKER_TAG=$(git rev-parse --short HEAD) && cp ~/projects/vault/.env.production .env && docker compose -f docker-compose.prod.yml up -d
 
   test-prod:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
-
-        # Install Node on the runner
-      - name: Install Node
-        uses: actions/setup-node@v1
-        with:
-          node-version: "12.x"
-
-      # Install the newman command line utility and also install the html extra reporter
-      - name: Install newman
-        run: |
-          npm install -g newman
-          npm install -g newman-reporter-htmlext
 
       # Make directory to upload the test results
       - name: Make Directory for results
