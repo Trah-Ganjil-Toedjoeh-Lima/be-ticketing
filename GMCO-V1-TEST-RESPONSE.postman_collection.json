@@ -1,0 +1,80 @@
+{
+	"info": {
+		"_postman_id": "0736b772-3dfa-411f-8a16-85ccb6192d54",
+		"name": "GMCO-V1-TEST-RESPONSE",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "16816087"
+	},
+	"item": [
+		{
+			"name": "Health",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Response time is less than 200ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(1200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{BaseUrl}}/health",
+					"host": [
+						"{{BaseUrl}}"
+					],
+					"path": [
+						"health"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get All Seat",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Response time is less than 200ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(1200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{BaseUrl}}/seat_map",
+					"host": [
+						"{{BaseUrl}}"
+					],
+					"path": [
+						"seat_map"
+					]
+				},
+				"description": "# Contoh data: 5 Variasi field \"status\"\n\n{  \n\"count\": 5,  \n\"data\": \\[  \n{  \n\"seat_id\": 1,  \n\"name\": \"A10\",  \n\"price\": 165000,  \n\"status\": \"available\"  \n},  \n{  \n\"seat_id\": 2,  \n\"name\": \"A11\",  \n\"price\": 165000,  \n\"status\": \"reserved_by_me\"  \n},  \n{  \n\"seat_id\": 3,  \n\"name\": \"A12\",  \n\"price\": 165000,  \n\"status\": \"purchased_by_me\"  \n},  \n{  \n\"seat_id\": 4,  \n\"name\": \"A13\",  \n\"price\": 165000,  \n\"status\": \"reserved\"  \n},  \n{  \n\"seat_id\": 5,  \n\"name\": \"A14\",  \n\"price\": 165000,  \n\"status\": \"purchased\"  \n}\\]  \n}"
+			},
+			"response": []
+		}
+	]
+}
