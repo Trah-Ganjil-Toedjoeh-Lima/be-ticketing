@@ -36,7 +36,7 @@ A [Postman collection](https://documenter.getpostman.com/view/16816087/2s93si1qA
 ## How to set up? (Docker, WSL2/Ubuntu)
 0. Have Docker installed on your system.
 1. Clone this repository
-2. Navigate to the repository folder
+2. Navigate to the repository folder using a terminal (WSL2's Ubuntu terminal is recommended)
 3. Rename 'env.example' to '.env' or create an .env file of your own, following the example.
 4. Run these commands in your terminal of choice:
 
