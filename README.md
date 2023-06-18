@@ -19,3 +19,9 @@ Tech Stack:
 <br>
 <br>
 Chandra Herdiputra, January 2023
+
+# Software Testing
+A [Postman collection](https://documenter.getpostman.com/view/16816087/2s93si1qAW) has been set up for testing this back-end API.
+
+## How to set up
+1. Docker?
